@@ -36,5 +36,6 @@ References:
 14. Go to `Actions` and see the details of your running workflow
 15. The workflow has the error:
 ```
-[githubabcs/hello-world-composite-action@main] is not allowed to be used in [organization]. Actions in this workflow must be: within a repository that belongs to your Enterprise account or created by GitHub.
+[githubabcs/hello-world-composite-action@main] is not allowed to be used in [organization]. 
+Actions in this workflow must be: within a repository that belongs to your Enterprise account or created by GitHub.
 ```
