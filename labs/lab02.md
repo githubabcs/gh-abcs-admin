@@ -1,12 +1,11 @@
-# 1 - Managing GitHub Actions settings for a repository
+# 2 - Managing GitHub Actions settings for a repository
 In this lab you will restrict the usage of Actions in your own repository
 > Duration: 5-10 minutes
 
 References:
 - [Managing GitHub Actions settings for a repository](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/enabling-features-for-your-repository/managing-github-actions-settings-for-a-repository#allowing-specific-actions-to-run)
-- []()
 
-## 1.1 Update Actions and Workflow permissions
+## 2.1 Update Actions and Workflow permissions
 
 1. Navigate to the `Settings > Actions > General` page of your own repository
 2. In the section `Actions permissions` click on the last option to only allow specified actions and reusable workflows
