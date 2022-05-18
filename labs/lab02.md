@@ -25,7 +25,7 @@ References:
     name: A first job to say hello
     steps:
       - id: hello-world
-        uses: githubabcs/hello-world-composite-action@main
+        uses: githubabcs/hello-world-composite-action@v1.0.1
         with:
           who-to-greet: 'Hello from GH ABCs'
       - run: echo random-number ${{ steps.hello-world.outputs.random-number }}
@@ -37,4 +37,9 @@ References:
 ```
 [githubabcs/hello-world-composite-action@main] is not allowed to be used in [organization]. 
 Actions in this workflow must be: within a repository that belongs to your Enterprise account or created by GitHub.
+```
+16. Navigate to the `Settings > Actions > General` page of your own repository
+17. Allow the action by adding it to the `Allow specified actions and reusable workflows` field:
+```
+githubabcs/hello-world-composite-action@v1.0.1
 ```

@@ -15,7 +15,7 @@ References:
     - Require a pull request before merging
     - Require review from Code Owners
     - Require status checks to pass before merging
-    - Search for `CI`and select it as a required status check
+    - Search for `build`and select it as a required status check
     - Require conversation resolution before merging
     - Include administrators
 5. Click `Create` to create the branch protection rule
