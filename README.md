@@ -22,7 +22,8 @@
 
 ### Learning GitHub Admin
 - [Microsoft Learn - GitHub Administration Collection](https://docs.microsoft.com/en-us/users/githubtraining/collections/mom7u1gzjdxw03)
-- [Learning Lab](https://lab.github.com/)
+- [GitHub Skills](https://skills.github.com/)
+- [GitHub Enterprise Onboarding Guide](https://resources.github.com/getting-started/enterprise/)
 
 ### GitHub Admin Documentation
 - [Enterprise administrators](https://docs.github.com/en/enterprise-cloud@latest/admin)
@@ -42,7 +43,6 @@
 - [Enforcing information security policy through GitHub Enterprise - GitHub Universe 2021 - YouTube](https://www.youtube-nocookie.com/embed/DCu-ZTT7WTI)
 
 ### Articles & Guides
-- [The GitHub Guide to Organizations](https://resources.github.com/downloads/github-guide-to-organizations.pdf)
 - [Improved management for GitHub Enterprise owners | The GitHub Blog](https://github.blog/2022-03-10-improved-management-github-enterprise-owners/)
 - [How to secure your GitHub organization and enterprise account | The GitHub Blog](https://github.blog/2020-07-23-how-to-secure-your-github-organization-and-enterprise-account/)
 - [Connect GitHub Enterprise Cloud to Defender for Cloud Apps | Microsoft Docs](https://docs.microsoft.com/en-us/defender-cloud-apps/connect-github-ec)
