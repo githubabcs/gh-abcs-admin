@@ -9,7 +9,7 @@ References:
 - [Creating a template repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/creating-a-template-repository)
 - [Creating a repository from a template](https://docs.github.com/en/repositories/creating-and-managing-repositories/creating-a-repository-from-a-template)
 
-## 2.1 Create issue templates
+## 4.1 Create issue templates
 
 1. Navigate to the `Settings > General` page of your repository
 2. In the `Features > Issues` section, click `Set up templates` button
@@ -19,7 +19,7 @@ References:
 6. Click on `Propose changes` to commit the tempaltes to your repository. 
 7. Repeat steps 3) to 6) to add more issue templates
 
-## 2.2 Create pull request templates
+## 4.2 Create pull request templates
 
 1. Navigate to the `main` branch of your repository
 2. Click `Add file` to create a new file
@@ -40,7 +40,7 @@ Fixes #
 
 ```
 
-## 2.3 Create a template repository
+## 4.3 Create a template repository _(Optional)_
 
 1. Navigate to the `Settings > General` page of your repository
 2. Select `Template repository` checkbox

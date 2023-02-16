@@ -16,7 +16,7 @@
 - [ ]  _Hands-on Lab:_ > [Activity 3](/labs/lab03.md)
 
 ### Module 4: GitHub Templates
-- [ ]  _Hands-on Lab:_ > [Activity 2](/labs/lab04.md)
+- [ ]  _Hands-on Lab:_ > [Activity 4](/labs/lab04.md)
 
 ### Module 5: GitHub API
 - [ ]  _Hands-on Lab:_ > [Activity 5](/labs/lab05.md)
