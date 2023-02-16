@@ -1,0 +1,71 @@
+name: 05-1. Use GitHub APIs
+on: 
+  workflow_dispatch:
+  push:
+
+# Limit the permissions of the GITHUB_TOKEN
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+
+  rest-api-create-and-close-issue:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v6
+        id: create-issue
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            const result = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: 'Issue auto-created from workflow run ${{github.run_id}}',
+              body: '👋 Thank you! We appreciate your contribution to this project.',
+              labels: ["training"]
+            })
+            console.log(result)
+            return result.data
+
+      - name: Displays create issue result
+        run: echo "${{toJSON(steps.create-issue.outputs.result)}}"
+
+      # Add here the close-issue step
+
+
+  graphql-api-query-issues:
+    needs: rest-api-create-and-close-issue
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v6
+        id: issues-result
+        with:
+          script: |
+            const query = `query($owner:String!, $name:String!, $label:String!) {
+              repository(owner:$owner, name:$name){
+                issues(first:100, labels: [$label]) {
+                  nodes {
+                    number,
+                    title
+                  }
+                }
+              }
+            }`;
+            const variables = {
+              owner: context.repo.owner,
+              name: context.repo.repo,
+              label: 'training'
+            }
+            const result = await github.graphql(query, variables)
+            console.log(result.repository.issues.nodes)
+            return result
+      
+      - name: Displays training issues
+        run: echo "${{toJSON(steps.issues-result.outputs.result)}}"
+
+  
+  # Add here the labels query step
+
+
+            
