@@ -15,9 +15,9 @@ References:
     - Require a pull request before merging
     - Require review from Code Owners
     - Require status checks to pass before merging
-    - Search for `build`and select it as a required status check
+    - Search for `build`and select it as a required status check (if Activity 2 has not been completed, create a new simple workflow)
     - Require conversation resolution before merging
-    - Include administrators
+    - Do not allow bypassing the above settings
 5. Click `Create` to create the branch protection rule
 6. Test the branch protection by adding/updating one file from your repository
 7. Commit the changes into a new `feature/lab03` branch 
