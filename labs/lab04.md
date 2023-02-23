@@ -49,3 +49,10 @@ Fixes #
 5. _(Optional)_ Create a new repository from one of the templates
 6. _(Optional)_ Navigate to your repository template and click on the `Use this template` button
 
+## 4.4 Create a Pull Request _(Optional)_
+
+1. Navigate to the `main` branch of your repository
+2. Update the [README.md](/README.md) file with checking the completed activities [x]
+3. Commit the changes into a new `feature/lab04` branch 
+4. Open a new pull request from `Pull requests`
+5. The template you created will be displayed and used when creating a new PR
