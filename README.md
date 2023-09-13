@@ -28,8 +28,9 @@
 
 ### Learning GitHub Admin
 - [Microsoft Learn - GitHub Administration Collection](https://docs.microsoft.com/en-us/users/githubtraining/collections/mom7u1gzjdxw03)
-- [GitHub Skills](https://skills.github.com/)
 - [GitHub Enterprise Onboarding Guide](https://resources.github.com/getting-started/enterprise/)
+- [The Book on GitHub Enterprise Cloud Adoption](https://resources.github.com/devops/get-started-with-github-enterprise-cloud/)
+- [GitHub Skills](https://skills.github.com/)
 
 ### GitHub Admin Documentation
 - [Enterprise administrators](https://docs.github.com/en/enterprise-cloud@latest/admin)
@@ -54,6 +55,7 @@
 - [GitHub Universe](https://githubuniverse.com/)
 
 ### Articles & Guides
+- [Best practices for organizations and teams using GitHub Enterprise Cloud](https://github.blog/2023-08-02-best-practices-for-organizations-and-teams-using-github-enterprise-cloud/)
 - [Everything new from GitHub Universe 2022](https://github.blog/2022-11-09-everything-new-from-github-universe-2022/)
 - [Improved management for GitHub Enterprise owners | The GitHub Blog](https://github.blog/2022-03-10-improved-management-github-enterprise-owners/)
 - [How to secure your GitHub organization and enterprise account | The GitHub Blog](https://github.blog/2020-07-23-how-to-secure-your-github-organization-and-enterprise-account/)
