@@ -1,3 +1,7 @@
+---
+render_with_liquid: false
+---
+
 # 5 - GitHub API - REST API & GraphQL API
 In this lab you will create a workflow that calls GitHub APIs using REST API and GraphQL API.
 > Duration: 15-20 minutes

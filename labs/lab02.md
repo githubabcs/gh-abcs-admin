@@ -1,3 +1,7 @@
+---
+render_with_liquid: false
+---
+
 # 2 - Managing GitHub Actions settings for a repository
 In this lab you will restrict the usage of Actions in your own repository
 > Duration: 5-10 minutes

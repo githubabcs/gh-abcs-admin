@@ -1,3 +1,7 @@
+---
+render_with_liquid: false
+---
+
 # GitHub Well-Architected Framework: Best Practices and Principles
 
 ## Overview
