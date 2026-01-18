@@ -65,7 +65,7 @@ Implementing GHAS across enterprise organizations requires standardized security
 
 **Baseline Security Policies**: Establish minimum security standards across all organizations through enterprise policies. These may include mandatory code scanning on critical repositories, mandatory secret scanning with push protection, and required dependency vulnerability reviews before merge.
 
-**Organization Inheritance Hierarchy**: As described in [Policy Inheritance Architecture (Doc 06)](./06-policy-inheritance.md), security configurations flow from enterprise to organization to repository levels. GHAS enablement policies cascade through this hierarchy, with organizations inheriting enterprise mandates while adding organization-specific controls.
+**Organization Inheritance Hierarchy**: As described in [Policy Inheritance Architecture](./06-policy-inheritance.md), security configurations flow from enterprise to organization to repository levels. GHAS enablement policies cascade through this hierarchy, with organizations inheriting enterprise mandates while adding organization-specific controls.
 
 **Tiered Implementation Levels**: Organizations should classify repositories into tiers (critical, important, standard) and apply proportionate security scanning configurations. Critical repositories might require all GHAS features with strict blocking policies, while standard repositories enable core scanning with advisory-only configurations.
 
