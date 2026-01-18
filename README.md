@@ -1,7 +1,36 @@
-# gh-abcs-admin
-> The GitHub ABCs admin training with templates, examples, hands-on labs and additional learning resources.
+# GitHub Administration & Governance Workshop (L400)
 
-## Examples & Hands-on Labs
+> **Advanced Workshop** | Expert-level training for GitHub Enterprise Cloud administration, governance, and best practices. This workshop covers enterprise hierarchy, organization strategies, identity management (including Enterprise Managed Users), policy enforcement, security compliance, and the GitHub Well-Architected Framework.
+
+## Workshop Documentation
+
+Comprehensive L400-level technical documentation for GitHub Enterprise Cloud administration and governance.
+
+### Enterprise Administration
+- [📘 Enterprise Hierarchy](docs/01-enterprise-hierarchy.md) - GHEC structure, roles, and multi-org management
+- [🏢 Organization Strategies](docs/02-organization-strategies.md) - Single/multi-org patterns, red-green-sandbox-archive
+
+### Identity & Access Management
+- [🔐 Identity & Access Management](docs/03-identity-access-management.md) - SAML SSO, SCIM, enterprise type selection
+- [⭐ Enterprise Managed Users (EMU)](docs/04-enterprise-managed-users.md) - EMU deep dive, advantages, best practices
+
+### Teams & Permissions
+- [👥 Teams and Permissions](docs/05-teams-permissions.md) - Team structures, nested teams, permission models
+- [📋 Policy Inheritance](docs/06-policy-inheritance.md) - Enterprise → Org → Repo policy enforcement
+
+### Repository Governance
+- [📦 Repository Governance](docs/07-repository-governance.md) - Rulesets, branch protection, templates
+- [🔒 Security & Compliance](docs/08-security-compliance.md) - GHAS, code scanning, audit logs
+
+### Best Practices & Architecture
+- [✅ Best Practices & WAF](docs/09-best-practices-waf.md) - GitHub Well-Architected Framework principles
+- [🏗️ Reference Architecture](docs/10-reference-architecture.md) - Architecture diagrams and patterns
+
+---
+
+## Hands-on Labs
+
+Practical exercises to reinforce GitHub administration concepts.
 
 ### Hands-on Labs Setup
 - [ ]  [Lab Setup](/labs/setup.md)
