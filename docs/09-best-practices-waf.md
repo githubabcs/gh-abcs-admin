@@ -1,5 +1,5 @@
 ---
-render_with_liquid: false
+liquid: false
 ---
 
 # GitHub Well-Architected Framework: Best Practices and Principles

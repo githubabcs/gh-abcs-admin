@@ -1,5 +1,5 @@
 ---
-render_with_liquid: false
+liquid: false
 ---
 
 # 2 - Managing GitHub Actions settings for a repository
