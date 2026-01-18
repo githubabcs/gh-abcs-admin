@@ -1,1 +1,45 @@
+title: GitHub ABCs - Admin Guide
+description: Enterprise Administration Best Practices for GitHub
 theme: jekyll-theme-architect
+
+# Build settings
+markdown: kramdown
+kramdown:
+  input: GFM
+  syntax_highlighter: rouge
+
+# Include these directories
+include:
+  - docs
+  - labs
+
+# Collections
+collections:
+  docs:
+    output: true
+    permalink: /docs/:path/
+  labs:
+    output: true
+    permalink: /labs/:path/
+
+# Defaults
+defaults:
+  - scope:
+      path: ""
+      type: "docs"
+    values:
+      layout: default
+  - scope:
+      path: ""
+      type: "labs"
+    values:
+      layout: default
+
+# Exclude from processing
+exclude:
+  - README.md
+  - LICENSE
+  - Gemfile
+  - Gemfile.lock
+  - node_modules
+  - vendor
