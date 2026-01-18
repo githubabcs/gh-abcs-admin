@@ -616,9 +616,12 @@ Repository-level policy changes are logged in organization audit logs:
 
 **Retention Policies**
 
-- **Enterprise audit log:** 180-day retention by default for GHEC
+- **Enterprise audit log:** 180-day retention for audit events
 - **Organization audit log:** 180-day retention for organizations within GHEC enterprise
-- **Extended retention:** Available through audit log streaming to SIEM systems
+- **Git events:** 7-day retention only (includes push, clone, fetch operations)
+- **Extended retention:** Available through audit log streaming to external SIEM systems
+
+> **Important:** The audit log retains Git events for only **seven days**. To maintain longer Git event history, configure audit log streaming to an external system.
 
 **Export and Streaming**
 

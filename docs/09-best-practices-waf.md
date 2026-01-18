@@ -4,9 +4,11 @@
 
 The GitHub Well-Architected Framework (WAF) provides a comprehensive set of principles and best practices for designing, implementing, and operating enterprise-scale GitHub environments. This framework enables organizations to build secure, reliable, and efficient software delivery platforms that scale with business growth.
 
-The GitHub WAF is built on five fundamental pillars that work together to create a holistic approach to software development and delivery. Understanding and implementing these pillars ensures that your GitHub Enterprise deployment meets enterprise requirements while maintaining agility and developer productivity.
+> **Note:** The official GitHub Well-Architected Framework ([wellarchitected.github.com](https://wellarchitected.github.com)) is organized around five pillars: **Productivity**, **Collaboration**, **Application Security**, **Governance**, and **Architecture**. This document presents an enterprise-focused perspective that maps these official pillars to operational concerns commonly addressed in enterprise deployments, drawing inspiration from cloud architecture frameworks while remaining aligned with GitHub's official guidance.
 
-## GitHub WAF Five Pillars
+The following sections organize best practices around operational pillars that enterprise administrators commonly address when deploying GitHub at scale.
+
+## Enterprise Deployment Pillars
 
 ### 1. Reliability
 

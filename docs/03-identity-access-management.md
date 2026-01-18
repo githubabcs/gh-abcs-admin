@@ -153,7 +153,7 @@ flowchart TD
 - Limitation: Does not support nested group provisioning
 
 **Okta:**
-- SAML 2.0 or OIDC authentication
+- SAML 2.0 authentication only (OIDC is **not supported** for EMU)
 - Native GitHub EMU application with SCIM provisioning
 - Support for group push and role assignment
 - Extensive attribute mapping capabilities

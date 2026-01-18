@@ -20,7 +20,7 @@ An enterprise account on GitHub Enterprise Cloud delivers advanced administrativ
 
 **Security and Compliance**
 - Enterprise-wide security policies and enforcement
-- Advanced audit logging with 180-day retention (extendable via log streaming)
+- Advanced audit logging with 180-day retention for audit events (Git events: 7 days); extendable via log streaming
 - IP allow lists at the enterprise level
 - SSH certificate authority for cryptographic authentication
 - SCIM provisioning for automated user lifecycle management
@@ -168,6 +168,43 @@ Billing Managers have specialized access limited to financial and subscription m
 - Budget managers requiring cost visibility
 - Accounting personnel processing invoices
 
+### App Manager
+
+App Managers have specialized permissions to manage GitHub App registrations owned by the enterprise:
+
+**Capabilities:**
+- View, create, edit, and delete GitHub App registrations owned by the enterprise
+- Manage app settings and configurations
+
+**Restrictions:**
+- Cannot install and uninstall GitHub Apps on an enterprise or organization
+- Cannot access other enterprise administrative settings
+
+**Use Cases:**
+- Platform engineers managing enterprise-wide integrations
+- DevOps teams maintaining CI/CD GitHub Apps
+- Security teams managing security-related app registrations
+
+### Security Manager
+
+Security Managers have permissions to effectively manage security features and alerts for the enterprise:
+
+**Capabilities:**
+- View, manage, and assign security configurations at enterprise and organization level
+- Manage use of GitHub Secret Protection and GitHub Code Security
+- View security alerts and dashboards for all repositories in organizations
+- Manage security campaigns for organizations
+- Manage repository settings for security features
+- Read access for code in all repositories
+- Write access for all security alerts in the enterprise
+
+**Use Cases:**
+- Security engineers managing enterprise-wide security posture
+- Compliance officers monitoring security alerts
+- Security operations teams responding to vulnerabilities
+
+> **Note:** The enterprise security manager role is currently in public preview and subject to change.
+
 ### Enterprise Member
 
 Enterprise Members are users who belong to at least one organization within the enterprise.
@@ -182,6 +219,31 @@ Enterprise Members are users who belong to at least one organization within the 
 - Membership can be direct or via IdP group synchronization
 - Outside collaborators are not enterprise members
 - Member status affects licensing and compliance reporting
+
+### Guest Collaborator (EMU Only)
+
+Guest Collaborators provide limited access for vendors and contractors in Enterprise Managed Users environments:
+
+**Characteristics:**
+- Provisioned by your IdP, like all managed user accounts
+- Can be added as organization members or as collaborators in repositories
+- Cannot access internal repositories in the enterprise, except in organizations where they're added as a member
+- Different from regular users who automatically gain access to all internal repositories when added to one organization
+
+**Use Cases:**
+- Contractors working on specific projects
+- Vendors requiring limited repository access
+- External consultants with scoped permissions
+
+### Custom Enterprise Roles
+
+Custom roles allow defining specific sets of permissions for access to enterprise settings:
+
+**Capabilities:**
+- Define granular permission sets tailored to organizational needs
+- Delegate administrative duties securely
+- Grant extra privileges to help non-administrators be productive
+- Create roles for specific functions (security auditors, compliance reviewers, etc.)
 
 ## Enterprise Settings and Dashboard Navigation
 

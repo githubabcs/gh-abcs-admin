@@ -129,128 +129,233 @@ Multi-organization architectures leverage organizational boundaries as security,
 
 ```mermaid
 graph TD
-    A[Enterprise Account] --> B[Production Org]
-    A --> C[Development Org]
+    A[Enterprise Account] --> B[Green Org<br/>~90% of repos]
+    A --> C[Red Org<br/>Need-to-know]
     A --> D[Sandbox Org]
     A --> E[Archive Org]
     
-    B --> B1[Critical Systems]
-    B --> B2[Customer-Facing Apps]
-    B --> B3[Strict Policies]
+    B --> B1[Internal Repositories]
+    B --> B2[Open Collaboration]
+    B --> B3[Base: Write Access]
     
-    C --> C1[Feature Development]
-    C --> C2[Integration Testing]
-    C --> C3[Relaxed Policies]
+    C --> C1[Confidential Projects]
+    C --> C2[Regulated Code]
+    C --> C3[Base: No Access]
     
-    D --> D1[Innovation Projects]
-    D --> D2[Experiments]
+    D --> D1[Experiments]
+    D --> D2[Training/Hackathons]
     D --> D3[Minimal Policies]
     
-    E --> E1[Decommissioned Code]
-    E --> E2[Historical Archives]
-    E --> E3[Read-Only Access]
+    E --> E1[Archived Repos]
+    E --> E2[Historical Code]
+    E --> E3[Read-Only]
     
     style A fill:#e1f5ff
-    style B fill:#f8d7da
-    style C fill:#d1ecf1
+    style B fill:#d4edda
+    style C fill:#f8d7da
     style D fill:#fff3cd
     style E fill:#d6d8db
 ```
 
-### Red/Green (Blue/Green) Pattern
+### Red-Green-Sandbox-Archive Pattern
 
-The Red/Green pattern (sometimes called Blue/Green) establishes strict separation between production and non-production environments using organizational boundaries. This pattern is derived from blue/green deployment strategies but applied at the organizational architecture level.
+The Red-Green-Sandbox-Archive pattern is GitHub's **recommended multi-organization model** for enterprises that need more than a single organization. This pattern is based on **visibility and access control levels**, not deployment environments.
 
-**Architecture Characteristics**
+> **Reference:** This pattern is officially documented in [Strategies for using organizations in GitHub Enterprise Cloud](https://resources.github.com/learn/pathways/administration-governance/essentials/strategies-for-using-organizations-github-enterprise-cloud/).
 
-**Red Organization (Production)**
-- **Purpose**: Production systems, customer-facing applications, revenue-generating services
-- **Security Posture**: Maximum enforcement, zero-trust principles
-- **Access Model**: Minimal privileges, time-bounded access, comprehensive audit logging
-- **Change Control**: Mandatory peer review, required status checks, deployment approval gates
-- **Compliance**: SOC 2, ISO 27001, industry-specific regulations (PCI DSS, HIPAA)
+> **Important:** This pattern is NOT related to blue/green deployment strategies. The "Red" and "Green" names refer to access control models (restrictive vs. open), not production vs. development environments.
 
-**Green Organization (Development)**
-- **Purpose**: Feature development, integration testing, staging environments
-- **Security Posture**: Balanced security with developer velocity
-- **Access Model**: Broader access for development teams, self-service capabilities
-- **Change Control**: Lighter review requirements, faster iteration cycles
-- **Compliance**: Development environment standards, non-production data handling
+```mermaid
+graph LR
+    subgraph "Green Organization (~90% of work)"
+        G1[Base Permission: Write]
+        G2[Innersource by Default]
+        G3[Branch Protection for Quality]
+    end
+    
+    subgraph "Red Organization (Need-to-Know)"
+        R1[Base Permission: None]
+        R2[Explicit Team Access Only]
+        R3[Highly Confidential]
+    end
+    
+    subgraph "Sandbox Organization"
+        S1[Anyone Can Create Repos]
+        S2[Experimentation Space]
+        S3[Minimal Restrictions]
+    end
+    
+    style G1 fill:#d4edda
+    style G2 fill:#d4edda
+    style G3 fill:#d4edda
+    style R1 fill:#f8d7da
+    style R2 fill:#f8d7da
+    style R3 fill:#f8d7da
+    style S1 fill:#fff3cd
+    style S2 fill:#fff3cd
+    style S3 fill:#fff3cd
+```
 
-**Policy Differentiation**
+#### Green Organization
 
-| Policy Domain | Red (Production) | Green (Development) |
-|---------------|------------------|---------------------|
-| Branch Protection | Required reviews (2+), signed commits, status checks | Required reviews (1+), optional signing |
-| Secret Scanning | Push protection enabled, custom patterns | Push protection disabled, alerts only |
-| Actions Policies | Approved actions only, self-hosted runners | Public actions allowed, GitHub-hosted runners |
-| External Collaborators | Prohibited | Allowed with time limits |
-| Repository Visibility | Private only | Private and internal |
-| GHAS Enforcement | All features required | Optional per repository |
-| IP Allow Lists | Corporate network only | Corporate + remote access |
-| Deployment Environments | Protection rules, approval gates | Self-service deployment |
+The Green organization serves as the **primary collaboration space** for your developers, with approximately **90% of your repositories** residing here. This is where innersource thrives.
 
-**Implementation Best Practices**
+**Key Characteristics:**
+- **Base Permissions: Write** — Promotes innersource and empowers users to propose changes to any repository
+- **Branch Protection** — Ensures that users can only propose changes (via PRs) and that changes go through code review and approval
+- **Visibility** — Internal repositories enable discovery and collaboration across teams
+- **Purpose** — Day-to-day development, shared libraries, platform services, most application code
 
-**Code Promotion Pipeline**
-1. Development occurs in Green organization repositories
-2. Pull request workflow merges code to main branch
-3. CI/CD pipeline packages artifacts (container images, binaries, packages)
-4. Artifacts promoted to production artifact registry
-5. Red organization references promoted artifacts in deployment pipelines
-6. Infrastructure-as-Code (IaC) may be replicated or shared depending on trust model
+**Access Model:**
+- All organization members can read and propose changes to repositories
+- Higher-level permissions (maintain, admin) granted through teams
+- CODEOWNERS files ensure appropriate reviewers for each area
+- Branch protection rules prevent direct commits to protected branches
 
-**Repository Strategy**
-- **Option 1: Separate Repositories**: Maintain distinct repositories in each organization; promote artifacts only
-  - **Advantages**: Complete isolation, different team access patterns
-  - **Disadvantages**: Code duplication, synchronized repository settings
-  
-- **Option 2: Branch-Based**: Single repository in Green, protected production branch
-  - **Advantages**: Unified history, simpler management
-  - **Disadvantages**: Production code in non-production organization
+**Why "Green":**
+- Represents an "open" or "go" signal for collaboration
+- Most work happens here with minimal friction
+- Encourages discoverability, code reuse, and innersource culture
 
-**Access Management**
-- **Separate Team Membership**: Production access requires explicit approval, separate IdP groups
-- **Temporary Access Patterns**: Time-bounded production access using GitHub App automation
-- **Break-Glass Procedures**: Emergency access protocols with mandatory incident tickets
-- **Service Accounts**: Dedicated machine users for CI/CD with minimal scoped credentials
+#### Red Organization
 
-**Use Cases**
-- Regulated industries requiring environment separation (financial services, healthcare)
-- Organizations with strict change control requirements (ITIL, CMMI Level 4-5)
-- Enterprises with separate production operations teams
-- Multi-tenant SaaS providers with customer isolation requirements
+The Red organization is for repositories that must be kept on a **need-to-know basis**. This is the restrictive organization for highly confidential or regulated code.
 
-### Sandbox Pattern
+**Key Characteristics:**
+- **Base Permissions: None** — Users must be explicitly added via teams to access any repository
+- **Explicit Access Required** — Team membership grants read or write access
+- **Strict Control** — Defined process for creating repositories and granting access
+- **Purpose** — Confidential projects, regulated code, sensitive IP, security-critical systems
 
-The Sandbox organization provides a low-risk environment for innovation, experimentation, and learning without impacting production systems or development velocity.
+**Access Model:**
+- No default visibility — repositories are invisible unless explicitly granted
+- Team-based access control with documented approval process
+- Stricter review requirements and audit logging
+- May include additional security controls (IP allowlists, etc.)
 
-**Architecture Characteristics**
+**Why "Red":**
+- Represents a "stop" or "restricted" signal
+- Access is deliberately limited
+- Prevents accidental exposure of sensitive content
 
-**Purpose and Scope**
+**When to Use Red Organization:**
+- Highly confidential projects (M&A, strategic initiatives)
+- Regulated code requiring audit trails (PCI DSS, HIPAA, SOX)
+- Security-sensitive systems (authentication, encryption, secrets management)
+- Code subject to export control or intellectual property concerns
+- Projects for highly sensitive customers
+
+#### Sandbox Organization
+
+The Sandbox organization provides a **shared space where any user can create and experiment** with repositories without impacting production systems or cluttering the main Green organization.
+
+**Key Characteristics:**
+- **Self-Service Repository Creation** — Developers can create repos freely
+- **Minimal Policies** — Relaxed branch protection, permissive settings
+- **Experimentation Focus** — Proof-of-concepts, hackathons, learning
+- **No Production Data** — Synthetic data only, no sensitive information
+
+**Purpose:**
 - Technology evaluation and proof-of-concept projects
-- Developer training and certification programs
+- Developer training and skill development
 - Hackathons and innovation initiatives
+- Interview coding exercises and assessments
 - Third-party integration testing
-- Open-source project contributions
-- Interview and assessment environments
+- Open-source contribution practice
 
-**Security Model**
-- **Isolation**: No connectivity to production or development systems
-- **Data Restrictions**: Synthetic data only, no production data or credentials
-- **Network Boundaries**: Separate network policies, no VPN/private link access
-- **Access Control**: Self-service repository creation, relaxed permissions
-- **Monitoring**: Basic audit logging, anomaly detection for abuse patterns
+**Workflow:**
+- Developers create experimental repositories in Sandbox
+- Successful experiments can be promoted to Green organization
+- Abandoned experiments are periodically cleaned up or archived
+- No expectation of long-term maintenance
 
-**Policy Configuration**
-- Minimal branch protection (optional peer review)
-- Public repositories allowed (with approval workflow)
-- GitHub Actions: Public marketplace access, generous compute quotas
-- External collaborators: Allowed for partnership evaluations
-- GitHub Packages: Separate registry, no promotion to production
-- Advanced Security: Optional, typically disabled for cost optimization
+> **Note:** A Sandbox organization is especially important if you configure GHEC to prevent developers from creating personal repositories.
 
-**Lifecycle Management**
+#### Archive Organization (Optional)
+
+The Archive organization contains repositories that are **no longer actively maintained**. While any repository can be archived in place (making it read-only), some enterprises prefer to transfer archived repositories to a dedicated organization.
+
+**Key Characteristics:**
+- **Read-Only Access** — All repositories are archived
+- **Historical Preservation** — Maintains code history for reference
+- **Reduced Clutter** — Keeps active organizations clean
+- **Optional** — Many enterprises keep archived repos in their original organization
+
+**Considerations:**
+- Transferring changes the repository URL (owner/name syntax)
+- Users expecting the repo in the original organization may have difficulty finding it
+- Automation and links may need updating
+- Consider documenting archived repository locations
+
+**When to Use Archive Organization:**
+- Large enterprises with many decommissioned projects
+- Regulatory requirements for code retention
+- Desire to keep active organizations focused on current work
+
+### Policy Differentiation Across Organizations
+
+| Policy Domain | Green (Open) | Red (Restricted) | Sandbox |
+|---------------|--------------|------------------|---------|
+| **Base Permissions** | Write | None | Write or Admin |
+| **Repository Creation** | Controlled | Restricted (approval) | Self-service |
+| **Branch Protection** | Required (quality) | Strict (security + quality) | Optional |
+| **Internal Repos** | Primary visibility | Limited use | Allowed |
+| **Private Repos** | For specific needs | Default | Allowed |
+| **External Collaborators** | Controlled | Prohibited or strict | Allowed |
+| **GitHub Actions** | Standard policies | Strict allow-lists | Permissive |
+| **GHAS Features** | Enabled | Required | Optional |
+
+### Workflow Between Organizations
+
+```mermaid
+flowchart LR
+    subgraph Sandbox
+        S[Experiment/POC]
+    end
+    
+    subgraph Green
+        G[Active Development]
+    end
+    
+    subgraph Red
+        R[Confidential Work]
+    end
+    
+    subgraph Archive
+        A[Decommissioned]
+    end
+    
+    S -->|Promote successful<br/>experiments| G
+    G -->|Elevate sensitive<br/>projects| R
+    G -->|Decommission| A
+    R -->|Declassify| G
+    R -->|Decommission| A
+    
+    style S fill:#fff3cd
+    style G fill:#d4edda
+    style R fill:#f8d7da
+    style A fill:#d6d8db
+```
+
+**Promotion from Sandbox to Green:**
+1. Experiment succeeds and becomes formal project
+2. Repository transferred to Green organization
+3. Apply standard branch protection and policies
+4. Set up proper team access and CODEOWNERS
+
+**Elevation from Green to Red:**
+1. Project becomes confidential (acquisition, regulatory, etc.)
+2. Repository transferred to Red organization
+3. Access restricted to authorized teams only
+4. Enhanced audit logging enabled
+
+**Declassification from Red to Green:**
+1. Confidentiality requirement lifted
+2. Repository transferred to Green organization
+3. Base permissions enable broader access
+4. Innersource contribution enabled
+
+### Sandbox Lifecycle Management
 
 **Onboarding Process**
 1. Developer submits sandbox request via issue template or portal
@@ -259,7 +364,7 @@ The Sandbox organization provides a low-risk environment for innovation, experim
 4. Automated notification 7 days before expiration with renewal instructions
 
 **Graduation Path**
-- Successful experiments promoted to Development organization via repository transfer
+- Successful experiments promoted to Green organization via repository transfer
 - Requires security review, code quality assessment, and architectural approval
 - Repository transfer triggers automated policy application and security scan baseline
 
@@ -273,14 +378,6 @@ The Sandbox organization provides a low-risk environment for innovation, experim
 - **Storage Quotas**: Repository size limits (1GB soft limit, alerts at 80%)
 - **GHAS Exclusion**: Sandbox repositories excluded from GHAS license consumption
 - **Spending Limits**: Organization-level spending caps for Actions and Packages
-
-**Use Cases**
-- **Technology Evaluation**: Assessing new frameworks, languages, or tools before adoption
-- **Developer Onboarding**: New hire training environments without production access risk
-- **Hackathons**: Time-bounded innovation events with rapid iteration
-- **Partner Integration**: Testing third-party APIs and services in isolation
-- **Certification Labs**: Hands-on environments for internal training programs
-- **Interview Assessments**: Candidate technical evaluations with consistent environments
 
 ### Archive Pattern
 
@@ -542,34 +639,34 @@ Consistent naming conventions enable programmatic organization management, impro
 
 **Hierarchical Prefix Naming**
 ```
-<enterprise>-<category>-<descriptor>
+<enterprise>-<access-level>-<descriptor>
 ```
 
-**Examples:**
-- `acme-prod-external` - Production organization for customer-facing services
-- `acme-dev-platform` - Development organization for platform engineering
+**Examples Using Red-Green-Sandbox-Archive Pattern:**
+- `acme-green-platform` - Primary collaboration organization for platform engineering
+- `acme-red-security` - Need-to-know organization for security-sensitive projects
 - `acme-sandbox-innovation` - Sandbox for R&D and experiments
 - `acme-archive-legacy` - Archive for decommissioned systems
-- `acme-compliance-pci` - PCI DSS compliant workloads
+- `acme-red-pci` - Restricted organization for PCI DSS compliant workloads
 
 **Business Unit Alignment**
 ```
-<enterprise>-<business-unit>-<environment>
+<enterprise>-<business-unit>-<access-level>
 ```
 
 **Examples:**
-- `globex-retail-prod` - Retail division production
-- `globex-insurance-dev` - Insurance division development
-- `globex-corporate-it` - Corporate IT shared services
+- `globex-retail-green` - Retail division primary collaboration org
+- `globex-insurance-red` - Insurance division restricted org
+- `globex-corporate-sandbox` - Corporate IT experimentation space
 
 **Geographic Distribution**
 ```
-<enterprise>-<region>-<purpose>
+<enterprise>-<region>-<access-level>
 ```
 
 **Examples:**
-- `initech-emea-prod` - EMEA regional production
-- `initech-apac-dev` - APAC regional development
+- `initech-emea-green` - EMEA regional primary collaboration org
+- `initech-apac-red` - APAC regional restricted org
 - `initech-amer-sandbox` - Americas sandbox environment
 
 ### Naming Convention Best Practices
@@ -582,29 +679,29 @@ Consistent naming conventions enable programmatic organization management, impro
 
 **Semantic Clarity**
 - Self-documenting names convey purpose without lookup
-- Consistent terminology across enterprise (standardize on red/green or blue/green, not mixed)
+- Consistent terminology across enterprise (standardize on red/green for access levels)
 - Avoid generic names (`team-a`, `org-1`) that scale poorly
 
 **Future-Proofing**
 - Reserve naming patterns for anticipated growth (plan for 10x scale)
-- Version numbers in names create migration challenges (avoid `acme-v2-prod`)
+- Version numbers in names create migration challenges (avoid `acme-v2-green`)
 - Consider merger/acquisition scenarios (use neutral naming)
 
 **Automation Integration**
 - Naming pattern validation via GitHub Actions workflow on organization creation
-- Automated tagging based on naming pattern (e.g., `acme-prod-*` gets `environment:production` topic)
+- Automated tagging based on naming pattern (e.g., `acme-red-*` gets `access:restricted` topic)
 - RBAC policies derived from organization name patterns
 
 ### Metadata and Discoverability
 
 **Organization Description Standard**
 ```
-<purpose> | <owner-team> | <environment-tier> | <compliance-scope>
+<purpose> | <owner-team> | <access-level> | <compliance-scope>
 ```
 
 **Example:**
 ```
-Customer-facing e-commerce platform | Product Engineering | Production | PCI DSS
+Customer-facing e-commerce platform | Product Engineering | Green (Collaboration) | PCI DSS
 ```
 
 **Organization Profile Components**
@@ -713,24 +810,24 @@ done
 
 **Red/Green to Single Organization**
 
-**Rationale**: Development velocity concerns outweigh environment separation benefits
+**Rationale**: Administrative overhead of multi-org exceeds access control benefits
 
-**Approach**: Merge Green into Red with enhanced branch protection
-- Establish branch naming convention (`production/*`, `development/*`)
-- Implement repository rulesets with environment-specific targeting
-- Migrate deployment environment protection rules
-- Consolidate CI/CD pipelines with environment-aware logic
+**Approach**: Merge Red into Green with enhanced team-based access
+- Establish team-based access control instead of organization-level separation
+- Implement repository rulesets with targeted scoping for sensitive repos
+- Create private repositories with restricted team access for former "Red" content
+- Consolidate user management to single organization
 
-**Single to Red/Green/Sandbox Separation**
+**Single to Red-Green-Sandbox-Archive Separation**
 
-**Rationale**: Security maturity progression demands defense-in-depth
+**Rationale**: Need for access differentiation (open collaboration vs. restricted) and experimentation space
 
-**Approach**: Extract by criticality and lifecycle
-1. **Identify Production Repositories**: Customer-facing, revenue-generating, regulated
-2. **Create Red Organization**: Configure maximum security posture
-3. **Transfer Production Repos**: Migrate with comprehensive testing
-4. **Establish Promotion Pipeline**: Define artifact promotion from Green → Red
-5. **Create Sandbox**: Extract experimental repositories to separate organization
+**Approach**: Extract by access requirements
+1. **Identify Restricted Repositories**: Confidential, regulated, need-to-know projects
+2. **Create Red Organization**: Configure base permissions to "None"
+3. **Transfer Restricted Repos**: Migrate with explicit team access grants
+4. **Keep Green as Primary**: ~90% of repos stay in open collaboration org
+5. **Create Sandbox**: Establish experimentation space with self-service repo creation
 
 ### Migration Risk Mitigation
 
@@ -776,16 +873,16 @@ flowchart TD
     G -->|No| H[Single Org + Enhanced Policies]
     G -->|Yes| I[Compliance Separation Pattern]
     
-    D -->|No| J{Prod/Dev Separation Needed?}
+    D -->|No| J{Access Differentiation Needed?}
     D -->|Yes| K[Business Unit Pattern]
     
     J -->|No| F
-    J -->|Yes| L[Red/Green Pattern]
+    J -->|Yes| L[Red-Green-Sandbox Pattern]
     
     E --> M{Primary Driver?}
     M -->|Compliance| I
     M -->|Business Units| K
-    M -->|Environment Isolation| N[Red/Green/Sandbox Pattern]
+    M -->|Access Control| N[Red-Green-Sandbox Pattern]
     
     F --> O[+ Sandbox Org for Innovation]
     H --> O
@@ -807,11 +904,11 @@ flowchart TD
 
 ### Evaluation Criteria Matrix
 
-| Criterion | Weight | Single Org | Red/Green | Business Unit | Compliance Separation |
-|-----------|--------|------------|-----------|---------------|----------------------|
+| Criterion | Weight | Single Org | Red-Green-Sandbox | Business Unit | Compliance Separation |
+|-----------|--------|------------|-------------------|---------------|----------------------|
 | **Team Size** | High | Optimal < 500 | Optimal < 1000 | Any | Any |
 | **Admin Overhead** | Medium | Low | Medium | High | Very High |
-| **Collaboration** | High | Excellent | Good | Medium | Limited |
+| **Collaboration** | High | Excellent | Excellent | Medium | Limited |
 | **Security Isolation** | High | Basic | Good | Good | Excellent |
 | **Compliance** | High | Limited | Medium | Medium | Excellent |
 | **Cost Allocation** | Medium | Manual | Basic | Good | Excellent |
@@ -833,12 +930,12 @@ flowchart TD
 - Compliance requirements are uniform across all development activities
 - Organizational structure is flat with minimal departmental boundaries
 
-**Choose Red/Green Pattern When:**
-- Production incidents require blast radius containment
-- Regulatory compliance mandates environment separation (but not isolation)
-- Different change control processes apply to production vs. development
-- Development velocity is hindered by production-level controls
-- Clear promotion pipeline exists for artifacts from dev to prod
+**Choose Red-Green-Sandbox Pattern When:**
+- Need differentiation between open collaboration (Green) and restricted access (Red)
+- Want to promote innersource with most repos (~90%) in open collaboration org
+- Some repositories must be on a need-to-know basis (confidential, regulated, sensitive IP)
+- Developers need experimentation space (Sandbox) without cluttering main org
+- Different base permission models needed: Write (Green) vs. None (Red)
 
 **Choose Business Unit Pattern When:**
 - Multiple P&L centers require cost allocation and showback
@@ -856,9 +953,9 @@ flowchart TD
 
 **Hybrid Patterns**
 Most enterprises benefit from combining multiple patterns:
-- **Common Architecture**: Red/Green + Sandbox + Archive
+- **Common Architecture**: Red-Green-Sandbox-Archive (GitHub's recommended pattern)
 - **BU with Isolation**: Business Unit + Compliance Separation per unit
-- **Geographic BU**: Business Unit (by region) + Red/Green (per BU)
+- **Geographic BU**: Business Unit (by region) + Red-Green (per BU)
 
 ## Organization Lifecycle Management
 
@@ -1001,6 +1098,8 @@ stateDiagram-v2
 - [About organizations](https://docs.github.com/en/enterprise-cloud@latest/organizations/collaborating-with-groups-in-organizations/about-organizations)
 - [Managing organization settings](https://docs.github.com/en/enterprise-cloud@latest/organizations/managing-organization-settings)
 - [Best practices for organizations](https://docs.github.com/en/enterprise-cloud@latest/organizations/collaborating-with-groups-in-organizations/best-practices-for-organizations)
+- [Strategies for using organizations in GitHub Enterprise Cloud](https://resources.github.com/learn/pathways/administration-governance/essentials/strategies-for-using-organizations-github-enterprise-cloud/) - **Official Red-Green-Sandbox-Archive pattern documentation**
+- [Best practices for organizing work in your enterprise](https://docs.github.com/en/enterprise-cloud@latest/admin/concepts/enterprise-best-practices/organize-work) - Official guidance on organization strategies
 - [Transferring a repository](https://docs.github.com/en/enterprise-cloud@latest/repositories/creating-and-managing-repositories/transferring-a-repository)
 - [Viewing and managing a member's SAML access](https://docs.github.com/en/enterprise-cloud@latest/organizations/granting-access-to-your-organization-with-saml-single-sign-on/viewing-and-managing-a-members-saml-access-to-your-organization)
 

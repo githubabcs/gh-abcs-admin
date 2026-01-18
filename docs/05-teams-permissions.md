@@ -390,6 +390,17 @@ graph TD
 - View organization membership (for billing purposes only)
 - Cannot access repositories or organization settings
 
+**Security Manager:**
+- View security alerts and manage settings for code security across the organization
+- Read permission for all repositories in the organization
+- Manage security configurations and security alerts
+- Review and manage bypass requests for push protection
+- Review alert dismissal requests for code scanning and secret scanning
+
+**GitHub App Manager:**
+- Manage the settings of some or all GitHub App registrations owned by the organization
+- Cannot install and uninstall GitHub Apps on an organization
+
 **Owner:**
 - All permissions across the organization
 - Add/remove organization members
@@ -400,6 +411,21 @@ graph TD
 - Promote/demote other owners
 - Access all repositories (including private)
 - Configure enterprise connections
+
+### Pre-defined Organization Roles
+
+GitHub provides pre-defined roles that can be assigned to individuals or teams:
+
+| Role | Description |
+|------|-------------|
+| **All-repository read** | Grants read access to all repositories in the organization |
+| **All-repository write** | Grants write access to all repositories in the organization |
+| **All-repository triage** | Grants triage access to all repositories in the organization |
+| **All-repository maintain** | Grants maintenance access to all repositories in the organization |
+| **All-repository admin** | Grants admin access to all repositories in the organization |
+| **CI/CD admin** | Grants admin access to manage Actions policies, runners, runner groups, secrets, variables, and usage metrics |
+| **Security manager** | Grants the ability to manage security policies, security alerts, and security configurations |
+| **App Manager** | Grants the ability to create, edit, and delete all GitHub Apps in an organization |
 
 ### Enterprise Permission Levels
 

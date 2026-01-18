@@ -366,10 +366,26 @@ While EMU provides significant advantages, it's crucial to understand its constr
 
 **4. Feature Access Restrictions**
 - ❌ Cannot use GitHub Sponsors
-- ❌ Cannot create or participate in public GitHub Pages
+- ❌ Cannot create or participate in public GitHub Pages (limited - see GitHub Pages limits)
 - ❌ Cannot use personal access tokens (unless policy allows)
 - ❌ Limited GitHub Marketplace access
-- ⚠️ GitHub Copilot requires enterprise license
+- ❌ Cannot create gists or comment on gists
+- ❌ Cannot create personalized profiles
+- ❌ Do not have access to the GitHub Certifications program
+- ❌ Cannot sign up for GitHub Copilot Pro or GitHub Copilot Free (requires enterprise Copilot Business/Enterprise license)
+- ⚠️ GitHub Copilot coding agent is not available in personal repositories (requires GitHub-hosted runners)
+
+**5. GitHub Actions Limitations**
+- ❌ Cannot create workflow templates for GitHub Actions
+- ❌ GitHub-hosted runners are not available for repositories owned by managed user accounts
+- ⚠️ Can trigger workflows in organizations where they are not members by forking and creating PRs
+
+**6. GitHub Codespaces Restrictions (GitHub.com)**
+- ✅ Can create codespaces for organization repositories (if organization pays for Codespaces)
+- ❌ Cannot create codespaces for personal repositories
+- ❌ Cannot create codespaces for repositories outside their organizations
+- ❌ Cannot use GitHub's public templates for Codespaces
+- ❌ Cannot publish a codespace created from a template to a new repository
 
 ### Operational Considerations
 
@@ -449,9 +465,9 @@ EMU integrates with enterprise-grade identity providers using standard protocols
 | Identity Provider | SAML 2.0 | OIDC | SCIM 2.0 | Notes |
 |-------------------|----------|------|----------|-------|
 | **Microsoft Entra ID** (Azure AD) | ✅ | ✅ | ✅ | Recommended, best integration |
-| **Okta** | ✅ | ✅ | ✅ | Full feature support |
+| **Okta** | ✅ | ❌ | ✅ | SAML-only (OIDC not supported) |
 | **PingFederate** | ✅ | ❌ | ✅ | SAML-only |
-| **Generic OIDC** | ❌ | ✅ | ✅ | With supported SCIM provider |
+| **Other IdPs** | ✅ | - | ✅ | Via REST API, SAML 2.0 required |
 
 ### Protocol Comparison: OIDC vs SAML
 
@@ -787,30 +803,38 @@ Best For:
   - Frequent collaborators
 ```
 
-**Strategy 2: Outside Collaborators (Personal Accounts)**
+**Strategy 2: Repository Collaborators (EMU Terminology)**
+
+> **Important:** In Enterprise Managed Users environments, the outside collaborator role is called "**repository collaborator**". A repository collaborator must be part of your enterprise, with a managed user account provisioned from your identity provider.
+
 ```yaml
 Approach:
-  - Invite via personal GitHub account
+  - Provision managed user accounts for external collaborators via IdP
   - Grant repository-specific access
-  - Cannot be added to teams
-  - Limited organization visibility
+  - Collaborators are subject to enterprise IP allow list and IdP conditional access
+  - Not subject to organization IP allow list
+
+Key Differences from Personal Account Enterprises:
+  - Cannot enforce 2FA (handled by IdP for EMU)
+  - Cannot bypass SSO requirements (SSO managed at enterprise level)
+  - If user doesn't consume a license, they will after repository access is granted
 
 Pros:
-  - No IdP management needed
-  - Quick onboarding
-  - No additional licenses
-  - Familiar for contractors
+  - Full enterprise audit trail
+  - IdP-managed lifecycle
+  - Consistent security controls
+  - Enterprise policy compliance
 
 Cons:
-  - Outside enterprise boundary
-  - Limited audit trail
-  - Manual management
-  - No IdP integration
+  - Requires IdP provisioning
+  - Consumes enterprise license
+  - More complex onboarding
+  - IdP management overhead
 
 Best For:
-  - Short-term contractors
-  - Open source collaborators
-  - One-off contributors
+  - Long-term contractors needing enterprise integration
+  - Vendors requiring audited access
+  - Partners with formal relationships
 ```
 
 **Strategy 3: Separate Organization**
