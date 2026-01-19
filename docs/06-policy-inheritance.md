@@ -212,9 +212,9 @@ graph TD
     C --> F[Repo B1 Workflow]
     
     A -->|Enforced: Only Approved Actions| G[Enterprise Allowlist]
-    G -->|Contains| H[actions/checkout@v4<br/>actions/setup-node@v4<br/>github/codeql-action/*]
+    G -->|Contains| H["actions/checkout@v4<br/>actions/setup-node@v4<br/>github/codeql-action/*"]
     
-    B -->|Org A Adds| I[Org-Specific Actions<br/>org-a/deploy-action@v1]
+    B -->|Org A Adds| I["Org-Specific Actions<br/>org-a/deploy-action@v1"]
     C -->|Org B Restricts Further| J[No Self-Hosted Runners]
     
     D -->|Must Use Actions From| K[Enterprise Allowlist ∪ Org A Allowlist]

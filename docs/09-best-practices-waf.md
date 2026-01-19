@@ -1,7 +1,3 @@
----
-liquid: false
----
-
 # GitHub Well-Architected Framework: Best Practices and Principles
 
 ## Overview
