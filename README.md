@@ -26,6 +26,9 @@ Comprehensive L400-level technical documentation for GitHub Enterprise Cloud adm
 - [✅ Best Practices & WAF](docs/09-best-practices-waf.md) - GitHub Well-Architected Framework principles
 - [🏗️ Reference Architecture](docs/10-reference-architecture.md) - Architecture diagrams and patterns
 
+### Security Policies
+- [🛡️ Security-by-Default Policies](docs/11-security-by-default-policies.md) - Comprehensive security settings and policy recommendations for Enterprise, Organization, and Repository levels
+
 ---
 
 ## Hands-on Labs
