@@ -29,6 +29,9 @@ Comprehensive L400-level technical documentation for GitHub Enterprise Cloud adm
 ### Security Policies
 - [🛡️ Security-by-Default Policies](docs/11-security-by-default-policies.md) - Comprehensive security settings and policy recommendations for Enterprise, Organization, and Repository levels
 
+### AI & Copilot Governance
+- [🤖 GitHub Copilot Governance](docs/12-github-copilot-governance.md) - Enterprise Copilot policies, settings, content exclusions, license management, and best practices
+
 ---
 
 ## Hands-on Labs
