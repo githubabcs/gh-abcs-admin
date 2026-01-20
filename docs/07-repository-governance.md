@@ -1480,8 +1480,8 @@ gh api \
 
 ### Related Documentation
 
-- [01-policy-inheritance.md](./01-policy-inheritance.md) - Organization and enterprise-level policy inheritance affecting repository settings
-- [03-teams-permissions.md](./03-teams-permissions.md) - Team-based access control and permission levels for repositories
+- [06-policy-inheritance.md](./06-policy-inheritance.md) - Organization and enterprise-level policy inheritance affecting repository settings
+- [05-teams-permissions.md](./05-teams-permissions.md) - Team-based access control and permission levels for repositories
 - [08-security-compliance.md](./08-security-compliance.md) - Security settings, secret scanning, and compliance requirements
 
 ### Additional Resources

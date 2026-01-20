@@ -1543,9 +1543,9 @@ curl https://api.github.com/scim/v2/organizations/ORG/Users \
 
 ### Related Documentation in This Series
 
-- [Enterprise Managed Users (EMU)](./06-enterprise-managed-users.md) - Centralized identity management and team provisioning
-- [Identity and Access Management](./07-identity-access-management.md) - SAML SSO, SCIM provisioning, and authentication
-- [Repository Governance](./04-repository-governance.md) - Branch protection, required reviews, and security policies
+- [Enterprise Managed Users (EMU)](./04-enterprise-managed-users.md) - Centralized identity management and team provisioning
+- [Identity and Access Management](./03-identity-access-management.md) - SAML SSO, SCIM provisioning, and authentication
+- [Repository Governance](./07-repository-governance.md) - Branch protection, required reviews, and security policies
 
 ### API References
 
