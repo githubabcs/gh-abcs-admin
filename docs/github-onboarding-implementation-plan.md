@@ -8,6 +8,21 @@
 
 ---
 
+## ✅ Implementation Decisions
+
+The following decisions have been confirmed for this implementation:
+
+| # | Decision | Confirmed Answer | Impact |
+|---|----------|------------------|--------|
+| 1 | **Enterprise Type** | **EMU (Enterprise Managed Users)** | All identity sections configured for EMU |
+| 2 | **Sandbox Org Base Permission** | **None** (sandbox may have private repos) | Phase 3.2 |
+| 3 | **Archive Org Base Permission** | **None** | Phase 3.2 |
+| 4 | **Repository Creation Policy** | **Organization Owners only** | Phase 4.1.1 |
+| 5 | **Copilot Coding Agent** | **No Policy** (let organizations decide; agentic features will be used) | Phase 7.1.1 |
+| 6 | **Required PR Approvals** | **Minimum 1 at org level**; teams can add stricter rules as needed | Phase 5.1.1 |
+
+---
+
 ## Table of Contents
 
 1. [Phase 0: Pre-Implementation Planning](#phase-0-pre-implementation-planning)
@@ -77,10 +92,12 @@
 
 | Organization | Purpose | Base Permission | Visibility Default |
 |--------------|---------|-----------------|-------------------|
-| **Green** (~90% of repos) | Standard development, innersource collaboration | Read or Write | Internal |
-| **Red** (Need-to-know) | Confidential, regulated, or sensitive code | None | Private |
-| **Sandbox** | Experimentation, POCs, hackathons | Write | Internal |
-| **Archive** | Retired/historical repositories | Read-only | Internal/Private |
+| **Green** (~90% of repos) | Standard development, innersource collaboration | **None** | Internal/Private |
+| **Red** (Need-to-know) | Confidential, regulated, or sensitive code | **None** | Private |
+| **Sandbox** | Experimentation, POCs, hackathons | **None** | Internal/Private |
+| **Archive** | Retired/historical repositories | **None** | Internal/Private |
+
+> **Note:** Base permission of "None" for all organizations ensures private repositories require explicit team grants (least privilege). Internal repositories will still be visible to all enterprise members (GitHub enforces minimum read access for internal repos).
 
 > **Reference:** [Organization Strategies](./02-organization-strategies.md)
 
@@ -226,10 +243,12 @@
 
 | Task | Description | Recommended Setting | Status |
 |------|-------------|---------------------|--------|
-| **Green Org Base Permission** | Set default access for members | **Read** (for innersource) or **Write** | ☐ |
+| **Green Org Base Permission** | Set default access for members | **None** (explicit team grants required) | ☐ |
 | **Red Org Base Permission** | Set default access for members | **None** (explicit grants only) | ☐ |
-| **Sandbox Org Base Permission** | Set default access for members | **Write** | ☐ |
-| **Archive Org Base Permission** | Set default access for members | **Read** | ☐ |
+| **Sandbox Org Base Permission** | Set default access for members | **None** (sandbox may contain private repos) | ☐ |
+| **Archive Org Base Permission** | Set default access for members | **None** (explicit grants required) | ☐ |
+
+> **Best Practice:** Setting base permission to "None" for **all organizations** ensures least privilege. Access must be explicitly granted via teams. Internal repositories maintain minimum read visibility for all enterprise members regardless of base permission setting.
 
 ### 3.3 Configure Team Structure
 
@@ -278,8 +297,10 @@
 | **Repository Forking** | **Restrict within same org** | Control code duplication | ☐ |
 | **Default Branch Name** | **Enforce: `main`** | Consistency across enterprise | ☐ |
 | **Outside Collaborators** | **Restrict to Org Owners** | Control external access | ☐ |
-| **Deploy Keys** | **Restrict** (prefer GitHub Apps) | Better access control | ☐ |
+| **Deploy Keys** | **Restrict** (prefer GitHub Apps) | Better access control - See warning | ☐ |
 | **Issue Deletion** | **Restrict to Org Owners** | Preserve issue history | ☐ |
+
+> **⚠️ Deploy Keys Warning (per [Security-by-Default Policies](./11-security-by-default-policies.md)):** Changing deploy keys policy to "disabled" **will disable existing deploy keys in all repositories**. Assess impact before changing.
 
 > **Reference:** [Security-by-Default Policies](./11-security-by-default-policies.md)
 
@@ -287,13 +308,18 @@
 
 | Policy | Recommended Setting | Rationale | Status |
 |--------|---------------------|-----------|--------|
-| **GHAS Availability** | **Enable for all organizations** | Enable security features | ☐ |
+| **GHAS Availability** | **Enable for all organizations** | Enable security features - See note | ☐ |
 | **Dependabot Alerts** | **Allow** | Repository admins can enable | ☐ |
 | **Secret Scanning** | **Enable** | Detect exposed secrets | ☐ |
 | **Code Scanning (CodeQL)** | **Enable** | Automated vulnerability detection | ☐ |
 | **Dependency Insights Visibility** | **Enable** | Allow members to view dependencies | ☐ |
-| **Copilot Autofix** | **Enable** | AI-powered security fix suggestions | ☐ |
-| **AI Detection for Secret Scanning** | **Enable** | Detect generic passwords/secrets | ☐ |
+| **Copilot Autofix** | **Enable** | AI-powered security fix suggestions - See note | ☐ |
+| **AI Detection for Secret Scanning** | **Enable** | Detect generic passwords/secrets - See note | ☐ |
+
+> **⚠️ GHAS Policy Notes (per [Security-by-Default Policies](./11-security-by-default-policies.md)):**
+> - **GHAS Availability:** This policy only impacts repository administrators; organization owners and security managers can always enable security features.
+> - **Copilot Autofix:** This policy controls Autofix for code scanning security queries only; Copilot Autofix is integral to GitHub Code Quality and cannot be disabled for that feature.
+> - **AI Detection for Secret Scanning:** This policy requires that repository administrators are allowed to enable Secret Protection (controlled by a separate policy).
 
 ### 4.2 Organization-Level Security Configurations
 
@@ -340,8 +366,10 @@ updates:
 |--------|---------------------|-----------|--------|
 | **Fine-Grained PAT Access** | **Allow with approval** | Require org owner approval | ☐ |
 | **Classic PAT Access** | **Restrict or Block** | Prefer fine-grained PATs | ☐ |
-| **PAT Maximum Lifetime** | **90-365 days** | Limit exposure window | ☐ |
+| **PAT Maximum Lifetime** | **90-365 days** | Limit exposure window - See note | ☐ |
 | **Fine-Grained PAT Approval** | **Require approval** | Centralized token governance | ☐ |
+
+> **⚠️ PAT Lifetime Note (per [Security-by-Default Policies](./11-security-by-default-policies.md)):** For fine-grained PATs, the default maximum lifetime is 366 days. Classic PATs do **not** have an expiration requirement by default.
 
 ---
 
@@ -374,7 +402,11 @@ updates:
 | **Block Force Pushes** | **Enable** | ☐ |
 | **Block Branch Deletion** | **Enable** | ☐ |
 | **Require Up-to-Date Branches** | **Enable** | ☐ |
-| **Require Signed Commits** | **Enable** (if org readiness ≥80%) | ☐ |
+| **Require Signed Commits** | **Enable** (if org readiness ≥80%) - See note below | ☐ |
+
+> **⚠️ Signed Commits Note:** Per [Security-by-Default Policies](./11-security-by-default-policies.md): "Consider organizational readiness before enforcing; developers need signing keys configured." Assess your organization's GPG/SSH signing key adoption before enabling this rule.
+
+> **📋 Ruleset Philosophy:** These are **minimum baseline rulesets** at the organization level. Individual teams/repositories can apply **stricter rules** as needed (e.g., 2+ approvals for production repos, additional status checks).
 
 #### 5.1.2 Create Required Status Checks Ruleset
 
@@ -446,10 +478,15 @@ updates:
 | **Actions Availability** | **Enable for all organizations** | Allow Actions with restrictions | ☐ |
 | **Allowed Actions** | **Restrict**: Enterprise actions, GitHub actions, verified creators | Prevent untrusted actions | ☐ |
 | **Require Actions SHA Pinning** | **Enable** | Prevent action version tampering | ☐ |
-| **Default Workflow Permissions** | **Read-only** | Least privilege for GITHUB_TOKEN | ☐ |
+| **Default Workflow Permissions** | **Read-only** | Least privilege for GITHUB_TOKEN - See note | ☐ |
 | **Allow Actions to Create PRs** | **Disable** | Prevent automated PR creation/approval | ☐ |
-| **Fork Pull Request Workflows** | **Require approval for all outside collaborators** | Prevent malicious workflow execution | ☐ |
-| **Repository-Level Runners** | **Disable** | Use org/enterprise runners for security | ☐ |
+| **Fork Pull Request Workflows** | **Require approval for all outside collaborators** | Prevent malicious workflow execution - See note | ☐ |
+| **Repository-Level Runners** | **Disable** | Use org/enterprise runners for security - See note | ☐ |
+
+> **⚠️ Actions Policy Notes (per [Security-by-Default Policies](./11-security-by-default-policies.md)):**
+> - **Default Workflow Permissions:** Enterprises created on or after February 2, 2023 default to read-only. **Older enterprises may default to read-write** - verify and update.
+> - **Fork Pull Request Workflows:** Workflows triggered by `pull_request_target` events **always run regardless of approval settings**.
+> - **Repository-Level Runners:** Self-hosted runners at repository level pose risks as they may be compromised by untrusted code.
 
 ### 6.2 Organization-Level Actions Configuration
 
@@ -507,9 +544,9 @@ updates:
 | **Copilot Chat in GitHub.com** | **Enabled** | Web-based chat workflows | ☐ |
 | **Copilot CLI** | **Enabled** | Command-line assistance | ☐ |
 | **Copilot Code Review** | **Enabled** | Improves code quality | ☐ |
-| **Copilot Coding Agent** | **Disabled** or **No Policy** | Requires security evaluation | ☐ |
+| **Copilot Coding Agent** | **No Policy** | Let organizations decide; agentic features will be used | ☐ |
 | **Agent Mode in IDE** | **No Policy** | Let organizations decide | ☐ |
-| **MCP Servers** | **Disabled** | External integrations require review | ☐ |
+| **MCP Servers** | **No Policy** | Let organizations decide based on integration needs | ☐ |
 
 #### 7.1.2 Privacy Policies (Critical)
 
