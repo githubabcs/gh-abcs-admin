@@ -26,7 +26,9 @@ For the specific **Advanced Security API gating** scenario, the recommended path
 10. [Recommendation Matrix](#10-recommendation-matrix)
 11. [Implementation Examples](#11-implementation-examples)
 12. [Scaling to 200 Projects with a Custom Pipeline Task](#12-scaling-to-200-projects-with-a-custom-pipeline-task)
-13. [References](#13-references)
+13. [Pipeline Decorators — The Hardest Scenario](#13-pipeline-decorators--the-hardest-scenario)
+14. [Why Microsoft Removed Build Identity Access — Security Analysis](#14-why-microsoft-removed-build-identity-access--security-analysis)
+15. [References](#15-references)
 
 ---
 
@@ -705,7 +707,327 @@ foreach ($project in $projects) {
 
 ---
 
-## 13. References
+## 13. Pipeline Decorators — The Hardest Scenario
+
+### Context
+
+The customer uses a **pipeline decorator** (not a custom task) that injects steps into every pipeline in the organization. The decorator currently uses `System.AccessToken` to call Advanced Security APIs and gate pipelines. After April 15, 2026, this will stop working.
+
+Key constraint: the customer already has **200 service connections with SPs** to cloud environments — but those are **Azure Resource Manager** SPs for deploying to Azure, not ADO-scoped SPs. Adding all 200 as Basic users in ADO would cost ~$1,200/month and is unnecessary.
+
+---
+
+### Why This Is Harder Than a Custom Task
+
+Pipeline decorators have **unique constraints** that don't apply to regular pipeline tasks:
+
+| Constraint | Impact |
+|-----------|--------|
+| **Service connection names must be hardcoded** — no variables, no parameters, no runtime expressions | The SC name in the decorator YAML must be a literal string, resolved at compile time |
+| **Decorator runs on EVERY pipeline in the org** | The referenced SC must be authorized in every project where pipelines run |
+| **Decorators cannot accept user inputs** | Unlike custom tasks, there's no `task.json` with input fields — the decorator YAML is fixed |
+| **SC authorization is project-scoped** | Even with "Grant access to all pipelines," that only applies within the project where the SC lives |
+
+This means: **the decorator must reference a single, hardcoded service connection name, and that SC must exist and be authorized in every project.**
+
+---
+
+### Evaluating Your Proposed Solution
+
+#### Your Solution: One Shared WIF Service Connection Across All Projects
+
+**Proposal**: Create **1 Service Principal** with only `Advanced Security: Read alerts` at the org level, create **1 Azure DevOps Service Connection** with Workload Identity Federation, and share it across all 200 projects with a consistent name (e.g., `advsec-gate-sc`).
+
+**Verdict: This is a sound approach.** Here's the analysis:
+
+| Aspect | Assessment |
+|--------|-----------|
+| **Security** | ✅ The SP has the narrowest possible scope — only `Advanced Security: Read alerts`, org-wide. It cannot modify code, manage releases, access ARM resources, or change alert states. |
+| **Cost** | ✅ Only 1 Basic license (~$6/month). No Advanced Security committer license since the SP doesn't commit code. |
+| **Shared SC concern** | ⚠️ Microsoft recommends against sharing SCs broadly, but that guidance targets **ARM SCs with cloud access**. This SC can only read security alerts in ADO — the blast radius of compromise is limited to reading vulnerability data (not modifying anything). |
+| **Decorator compatibility** | ✅ The SC name can be hardcoded in the decorator YAML since it's the same name everywhere. |
+| **Rollout** | 🟡 Must create/share the SC in all 200 projects (scriptable via REST API). |
+
+**Key defense of this approach**: The reason Microsoft discourages shared SCs is the principle of least privilege — a shared ARM SC could allow pipelines in Project A to deploy to Project B's Azure resources. But this SC has **zero ARM access**. It can only read ADO security alerts. The risk profile is fundamentally different.
+
+---
+
+### Challenging Your Solution — Risks to Consider
+
+| Risk | Severity | Mitigation |
+|------|----------|------------|
+| **Alert data exposure** — any pipeline in the org can read security alerts from any repo | 🟡 Medium | Accept if org policy allows central security visibility; if not, scope the SP's `Read alerts` permission per-project instead of org-wide |
+| **SC authorization sprawl** — must grant "Use" to all pipelines in 200 projects | 🟡 Medium | Script it via REST API; use "Grant access to all pipelines" per project |
+| **Single point of failure** — if the SC breaks, all 200 projects lose their gate | 🟡 Medium | Monitor the SC, set up alerts; WIF has no secrets to expire |
+| **Decorator update required** — decorator YAML must be changed from `System.AccessToken` to `AzureCLI@3` with the SC | 🟢 Low | One-time change, centrally managed |
+| **SC doesn't exist yet in new projects** — new projects need manual/automated provisioning | 🟡 Medium | Automate with a project creation hook or periodic script |
+
+---
+
+### Alternative Solutions Compared
+
+#### Alternative 1: Decorator Uses System.AccessToken + Explicitly Grant "Advanced Security: Read alerts" to Build Service
+
+**Status**: ❌ **Will NOT work after April 15, 2026.** Microsoft is blocking build service identities at the API level regardless of explicit permissions. This is not a permission issue — it's an identity-type block.
+
+#### Alternative 2: One SP Per Project (200 SPs)
+
+| Aspect | Assessment |
+|--------|-----------|
+| Cost | ❌ 200 × ~$6 = ~$1,200/month |
+| Security | ✅ Better isolation per project |
+| Rollout | ❌ 200 Entra app registrations + ADO provisioning |
+| Decorator | ❌ Decorator can't dynamically select which SC to use — it must be hardcoded |
+
+**Verdict**: Not viable. The decorator's hardcoded SC name means you NEED one shared SC anyway. Multiple SPs defeats the purpose and costs 200× more.
+
+#### Alternative 3: Status Checks (Sprint 271+) — Eliminate the Decorator
+
+| Aspect | Assessment |
+|--------|-----------|
+| Cost | ✅ $0 |
+| Security | ✅ Native platform feature |
+| Rollout | 🟡 Script branch policies across all repos via REST API |
+| Flexibility | ❌ PR gating only — no deployment gate, no custom logic |
+| Decorator | N/A — replaces the decorator entirely |
+
+**Verdict**: Best for PR gating. But if the decorator does more than just pass/fail (custom severity thresholds, alert categorization, deployment gates, reporting), Status Checks won't replace it.
+
+#### Alternative 4: Decorator Acquires Token from Key Vault (No Service Connection)
+
+The decorator injects a script step that reads SP credentials from an Azure Key Vault-linked variable group, then acquires an Entra token directly. This avoids the SC-in-decorator limitation.
+
+```yaml
+# decorator.yml
+steps:
+- ${{ if ne(variables['skipAdvSecGate'], 'true') }}:
+  - task: AzureKeyVault@2
+    inputs:
+      azureSubscription: 'keyvault-reader-sc'   # ARM SC - already exists
+      KeyVaultName: 'advsec-sp-keyvault'
+      SecretsFilter: 'advsec-sp-client-id,advsec-sp-client-secret,advsec-sp-tenant-id'
+      RunAsPreJob: false
+  - task: PowerShell@2
+    displayName: 'Advanced Security Gate'
+    inputs:
+      targetType: 'inline'
+      script: |
+        # Acquire Entra token for the dedicated AdvSec SP
+        $body = @{
+          client_id     = "$(advsec-sp-client-id)"
+          scope         = "499b84ac-1321-427f-aa17-267ca6975798/.default"
+          client_secret = "$(advsec-sp-client-secret)"
+          grant_type    = "client_credentials"
+        }
+        $token = (Invoke-RestMethod -Uri "https://login.microsoftonline.com/$(advsec-sp-tenant-id)/oauth2/v2.0/token" -Method POST -Body $body).access_token
+        # ... call Advanced Security API with $token ...
+```
+
+| Aspect | Assessment |
+|--------|-----------|
+| Cost | ✅ 1 Basic license (~$6/month) + Key Vault costs (negligible) |
+| Security | ⚠️ Client secret exists — use certificate to mitigate; secret is in Key Vault, never in pipeline YAML |
+| SC dependency | ⚠️ Requires an ARM SC for Key Vault — but customers likely already have one for deployments |
+| Decorator compat | ✅ Works if the ARM SC has the same name in all projects (common pattern) |
+
+**Verdict**: Viable fallback if WIF is not available or the "Azure DevOps" SC type hasn't rolled out yet. But adds secret management complexity.
+
+---
+
+### Recommended Solution
+
+**For your specific scenario (pipeline decorator, 200 projects, April 15 deadline):**
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  RECOMMENDED: Your proposed solution with refinements       │
+│                                                             │
+│  1 Service Principal (Entra)                                │
+│    └── Advanced Security: Read alerts (org-wide)            │
+│    └── Basic license ($6/month)                             │
+│    └── No code commit = No AdvSec committer license         │
+│                                                             │
+│  1 Azure DevOps Service Connection (WIF)                    │
+│    └── Name: "advsec-gate-sc" (hardcoded in decorator)      │
+│    └── Zero secrets (Workload Identity Federation)          │
+│    └── Shared to all 200 projects via REST API              │
+│    └── "Grant access to all pipelines" per project          │
+│                                                             │
+│  Updated Decorator (one-time change)                        │
+│    └── Replace System.AccessToken usage with AzureCLI@3     │
+│    └── Reference: azureDevOpsServiceConnection: advsec-gate │
+│    └── Republish extension                                  │
+│                                                             │
+│  Total cost: ~$6/month                                      │
+│  Total SPs as Basic users: 1 (not 200)                      │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Updated Decorator YAML
+
+```yaml
+# decorator.yml — updated to use ADO Service Connection
+steps:
+- ${{ if ne(variables['skipAdvSecGate'], 'true') }}:
+  - task: AzureCLI@3
+    displayName: 'Advanced Security Gate (Decorator)'
+    inputs:
+      connectionType: 'azureDevOps'
+      azureDevOpsServiceConnection: 'advsec-gate-sc'
+      scriptType: 'pscore'
+      scriptLocation: 'inlineScript'
+      inlineScript: |
+        $token = az account get-access-token `
+          --resource "499b84ac-1321-427f-aa17-267ca6975798" `
+          --query "accessToken" --output tsv
+
+        $headers = @{
+          Authorization  = "Bearer $token"
+          "Content-Type" = "application/json"
+        }
+
+        # Dynamically resolve org and project from pipeline context
+        $collectionUri = $env:SYSTEM_COLLECTIONURI
+        $project = $env:SYSTEM_TEAMPROJECT
+        $repoName = $env:BUILD_REPOSITORY_NAME
+        $org = ($collectionUri -replace 'https://dev.azure.com/', '' -replace '/$', '')
+
+        # Get repository ID
+        $repos = Invoke-RestMethod `
+          -Uri "${collectionUri}${project}/_apis/git/repositories?api-version=7.2" `
+          -Headers $headers
+        $repoId = ($repos.value | Where-Object { $_.name -eq $repoName }).id
+
+        if (-not $repoId) {
+          Write-Host "##vso[task.logissue type=warning]Repository not found in ADO, skipping Advanced Security gate"
+          exit 0
+        }
+
+        # Query Advanced Security alerts
+        $alerts = Invoke-RestMethod `
+          -Uri "https://advsec.dev.azure.com/$org/$project/_apis/alert/repositories/$repoId/alerts?criteria.states=active&criteria.severities=critical,high&api-version=7.2-preview.1" `
+          -Headers $headers
+
+        $activeHighCritical = @($alerts.value | Where-Object {
+          $_.severity -in @('critical', 'high') -and $_.state -eq 'active'
+        })
+
+        if ($activeHighCritical.Count -gt 0) {
+          Write-Host "##vso[task.logissue type=error]Found $($activeHighCritical.Count) active high/critical security alerts"
+          foreach ($a in $activeHighCritical) {
+            Write-Host "  - [$($a.severity)] $($a.title)"
+          }
+          Write-Host "##vso[task.complete result=Failed;]Advanced Security Gate FAILED"
+          exit 1
+        }
+
+        Write-Host "✅ No active high/critical security alerts — gate passed"
+```
+
+### Provisioning Script — Share SC Across 200 Projects
+
+```powershell
+# Run once: provision the shared service connection across all projects
+param(
+    [string]$OrgUrl = "https://dev.azure.com/{org}",
+    [string]$ServiceConnectionName = "advsec-gate-sc"
+)
+
+# Authenticate
+az login --allow-no-subscriptions
+$token = az account get-access-token --resource 499b84ac-1321-427f-aa17-267ca6975798 --query accessToken -o tsv
+$headers = @{ Authorization = "Bearer $token"; "Content-Type" = "application/json" }
+
+# Get all projects (handle pagination for 200+)
+$allProjects = @()
+$continuationToken = $null
+do {
+    $uri = "$OrgUrl/_apis/projects?`$top=100&api-version=7.2"
+    if ($continuationToken) { $uri += "&continuationToken=$continuationToken" }
+    $response = Invoke-WebRequest -Uri $uri -Headers $headers
+    $projects = ($response.Content | ConvertFrom-Json).value
+    $allProjects += $projects
+    $continuationToken = $response.Headers['x-ms-continuationtoken']
+} while ($continuationToken)
+
+Write-Host "Found $($allProjects.Count) projects"
+
+# Check if SC already exists in each project; if not, create or share it
+foreach ($project in $allProjects) {
+    $checkUri = "$OrgUrl/$($project.name)/_apis/serviceendpoint/endpoints?endpointNames=$ServiceConnectionName&api-version=7.2"
+    $existing = (Invoke-RestMethod -Uri $checkUri -Headers $headers).value
+
+    if ($existing.Count -gt 0) {
+        Write-Host "  [$($project.name)] SC already exists — ensuring authorization..."
+        # Authorize for all pipelines in this project
+        $authBody = @{
+            allPipelines = @{ authorized = $true }
+            resource     = @{ type = "endpoint"; id = $existing[0].id }
+        } | ConvertTo-Json -Depth 5
+
+        Invoke-RestMethod -Uri "$OrgUrl/$($project.name)/_apis/pipelines/pipelinepermissions/endpoint/$($existing[0].id)?api-version=7.2-preview.1" `
+            -Method PATCH -Headers $headers -Body $authBody -ContentType "application/json" | Out-Null
+        Write-Host "  [$($project.name)] ✅ Authorized"
+    } else {
+        Write-Host "  [$($project.name)] Creating SC..."
+        # Share the existing SC to this project by adding a project reference
+        # (Requires the SC to exist in at least one project first)
+        # Exact payload depends on ADO Service Connection type
+        Write-Host "  [$($project.name)] ⚠️ Manual share or REST creation needed"
+    }
+}
+```
+
+---
+
+## 14. Why Microsoft Removed Build Identity Access — Security Analysis
+
+### The Security Risk (Confirmed)
+
+**Your intuition is correct.** Prior to Sprint 269, any pipeline running with `System.AccessToken` could read Advanced Security alerts because the Build Service identity had **implicit API access by default**. This created a real security risk:
+
+```
+Risk Chain:
+  Any pipeline task/extension (including marketplace)
+    → Accesses System.AccessToken (tasks get it automatically)
+      → Authenticates as Build Service identity
+        → Calls Advanced Security API (allowed by default pre-Sprint 269)
+          → Reads all security alerts for the project/repo
+            → Can exfiltrate vulnerability data
+```
+
+### Key Facts from Microsoft Documentation
+
+1. **Build Service had default access**: The `Project Collection Build Service` and project-scoped Build Service identities were allowed to call Advanced Security APIs by default — no explicit permission grant was needed.
+
+2. **Tasks vs Scripts — important distinction**:
+   - **Scripts** (PowerShell, Bash inline): require explicit `env: SYSTEM_ACCESSTOKEN: $(System.AccessToken)` mapping
+   - **Pipeline Tasks/Extensions**: can access the job access token as part of their normal operation via the Task SDK, without the user explicitly mapping it
+
+3. **Shared identity problem**: The Build Service identity is **shared across ALL pipelines in a project** (or the entire collection if not restricted). There's no per-pipeline isolation. Any task in any pipeline gets the same identity.
+
+4. **Microsoft's stated reasoning** (Sprint 269 release notes):
+   > *"This change prevents pipeline-based automation from accessing or modifying security alert data using build service accounts, reducing the risk of unintended alert state changes during CI/CD runs."*
+
+5. **The fix**: Microsoft is requiring a **named service principal** with explicit `Advanced Security: Read alerts` permission, which provides:
+   - Explicit, auditable identity (not a shared build account)
+   - Can be scoped narrowly
+   - Uses Entra tokens (short-lived, conditional access)
+   - Per-pipeline access control via service connections
+
+### Is a Simple Extension a Risk?
+
+**Yes.** A marketplace extension (or any custom task) installed in the organization:
+- Runs with the job's access token automatically (tasks access it via the Task SDK)
+- Does NOT need "Allow scripts to access the OAuth token" — that setting only applies to script steps, not task steps
+- Could call any API the Build Service identity has access to
+- Before Sprint 269, that included Advanced Security APIs
+
+**This is precisely why Microsoft made the Sprint 269 change** — to ensure that only explicitly authorized service principals (with audit trails and conditional access) can read security alert data, not any pipeline task running under the broadly-shared Build Service identity.
+
+---
+
+## 15. References
 
 | Resource | URL |
 |----------|-----|
@@ -719,6 +1041,12 @@ foreach ($project in $projects) {
 | Entra Tokens via Azure CLI | https://learn.microsoft.com/en-us/azure/devops/cli/entra-tokens |
 | No New Azure DevOps OAuth Apps (April 2025) | https://devblogs.microsoft.com/devops/no-new-azure-devops-oauth-apps/ |
 | Configure Advanced Security Status Checks | https://learn.microsoft.com/en-us/azure/devops/repos/security/configure-github-advanced-security-features |
+| Author a Pipeline Decorator | https://learn.microsoft.com/en-us/azure/devops/extend/develop/add-pipeline-decorator |
+| Pipeline Decorator Context | https://learn.microsoft.com/en-us/azure/devops/extend/develop/pipeline-decorator-context |
+| Advanced Security Permissions | https://learn.microsoft.com/en-us/azure/devops/repos/security/github-advanced-security-permissions |
+| Sprint 269 Release Notes (Build Identity Restriction) | https://learn.microsoft.com/en-us/azure/devops/release-notes/2026/ghazdo/sprint-269-update |
+| Sprint 271 Release Notes (Status Checks) | https://learn.microsoft.com/en-us/azure/devops/release-notes/2026/ghazdo/sprint-271-update |
+| Pipeline Security Best Practices | https://learn.microsoft.com/en-us/azure/devops/pipelines/security/misc |
 
 ---
 
