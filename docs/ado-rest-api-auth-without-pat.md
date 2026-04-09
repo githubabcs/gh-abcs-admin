@@ -65,6 +65,11 @@ Every Azure Pipelines job automatically gets an OAuth token via `$(System.Access
 ### ⚠️ Advanced Security Impact
 As of **Sprint 269**, build service identities can no longer call Advanced Security APIs. A temporary rollback is in effect **until April 15, 2026**, after which `System.AccessToken` **will not work** for Advanced Security REST API calls.
 
+### Important: Access Model for System.AccessToken
+
+- **Script steps** (PowerShell, Bash inline): require explicit `env: SYSTEM_ACCESSTOKEN: $(System.AccessToken)` mapping or the "Allow scripts to access the OAuth token" job setting enabled
+- **Pipeline tasks/extensions**: can access the token via the Task SDK (`SYSTEMVSSCONNECTION` endpoint) without any user opt-in — see [Section 14](#14-why-microsoft-removed-build-identity-access--security-analysis) for security implications
+
 ### Usage
 ```yaml
 steps:
@@ -572,6 +577,7 @@ steps:
 **Task acquires token internally**:
 ```typescript
 // Inside the custom task
+const tenantId = tl.getInput('tenantId', true)!;
 const body = new URLSearchParams({
   client_id: tl.getInput('clientId', true)!,
   scope: 'https://app.vssps.visualstudio.com/.default',
@@ -855,7 +861,7 @@ steps:
 │                                                             │
 │  Updated Decorator (one-time change)                        │
 │    └── Replace System.AccessToken usage with AzureCLI@3     │
-│    └── Reference: azureDevOpsServiceConnection: advsec-gate │
+│    └── Reference: azureDevOpsServiceConnection: advsec-gate-sc │
 │    └── Republish extension                                  │
 │                                                             │
 │  Total cost: ~$6/month                                      │
@@ -982,71 +988,170 @@ foreach ($project in $allProjects) {
 
 ## 14. Why Microsoft Removed Build Identity Access — Security Analysis
 
+### Impact: 🔴 Critical
+
+This section explains the security rationale behind Microsoft's Sprint 269 decision to block build service identities from Advanced Security APIs. The findings below are based on verified technical analysis of the Azure Pipelines Task SDK, Microsoft documentation, and actual marketplace extension source code.
+
 ### The Security Risk (Confirmed)
 
-**Your intuition is correct.** Prior to Sprint 269, any pipeline running with `System.AccessToken` could read Advanced Security alerts because the Build Service identity had **implicit API access by default**. This created a real security risk:
+Prior to Sprint 269, any pipeline running with `System.AccessToken` could read Advanced Security alerts because the Build Service identity had **implicit API access by default**. This created a critical security risk:
 
 ```
-Risk Chain:
-  Any pipeline task/extension (including marketplace)
-    → Accesses System.AccessToken (tasks get it automatically)
-      → Authenticates as Build Service identity
+Attack Chain:
+  Any installed pipeline task/extension (including marketplace)
+    → Calls tl.getEndpointAuthorizationParameter('SYSTEMVSSCONNECTION', 'AccessToken', false)
+      → Receives the Build Service identity OAuth token (no user opt-in required)
         → Calls Advanced Security API (allowed by default pre-Sprint 269)
-          → Reads all security alerts for the project/repo
-            → Can exfiltrate vulnerability data
+          → Reads all security alerts (vulnerabilities, secrets, dependencies)
+            → Can exfiltrate sensitive vulnerability data to external services
 ```
 
-### Key Facts from Microsoft Documentation
+### The Technical Mechanism — SYSTEMVSSCONNECTION
 
-1. **Build Service had default access**: The `Project Collection Build Service` and project-scoped Build Service identities were allowed to call Advanced Security APIs by default — no explicit permission grant was needed.
+There are **three ways** a pipeline component can access the Build Service OAuth token. Understanding the distinction is critical:
 
-2. **Tasks vs Scripts — important distinction**:
-   - **Scripts** (PowerShell, Bash inline): require explicit `env: SYSTEM_ACCESSTOKEN: $(System.AccessToken)` mapping
-   - **Pipeline Tasks/Extensions**: can access the job access token as part of their normal operation via the Task SDK, without the user explicitly mapping it
+| Mechanism | Who Can Use It | User Opt-in Required? | Severity |
+|-----------|---------------|----------------------|----------|
+| `tl.getEndpointAuthorizationParameter('SYSTEMVSSCONNECTION', 'AccessToken', false)` | **Any pipeline task** via the Task SDK | ❌ **No** — built-in system endpoint, always available | 🔴 Critical |
+| `tl.getVariable('System.AccessToken')` | **Any pipeline task** via the Task SDK | ❌ **No** — pipeline variables are accessible to tasks | 🔴 Critical |
+| `process.env['SYSTEM_ACCESSTOKEN']` | **Scripts** (inline bash/PS) | ✅ **Yes** — requires `env: SYSTEM_ACCESSTOKEN: $(System.AccessToken)` or "Allow scripts to access OAuth token" | 🟡 Medium |
 
-3. **Shared identity problem**: The Build Service identity is **shared across ALL pipelines in a project** (or the entire collection if not restricted). There's no per-pipeline isolation. Any task in any pipeline gets the same identity.
+**Key finding**: `SYSTEMVSSCONNECTION` is a **built-in system service endpoint** that Azure Pipelines exposes to every task in every job. It represents the Build Service identity. Any pipeline task — including marketplace extensions — can call `tl.getEndpointAuthorizationParameter('SYSTEMVSSCONNECTION', 'AccessToken', false)` to obtain the OAuth token **without any user configuration or opt-in**.
 
-4. **Microsoft's stated reasoning** (Sprint 269 release notes):
-   > *"This change prevents pipeline-based automation from accessing or modifying security alert data using build service accounts, reducing the risk of unintended alert state changes during CI/CD runs."*
+The "Allow scripts to access the OAuth token" setting **only applies to script steps** (inline PowerShell, Bash, CMD). It does **NOT** restrict task-level access via the Task SDK. This distinction is often misunderstood.
 
-5. **The fix**: Microsoft is requiring a **named service principal** with explicit `Advanced Security: Read alerts` permission, which provides:
-   - Explicit, auditable identity (not a shared build account)
-   - Can be scoped narrowly
-   - Uses Entra tokens (short-lived, conditional access)
-   - Per-pipeline access control via service connections
+### What This Means in Practice
 
-### Is a Simple Extension a Risk?
+A marketplace extension does NOT need to declare any special permissions or service connection inputs to access the Build Service token. The task code simply needs:
 
-**Yes.** A marketplace extension (or any custom task) installed in the organization:
-- Runs with the job's access token automatically (tasks access it via the Task SDK)
-- Does NOT need "Allow scripts to access the OAuth token" — that setting only applies to script steps, not task steps
-- Could call any API the Build Service identity has access to
-- Before Sprint 269, that included Advanced Security APIs
+```typescript
+import * as tl from 'azure-pipelines-task-lib/task';
 
-**This is precisely why Microsoft made the Sprint 269 change** — to ensure that only explicitly authorized service principals (with audit trails and conditional access) can read security alert data, not any pipeline task running under the broadly-shared Build Service identity.
+// No user opt-in, no service connection input, no special permission
+const token = tl.getEndpointAuthorizationParameter('SYSTEMVSSCONNECTION', 'AccessToken', false);
+
+// This token authenticates as the Build Service identity
+// Pre-Sprint 269: could call Advanced Security APIs with this token
+const response = await fetch(
+  `https://advsec.dev.azure.com/{org}/{project}/_apis/alert/repositories/{repoId}/alerts?api-version=7.2-preview.1`,
+  { headers: { 'Authorization': `Bearer ${token}` } }
+);
+// → Returns all security alerts: code vulnerabilities, exposed secrets, dependency CVEs
+```
+
+**Verified by source code analysis**: Popular marketplace extensions (e.g., token replacement, code analysis, deployment tools) typically do NOT access `SYSTEMVSSCONNECTION` or call ADO REST APIs beyond their stated purpose. However, **nothing in the platform prevents them from doing so** — there is no sandboxing, no API allowlist per extension, and no runtime permission gate.
+
+### Three Compounding Factors
+
+**Factor 1: Shared Identity — No Pipeline Isolation**
+
+The Build Service identity (`Project Collection Build Service` or `{Project} Build Service`) is **shared across ALL pipelines** in a project (or the entire collection if not restricted). Every task in every pipeline gets the same identity with the same permissions.
+
+> From [Microsoft Learn](https://learn.microsoft.com/en-us/azure/devops/pipelines/process/access-tokens): *"The permissions of this token are based on the Project Build Service identity, meaning all job access tokens in a project have identical permissions."*
+
+**Factor 2: Advanced Security API Access Was Not Explicitly Gated**
+
+Prior to Sprint 269, Build Service identities were **not blocked at the API level** from calling Advanced Security endpoints. The [Sprint 269 release notes](https://learn.microsoft.com/en-us/azure/devops/release-notes/2026/ghazdo/sprint-269-update) confirm this was the change: *"Advanced Security REST APIs no longer accept build service identities."* The [rollback blog](https://devblogs.microsoft.com/devops/temporary-rollback-build-identities-can-access-advanced-security-read-alerts-again/) further states the restriction was *"a security improvement"* that was rolled back because customers relied on this access for automation. This means pipelines using `System.AccessToken` could call the Advanced Security API without any administrator having explicitly granted `Advanced Security: Read alerts` to the Build Service.
+
+**Factor 3: No Extension Sandboxing**
+
+Azure DevOps does not sandbox pipeline task execution. A task runs as a Node.js process on the agent with full access to:
+- The `SYSTEMVSSCONNECTION` token
+- The agent's file system (build sources, artifacts, secrets on disk)
+- Outbound network access (can exfiltrate data)
+- All environment variables set by previous tasks
+
+### The Risk: Supply-Chain Attacks on Marketplace Extensions
+
+The combination of these three factors creates a supply-chain attack vector:
+
+```
+1. Attacker publishes (or compromises) a popular marketplace extension
+2. Extension update adds code to read SYSTEMVSSCONNECTION token
+3. Extension calls Advanced Security API to harvest vulnerability data
+4. Extension exfiltrates: which repos have unpatched CVEs, exposed secrets, code vulnerabilities
+5. Attacker uses this intelligence to target the organization's weakest points
+```
+
+This is not theoretical — Microsoft's own pipeline security guidance explicitly warns:
+
+> From [Microsoft Learn - Secure Pipelines](https://learn.microsoft.com/en-us/azure/devops/pipelines/security/misc): *"If a malicious actor gains pipeline access in one project, and Build Service identities are insufficiently scoped, they could affect other projects' resources — escalating an initially limited breach into a wider compromise."*
+
+### Microsoft's Stated Reasoning (Sprint 269)
+
+From the [Sprint 269 release notes](https://learn.microsoft.com/en-us/azure/devops/release-notes/2026/ghazdo/sprint-269-update):
+
+> *"Advanced Security REST APIs no longer accept build service identities (such as `Project Collection Build Service`) as callers. This change prevents pipeline-based automation from accessing or modifying security alert data using build service accounts, reducing the risk of unintended alert state changes during CI/CD runs."*
+
+From the [temporary rollback blog post](https://devblogs.microsoft.com/devops/temporary-rollback-build-identities-can-access-advanced-security-read-alerts-again/):
+
+> *"We restricted API access for build identities as a security improvement but failed to provide an early notice for customers that relied upon this for various automations."*
+
+### How a Service Principal Fixes This
+
+Moving to a dedicated Service Principal with an Azure DevOps Service Connection resolves all three compounding factors:
+
+| Factor | Build Service (old) | Service Principal (new) |
+|--------|-------------------|----------------------|
+| **Identity isolation** | Shared across all pipelines in the project | Only the pipeline/task referencing the SC gets the token |
+| **Permission model** | Implicit — Build Service had default API access | Explicit — SP must be granted `Advanced Security: Read alerts` specifically |
+| **Audit trail** | Generic "Build Service" in logs | Named SP identity with Entra audit logs |
+| **Token access** | Any task gets it via `SYSTEMVSSCONNECTION` | Only the `AzureCLI@3` step (or task with SC input) referencing the specific SC |
+| **Conditional Access** | Not supported | ✅ Entra Conditional Access policies apply |
+| **Credential lifetime** | Job duration (up to 48h) | 1 hour (Entra token), auto-refreshed |
+| **Extension risk** | Any installed extension can read the token | Extensions cannot access the SP token unless they reference the SC by name |
 
 ---
 
 ## 15. References
 
+### Official Microsoft Documentation
+
+| Resource | URL |
+|----------|-----|
+| Authenticate with Entra ID | https://learn.microsoft.com/en-us/azure/devops/integrate/get-started/authentication/entra |
+| Service Principals & Managed Identities in ADO | https://learn.microsoft.com/en-us/azure/devops/integrate/get-started/authentication/service-principal-managed-identity |
+| Pipeline Job Access Tokens (System.AccessToken) | https://learn.microsoft.com/en-us/azure/devops/pipelines/process/access-tokens |
+| Azure DevOps Service Connection (Workload Identity) | https://learn.microsoft.com/en-us/azure/devops/pipelines/library/add-devops-entra-service-connection |
+| Service Connections Overview | https://learn.microsoft.com/en-us/azure/devops/pipelines/library/service-endpoints |
+| Entra Tokens via Azure CLI | https://learn.microsoft.com/en-us/azure/devops/cli/entra-tokens |
+| Advanced Security Permissions | https://learn.microsoft.com/en-us/azure/devops/repos/security/github-advanced-security-permissions |
+| Configure Advanced Security Features & Status Checks | https://learn.microsoft.com/en-us/azure/devops/repos/security/configure-github-advanced-security-features |
+| Author a Pipeline Decorator | https://learn.microsoft.com/en-us/azure/devops/extend/develop/add-pipeline-decorator |
+| Pipeline Decorator Context | https://learn.microsoft.com/en-us/azure/devops/extend/develop/pipeline-decorator-context |
+| Add a Custom Build Task in an Extension | https://learn.microsoft.com/en-us/azure/devops/extend/develop/add-build-task |
+| Pipeline Security — Secure Agents, Projects, and Containers | https://learn.microsoft.com/en-us/azure/devops/pipelines/security/misc |
+| Azure Pipelines Task SDK (azure-pipelines-task-lib) | https://github.com/microsoft/azure-pipelines-task-lib |
+| Advanced Security Alerts REST API Reference | https://learn.microsoft.com/en-us/rest/api/azure/devops/advancedsecurity/alerts/list |
+| Buy Basic Access & Manage Users (Licensing) | https://learn.microsoft.com/en-us/azure/devops/organizations/billing/buy-basic-access-add-users |
+| Entra Token Lifetimes | https://learn.microsoft.com/en-us/entra/identity-platform/configurable-token-lifetimes |
+| Managed Identity Token Caching | https://learn.microsoft.com/en-us/entra/identity/managed-identities-azure-resources/managed-identities-faq |
+| Entra OAuth for Azure DevOps (Migration from ADO OAuth) | https://learn.microsoft.com/en-us/azure/devops/integrate/get-started/authentication/entra-oauth |
+| AzureCLI@3 Task Reference (connectionType: azureDevOps) | https://learn.microsoft.com/en-us/azure/devops/pipelines/tasks/reference/azure-cli-v3 |
+
+### Release Notes & Roadmap
+
+| Resource | URL |
+|----------|-----|
+| Sprint 269 Release Notes — Build Identity Restriction | https://learn.microsoft.com/en-us/azure/devops/release-notes/2026/ghazdo/sprint-269-update |
+| Sprint 271 Release Notes — Status Checks | https://learn.microsoft.com/en-us/azure/devops/release-notes/2026/ghazdo/sprint-271-update |
+| PAT-less Authentication from Pipeline Tasks (Roadmap) | https://learn.microsoft.com/en-us/azure/devops/release-notes/roadmap/2025/new-service-connection |
+| Sprint 254 Update — No New OAuth Apps | https://learn.microsoft.com/en-us/azure/devops/release-notes/2025/general/sprint-254-update |
+
+### Blog Posts
+
 | Resource | URL |
 |----------|-----|
 | Reducing PAT Usage Across Azure DevOps | https://devblogs.microsoft.com/devops/reducing-pat-usage-across-azure-devops/ |
 | Temporary Rollback: Build Identities & Advanced Security | https://devblogs.microsoft.com/devops/temporary-rollback-build-identities-can-access-advanced-security-read-alerts-again/ |
-| Service Principals & Managed Identities in ADO | https://learn.microsoft.com/en-us/azure/devops/integrate/get-started/authentication/service-principal-managed-identity |
-| Authenticate with Entra ID | https://learn.microsoft.com/en-us/azure/devops/integrate/get-started/authentication/entra |
-| Azure DevOps Service Connection (Workload Identity) | https://learn.microsoft.com/en-us/azure/devops/pipelines/library/add-devops-entra-service-connection |
-| PAT-less Authentication from Pipeline Tasks (Roadmap) | https://learn.microsoft.com/en-us/azure/devops/release-notes/roadmap/2025/new-service-connection |
-| Pipeline Job Access Tokens | https://learn.microsoft.com/en-us/azure/devops/pipelines/process/access-tokens |
-| Entra Tokens via Azure CLI | https://learn.microsoft.com/en-us/azure/devops/cli/entra-tokens |
 | No New Azure DevOps OAuth Apps (April 2025) | https://devblogs.microsoft.com/devops/no-new-azure-devops-oauth-apps/ |
-| Configure Advanced Security Status Checks | https://learn.microsoft.com/en-us/azure/devops/repos/security/configure-github-advanced-security-features |
-| Author a Pipeline Decorator | https://learn.microsoft.com/en-us/azure/devops/extend/develop/add-pipeline-decorator |
-| Pipeline Decorator Context | https://learn.microsoft.com/en-us/azure/devops/extend/develop/pipeline-decorator-context |
-| Advanced Security Permissions | https://learn.microsoft.com/en-us/azure/devops/repos/security/github-advanced-security-permissions |
-| Sprint 269 Release Notes (Build Identity Restriction) | https://learn.microsoft.com/en-us/azure/devops/release-notes/2026/ghazdo/sprint-269-update |
-| Sprint 271 Release Notes (Status Checks) | https://learn.microsoft.com/en-us/azure/devops/release-notes/2026/ghazdo/sprint-271-update |
-| Pipeline Security Best Practices | https://learn.microsoft.com/en-us/azure/devops/pipelines/security/misc |
+
+### Code Samples & SDK References
+
+| Resource | URL |
+|----------|-----|
+| Azure DevOps Auth Samples (Service Principals) | https://github.com/microsoft/azure-devops-auth-samples/tree/master/ServicePrincipalsSamples |
+| Azure Pipelines Decorator Samples | https://github.com/n3wt0n/AzurePipelinesDecoratorSamples |
 
 ---
 
