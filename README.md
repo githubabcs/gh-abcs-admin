@@ -28,19 +28,26 @@ Comprehensive L400-level technical documentation for GitHub Enterprise Cloud adm
 
 ### Security Policies
 - [🛡️ Security-by-Default Policies](docs/11-security-by-default-policies.md) - Comprehensive security settings and policy recommendations for Enterprise, Organization, and Repository levels
+- [⚠️ GitHub Actions Security: Echo Command Injection](docs/17-github-actions-security-echo-command-injection.md) - Echo command injection vulnerability (HackerBot Claw attack) prevention in GitHub Actions workflows
 
 ### AI & Copilot Governance
 - [🤖 GitHub Copilot Governance](docs/12-github-copilot-governance.md) - Enterprise Copilot policies, settings, content exclusions, license management, and best practices
+- [🔄 GitHub Organization Rename Impact](docs/18-github-rename-org-impact.md) - Impact analysis of renaming a GitHub organization on Copilot, EMU authentication, and post-rename actions
 
 ### Implementation Guides
 - [🚀 GitHub Onboarding Implementation Plan](docs/13-github-onboarding-implementation-plan.md) - Comprehensive priority task list for GitHub Enterprise onboarding including governance, compliance, security-by-default configuration, repository rulesets, migration readiness, and Copilot governance
+- [🤖 Governed AI SDLC - Enterprise Adoption Plan](docs/20-governed-ai-sdlc-plan.md) - Enterprise adoption plan for a governed AI SDLC practice powered by an internal fleet of AI agents, covering golden paths, policy gating, observability, and DORA/SPACE + AI-specific KPIs
 
 ### Azure DevOps to GitHub Migration
 - [📊 ADO to GitHub Migration Assessment](docs/ado-to-github-migration-assessment.md) - Comprehensive mapping of ADO DevSecOps recommendations to GitHub equivalents
 - [📄 ADO to GitHub Migration Business Case (Markdown)](docs/ADO-to-GitHub-Migration-Business-Case.md) - Strategic business case for migrating from Azure DevOps to GitHub
 - [📄 ADO to GitHub Migration Business Case (HTML)](docs/ADO-to-GitHub-Migration-Business-Case.html) - Formatted business case document
 - [🔀 GitHub Enterprise Importer ADO Guide](docs/14-github-enterprise-importer-ado-guide.md) - Step-by-step guide for using GitHub Enterprise Importer with Azure DevOps
+- [� Azure Pipelines with GitHub Repos Integration](docs/15-azure-pipelines-github-repos-integration.md) - Impact analysis of using Azure Pipelines with GitHub repositories after migration
 - [🔍 Azure DevOps to GitHub Migration Analysis](docs/16-azure-devops-to-github-migration-analysis.md) - Detailed technical analysis of the migration process
+- [🔑 ADO REST API Authentication Without PATs](docs/ado-rest-api-auth-without-pat.md) - Alternatives to Personal Access Tokens for Azure DevOps REST API authentication in CI/CD pipelines
+- [❓ ADO to GitHub Migration Q&A Guide](docs/ADO-to-GitHub-Migration-QA.md) - Detailed questions and answers about migrating from Azure DevOps to GitHub using GEI
+- [💬 Workshop FAQ](docs/FAQ-workshop.md) - Frequently asked questions from GitHub Enterprise Admin workshops, including migration-related topics
 
 ---
 
