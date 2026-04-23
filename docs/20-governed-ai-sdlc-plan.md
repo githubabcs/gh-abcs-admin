@@ -756,7 +756,7 @@ This plan was independently validated by four LLMs in parallel - **Claude Opus 4
 | Authored with | GitHub Copilot CLI (Claude Opus 4.7, main agent) + background sub-agents on Claude Opus 4.6, Claude Sonnet 4.6, Claude Haiku 4.5, GPT-5.4 |
 | Tools used | `web_fetch`, `web_search`, GitHub MCP server, Microsoft Learn docs search/fetch, Twitter syndication JSON endpoint, ripgrep/glob over local files |
 | Human reviewer | Calin Lupas (Microsoft) - prompt author; approved 10-source scope, directed validation round, requested three-plane redraw |
-| AI co-author trailer | `Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>` (per repo convention; not yet committed - file lives outside a git repo) |
+| AI co-author trailer | `Co-authored-by: GitHub Copilot` (per repo convention; not yet committed - file lives outside a git repo) |
 
 ### 18.3 Source snapshot inventory (12 primary sources)
 
