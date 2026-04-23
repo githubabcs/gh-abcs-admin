@@ -36,6 +36,7 @@ Comprehensive L400-level technical documentation for GitHub Enterprise Cloud adm
 
 ### Implementation Guides
 - [🚀 GitHub Onboarding Implementation Plan](docs/13-github-onboarding-implementation-plan.md) - Comprehensive priority task list for GitHub Enterprise onboarding including governance, compliance, security-by-default configuration, repository rulesets, migration readiness, and Copilot governance
+- [☁️ GitHub Enterprise Cloud Adoption Plan](docs/21-github-enterprise-adoption-plan.md) - Phased adoption plan for Azure DevOps to GitHub Enterprise Cloud migration covering repos migration, Azure Pipelines to GitHub Actions, and DevSecOps enablement
 - [🤖 Governed AI SDLC - Enterprise Adoption Plan](docs/20-governed-ai-sdlc-plan.md) - Enterprise adoption plan for a governed AI SDLC practice powered by an internal fleet of AI agents, covering golden paths, policy gating, observability, and DORA/SPACE + AI-specific KPIs
 
 ### Azure DevOps to GitHub Migration
