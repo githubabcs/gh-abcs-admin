@@ -1,7 +1,40 @@
-# Governed AI SDLC - Enterprise Adoption Plan
+---
+title: Governed AI SDLC - Enterprise Adoption Plan
+description: Enterprise adoption plan for a governed AI SDLC practice powered by an internal fleet of AI agents, covering golden paths, policy gating, observability, and DORA/SPACE + AI-specific KPIs
+author: Platform AI Team
+ms.date: 2026-04-23
+ms.topic: overview
+---
+
+## Governed AI SDLC - Enterprise Adoption Plan
 
 **Scope:** ~1,000 developers, multiple business units, GitHub-centric toolchain.
 **Goal:** Build a governed, orchestrated AI SDLC practice powered by an internal fleet of AI agents that accelerates delivery while enforcing security, compliance, and Responsible AI.
+
+> For a concise 2-page overview suitable for executive stakeholders, see [Executive Summary](20-ai-sdlc-executive-summary.md).
+
+---
+
+## Table of Contents
+
+* [1. Executive Summary](#1-executive-summary)
+* [2. Landscape & Reference Frameworks](#2-landscape--reference-frameworks)
+* [3. Operating Model](#3-operating-model)
+* [4. Reference Architecture](#4-reference-architecture)
+* [5. The Internal AI SDLC Agent Team (Catalog)](#5-the-internal-ai-sdlc-agent-team-catalog)
+* [5B. Reusable Ecosystem Assets](#5b-reusable-ecosystem-assets-do-not-build-from-scratch)
+* [6. Agent Lifecycle](#6-agent-lifecycle-agent-sdlc)
+* [7. Governance Model](#7-governance-model)
+* [8. Security Posture](#8-security-posture)
+* [9. Metrics & Measurement](#9-metrics--measurement)
+* [10. Adoption Roadmap](#10-adoption-roadmap)
+* [11. Maturity Model](#11-maturity-model-self-assessed-quarterly)
+* [12. Enablement & Change Management](#12-enablement--change-management)
+* [13. Risks & Mitigations](#13-risks--mitigations)
+* [14. Immediate Next Steps](#14-immediate-next-steps-first-30-60-days-of-execution)
+* [15. Appendix](#15-appendix)
+* [16. Research Sources & Evidence Base](#16-research-sources--evidence-base)
+* [17. Validation Findings & v2 Backlog](#17-validation-findings--v2-backlog)
 
 ---
 
@@ -10,10 +43,11 @@
 We will stand up a **central AI SDLC Platform Team** that productizes an **"Agent Factory"** - a governed catalog of AI agents (GitHub Copilot coding agent, custom agents, MCP servers, skills, prompts) embedded into every stage of the SDLC. Consuming dev teams adopt these agents via **golden paths** on our Internal Developer Platform (IDP). All usage is policy-gated, observable, and measured against DORA (DevOps Research & Assessment) / SPACE (Satisfaction and well-being, Performance, Activity, Communication and collaboration, Efficiency and flow) + AI-specific KPIs.
 
 **North-star outcomes (12-18 months):**
-- >= 80% weekly active AI-agent usage across eligible developers
-- 25-40% lead-time-for-change reduction on pilot services
-- 100% of AI-generated code traceable and policy-checked pre-merge
-- Zero P1 incidents attributable to ungoverned AI output
+
+* ≥ 80% weekly active AI-agent usage across eligible developers
+* Measurable lead-time-for-change reduction on pilot services (industry benchmarks from DORA 2024 suggest 20-40% is achievable for elite/high performers adopting AI-assisted workflows; our target will be baselined in Phase 0 and calibrated against our own DORA metrics)
+* 100% of AI-generated code traceable and policy-checked pre-merge
+* Mean time to recover (MTTR) < 4 hours for any AI-attributable incident (safety metric, distinct from standard DORA MTTR tracked in section 9.2); target zero P1 incidents from ungoverned AI output
 
 ---
 
@@ -132,23 +166,23 @@ Developer-facing surfaces (IDE / GitHub.com / Chat / CLI) invoke agents in the *
 
 Each agent is published as a versioned product in the internal catalog with an `AGENTS.md` spec, owners, risk tier, eval suite, and SLOs.
 
-| # | Agent | SDLC Phase | Primary Responsibility | Key Integrations |
-|---|---|---|---|---|
-| 1 | **Product/Spec Agent** | Ideate | Turn PRDs -> specs, user stories, acceptance criteria (spec-kit) | Jira/ADO, Confluence |
-| 2 | **Architect Agent** | Design | ADRs, C4 diagrams, tech option analysis, threat-model drafts | Backstage, Miro |
-| 3 | **Scaffolder Agent** | Design->Build | Golden-path scaffolds (service, lib, IaC) | Backstage templates, Cookiecutter |
-| 4 | **Coder Agent** (Copilot Coding Agent) | Build | Implements issues -> PRs autonomously | GitHub Issues/PRs |
-| 5 | **Test Agent** | Test | Unit/integration/contract/e2e generation, coverage gap fixer | Playwright, Pact, JUnit |
-| 6 | **Reviewer Agent** | Review | PR review, style, logic, security hints (non-blocking suggestions + blocking checks) | GitHub PR API |
-| 7 | **Security Agent** | Review/Deploy | SAST/SCA triage, secret-scan triage, LLM-specific risks (OWASP LLM) | GHAS, CodeQL, Dependabot |
-| 8 | **Compliance Agent** | Review/Deploy | Policy-as-code checks, licence, data classification, regulatory tags | OPA/Rego, internal policy repo |
-| 9 | **Docs Agent** | Build/Release | Auto READMEs, ADRs, changelogs, API refs | MkDocs, Docusaurus |
-| 10 | **Release Agent** | Release | Release notes, version bumps, deploy PRs, rollback plans | GitHub Releases, Actions |
-| 11 | **SRE/Incident Agent** | Operate | Alert triage, runbook execution, postmortem drafting | PagerDuty, Splunk, K8s via MCP |
-| 12 | **FinOps Agent** | Operate | Cloud cost anomalies, right-sizing PRs | Azure/AWS MCP, Kubecost |
-| 13 | **Data/ML Agent** | Cross-cut | Dataset docs, model cards, drift alerts | MLflow, Feature Store |
-| 14 | **Migration Agent** | Modernize | Framework upgrades, language upgrades, dependency fleet moves | OpenRewrite, Dependabot |
-| 15 | **Knowledge Agent** | Cross-cut | RAG over internal docs, tribal-knowledge Q&A | SharePoint, Confluence, Git |
+| # | Agent | SDLC Phase | Rollout Phase | Primary Responsibility | Key Integrations |
+|---|---|---|---|---|---|
+| 1 | **Product/Spec Agent** | Ideate | Phase 2 | Turn PRDs -> specs, user stories, acceptance criteria (spec-kit) | Jira/ADO, Confluence |
+| 2 | **Architect Agent** | Design | Phase 2 | ADRs, C4 diagrams, tech option analysis, threat-model drafts | Backstage, Miro |
+| 3 | **Scaffolder Agent** | Design->Build | Phase 2 | Golden-path scaffolds (service, lib, IaC) | Backstage templates, Cookiecutter |
+| 4 | **Coder Agent** (Copilot Coding Agent) | Build | **Phase 1** | Implements issues -> PRs autonomously | GitHub Issues/PRs |
+| 5 | **Test Agent** | Test | **Phase 1** | Unit/integration/contract/e2e generation, coverage gap fixer | Playwright, Pact, JUnit |
+| 6 | **Reviewer Agent** | Review | **Phase 1** | PR review, style, logic, security hints (non-blocking suggestions + blocking checks) | GitHub PR API |
+| 7 | **Security Agent** | Review/Deploy | Phase 2 | SAST/SCA triage, secret-scan triage, LLM-specific risks (OWASP LLM) | GHAS, CodeQL, Dependabot |
+| 8 | **Compliance Agent** | Review/Deploy | Phase 2 | Policy-as-code checks, licence, data classification, regulatory tags | OPA/Rego, internal policy repo |
+| 9 | **Docs Agent** | Build/Release | Phase 2 | Auto READMEs, ADRs, changelogs, API refs | MkDocs, Docusaurus |
+| 10 | **Release Agent** | Release | Phase 2 | Release notes, version bumps, deploy PRs, rollback plans | GitHub Releases, Actions |
+| 11 | **SRE/Incident Agent** | Operate | Phase 3 | Alert triage, runbook execution, postmortem drafting | PagerDuty, Splunk, K8s via MCP |
+| 12 | **FinOps Agent** | Operate | Phase 3 | Cloud cost anomalies, right-sizing PRs | Azure/AWS MCP, Kubecost |
+| 13 | **Data/ML Agent** | Cross-cut | Phase 3 | Dataset docs, model cards, drift alerts | MLflow, Feature Store |
+| 14 | **Migration Agent** | Modernize | Phase 3 | Framework upgrades, language upgrades, dependency fleet moves | OpenRewrite, Dependabot |
+| 15 | **Knowledge Agent** | Cross-cut | Phase 3 | RAG over internal docs, tribal-knowledge Q&A | SharePoint, Confluence, Git |
 
 **Orchestration patterns used:**
 - **Sequential** (spec -> scaffold -> code -> test -> review)
@@ -393,38 +427,92 @@ All metrics land in a central **AI SDLC data warehouse** with Looker/Power BI da
 
 ---
 
-## 10. Adoption Roadmap (phased, no dates - sequence only)
+## 10. Adoption Roadmap
 
-### Phase 0 - Foundations
-- Stand up Platform Team, Governance Board, Champions program
-- Baseline DORA/SPACE + current AI usage
-- Procure/enable Copilot Enterprise, configure policies, SSO, audit
-- Publish AI Acceptable Use Policy + Responsible AI Standard
-- Create `ai-sdlc/agents`, `ai-sdlc/policies`, `ai-sdlc/evals` repos
+### Phase 0 - Foundations (4-6 weeks)
 
-### Phase 1 - Pilot (2-3 squads, <= 50 devs)
-- Roll out Copilot + Coder, Reviewer, Test agents
-- One golden path (e.g., Node/TS microservice) with full agent chain
-- Establish eval harness + red-team baseline
-- Weekly retro with pilots; iterate `AGENTS.md` specs
+* Stand up Platform Team, Governance Board, Champions program
+* Baseline DORA/SPACE + current AI usage
+* Procure/enable Copilot Enterprise, configure policies, SSO, audit
+* Publish AI Acceptable Use Policy + Responsible AI Standard
+* Create `ai-sdlc/agents`, `ai-sdlc/policies`, `ai-sdlc/evals` repos
 
-### Phase 2 - Expand (<= 250 devs, multiple BUs)
-- Add Security, Compliance, Docs, Release agents
-- Publish 3-5 golden paths (service, lib, IaC, data pipeline, frontend)
-- Self-service catalog on Backstage; SLA'd support from Platform Team
-- Launch metrics dashboards org-wide
+**Graduation gate → Phase 1:**
 
-### Phase 3 - Scale (all ~1,000 devs)
-- Add SRE/Incident, FinOps, Migration, Knowledge agents
-- Enable Coding Agent for autonomous issue->PR on approved repos
-- T3/T4 workflows with HITL gates live
-- Quarterly governance reviews; cost optimization pass
+| Criterion | Threshold |
+|---|---|
+| Platform Team chartered with named exec sponsor | Yes/No |
+| DORA/SPACE baseline survey completed | ≥ 70% response rate |
+| Copilot Enterprise tenant policies active | 100% of pilot orgs |
+| AI AUP + RAI Standard published and acknowledged | 100% of pilot squads |
+| `ai-sdlc/*` repos created with CI scaffolding | All 3 repos green |
 
-### Phase 4 - Optimize
-- Agent orchestration graphs (multi-agent workflows)
-- Fine-tuned / domain-adapted models where ROI justifies
-- Continuous eval + automatic rollback on regression
-- External benchmark and maturity re-assessment
+**Rollback trigger:** Exec sponsor not confirmed within 6 weeks → escalate to CTO before proceeding.
+
+### Phase 1 - Pilot (8-12 weeks, 2-3 squads, ≤ 50 devs)
+
+* Roll out Copilot + Coder, Reviewer, Test agents (agents #4, #5, #6)
+* One golden path (e.g., Node/TS microservice) with full agent chain
+* Establish eval harness + red-team baseline
+* Weekly retro with pilots; iterate `AGENTS.md` specs
+
+**Graduation gate → Phase 2:**
+
+| Criterion | Threshold |
+|---|---|
+| Weekly active Copilot usage among pilot devs | ≥ 60% |
+| Eval-suite pass rate for pilot agents | ≥ 85% |
+| Red-team exercise completed (no unmitigated critical findings) | 0 unmitigated critical or high findings |
+| Pilot squad satisfaction (survey) | ≥ 3.5/5 |
+| Zero P1 incidents attributable to AI output | 0 |
+| Lead-time-for-change delta measured vs. Phase 0 baseline | Measured and reported to Governance Board (no regression > 10%) |
+
+**Rollback trigger:** > 1 P1 incident from AI output, or eval pass rate < 70% for 2 consecutive weeks → pause expansion, remediate.
+
+### Phase 2 - Expand (12-16 weeks, ≤ 250 devs, multiple BUs)
+
+* Add Security, Compliance, Docs, Release, Product/Spec, Architect, Scaffolder agents (#1-3, #7-10)
+* Publish 3-5 golden paths (service, lib, IaC, data pipeline, frontend)
+* Self-service catalog on Backstage; SLA'd support from Platform Team
+* Launch metrics dashboards org-wide
+
+**Graduation gate → Phase 3:**
+
+| Criterion | Threshold |
+|---|---|
+| Weekly active Copilot usage across expanded population | ≥ 70% |
+| Golden paths adopted by ≥ 3 BUs | ≥ 3 BUs |
+| Agent catalog self-service (no manual onboarding) | ≥ 90% of onboardings completed without Platform Team intervention |
+| Metrics dashboards live and reviewed monthly | Yes, with ≥ 1 monthly review completed |
+| Cost per accepted suggestion tracked and within budget | Within ±15% of forecast |
+
+**Rollback trigger:** Cost exceeds budget by > 30% for 4 consecutive weeks → freeze new agent rollouts, run FinOps review.
+
+### Phase 3 - Scale (12-20 weeks, all ~1,000 devs)
+
+* Add SRE/Incident, FinOps, Migration, Knowledge, Data/ML agents (#11-15)
+* Enable Coding Agent for autonomous issue->PR on approved repos
+* T3/T4 workflows with HITL gates live
+* Quarterly governance reviews; cost optimization pass
+
+**Graduation gate → Phase 4:**
+
+| Criterion | Threshold |
+|---|---|
+| Weekly active AI-agent usage org-wide | ≥ 80% |
+| Lead-time-for-change improvement vs. Phase 0 baseline | ≥ 10% improvement (p < 0.05 over rolling 4-week window) |
+| 100% AI-generated code traceable and policy-checked | 100% |
+| Governance Board quarterly review completed | ≥ 1 cycle |
+| MTTR for AI-attributable incidents (safety metric, distinct from DORA MTTR) | < 4 hours |
+
+**Rollback trigger:** Org-wide adoption < 50% after 8 weeks at scale → diagnose enablement gaps before Phase 4.
+
+### Phase 4 - Optimize (ongoing)
+
+* Agent orchestration graphs (multi-agent workflows)
+* Fine-tuned / domain-adapted models where ROI justifies
+* Continuous eval + automatic rollback on regression
+* External benchmark and maturity re-assessment
 
 ---
 
@@ -489,7 +577,9 @@ risk_tier: T2
 description: Generates and maintains tests for PRs.
 capabilities: [unit-tests, coverage-gap-fix, mutation-hints]
 mcp_tools: [github.pr, repo.fs.read, repo.fs.write, ci.run]
-model_allowlist: [gpt-5.x, claude-sonnet-4.x]
+model_allowlist:
+  - gpt-5-2026-03-15       # Pin exact model version; reviewed quarterly
+  - claude-sonnet-4-20260401
 inputs: {triggers: [pr.opened, pr.synchronize]}
 guardrails:
  max_files_changed: 50
@@ -649,10 +739,10 @@ This plan was independently validated by four LLMs in parallel - **Claude Opus 4
 |---|---|---|---|
 | B1 | **Fabricated-taxonomy risk elsewhere:** audit every cited count / numbered list (section 5, section 5B, section 6) for "looks-authoritative-but-is-internal" labels | Platform Team | Opus |
 | B2 | ~~No real agent runtime control plane~~ **RESOLVED** (see section 17.1; section 4 redrawn) - follow-up work: define the runtime PDP (Policy Decision Point) wiring for sensitive tool calls, and publish the agent-catalog schema | Platform Architect | GPT-5.4 |
-| B3 | **Model supply chain governance** - no versioning policy, no deprecation handling, `model_allowlist` uses wildcards (`gpt-5.x`); pin exact model versions | Platform + Security | Opus |
+| B3 | ~~Model supply chain governance~~ **PARTIALLY RESOLVED** - Appendix A schema now pins exact model versions with quarterly review cadence; remaining: define deprecation handling and model rollback policy | Platform + Security | Opus |
 | B4 | **Incident response runbook for agent failures** - agent exfiltrates secrets / generates malicious code / infinite loop / bypasses gate has no defined severity matrix, escalation, or rollback drill | SRE + Security | Opus |
 | B5 | **HITL escalation criteria undefined** - no concrete triggers (file-path patterns, diff size, confidence threshold, tier x action matrix) | Governance Board | Opus + GPT-5.4 |
-| B6 | **Phase graduation criteria not measurable**, no rollback triggers per phase | Platform Product | Sonnet |
+| B6 | ~~Phase graduation criteria not measurable~~ **RESOLVED** - section 10 now includes measurable graduation gates with numeric thresholds and rollback triggers for each phase | Platform Product | Sonnet |
 | B7 | **Platform Team reporting line + budget source** not specified (CTO? CISO? BU-allocated? central?); blocks RACI authority | Exec Sponsor | Sonnet |
 | B8 | **Enablement delivery platform missing** (Learn path? Backstage TechDocs? internal Copilot Space?); no Day-1 -> Day-30 -> Day-90 experience map per persona | Enablement Lead | Sonnet |
 | B9 | **Export control (EAR/ITAR)** absent from section 2, section 7, section 13 - blocks rollout in regulated divisions | Legal + Compliance | Sonnet |
@@ -677,7 +767,7 @@ This plan was independently validated by four LLMs in parallel - **Claude Opus 4
 - Cite **SLSA** (slsa.dev) and define what L3 means for agent artifacts; choose **CycloneDX ML-BOM** or **SPDX** for model SBOM and commit to one.
 - Pin **OWASP LLM Top 10 (2025)** and map each entry to a section 8 control.
 - Cite specific **MITRE ATLAS** techniques in section 8 threat model.
-- Source or remove the **"25-40% lead-time reduction"** target; source champion 1:25 ratio.
+- Source or remove the **"20-40% lead-time reduction"** target; source champion 1:25 ratio.
 
 **Governance (Sonnet + Opus)**
 - Add **inbound IP contamination control** (Copilot public-code duplication filter org-wide, Legal sign-off on provenance, T3/T4 output flagged for legal review).
