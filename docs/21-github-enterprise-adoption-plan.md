@@ -11,6 +11,29 @@
 
 ---
 
+## Table of Contents
+
+* [Executive Summary](#executive-summary)
+* [Team Allocation Model](#team-allocation-model)
+* [Phase 0: Discovery & Planning](#phase-0-discovery--planning)
+* [Phase 1: Enterprise Configuration & Identity Validation](#phase-1-enterprise-configuration--identity-validation)
+* [Phase 2: Organization Structure & Policies](#phase-2-organization-structure--policies)
+* [Phase 3: Teams, Permissions & Access Model](#phase-3-teams-permissions--access-model)
+* [Phase 4: Security-by-Default & GitHub Advanced Security](#phase-4-security-by-default--github-advanced-security)
+* [Phase 5: Repository Governance, Rulesets & Templates](#phase-5-repository-governance-rulesets--templates)
+* [Phase 6: GitHub Actions, Copilot & Developer Tooling](#phase-6-github-actions-copilot--developer-tooling)
+* [Phase 7: Global Security Review & Documentation](#phase-7-global-security-review--documentation)
+* [Phase 8: Migration Readiness & Azure Pipelines Integration](#phase-8-migration-readiness--azure-pipelines-integration)
+* [Phase 9: Go/No-Go Checklist & Cutover Plan](#phase-9-gono-go-checklist--cutover-plan)
+* [Phase 10: Pilot Migration & Validation](#phase-10-pilot-migration--validation)
+* [Post-Pilot: Migration Waves (Oct – Dec 2026)](#post-pilot-migration-waves-oct--dec-2026)
+* [Key References](#key-references)
+* [Common Pitfalls to Avoid](#common-pitfalls-to-avoid)
+* [Appendix: Document Provenance & Quality Validation](#appendix-document-provenance--quality-validation)
+* [Appendix: Original Prompt](#appendix-original-prompt)
+
+---
+
 ## Executive Summary
 
 This plan provides a structured, security-first approach to adopting GitHub Enterprise Cloud, migrating from Azure DevOps. It is organized into **11 phases (0–10)**, progressing from foundational governance through pilot migration. The philosophy is **"governance before migration"** — all security, policies, identity, and structure must be validated before any code moves.
