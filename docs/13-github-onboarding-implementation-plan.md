@@ -461,7 +461,7 @@ updates:
 | Policy | Recommended Setting | Rationale | Status |
 |--------|---------------------|-----------|--------|
 | **Actions Availability** | **Enable for all organizations** | Allow Actions with restrictions | ☐ |
-| **Allowed Actions** | **Restrict**: Enterprise actions, GitHub actions, verified creators | Prevent untrusted actions | ☐ |
+| **Allowed Actions** | **Restrict**: Enterprise actions, GitHub actions, and explicitly allowlisted actions only (disable verified creators) | Prevent untrusted actions | ☐ |
 | **Require Actions SHA Pinning** | **Enable** | Prevent action version tampering | ☐ |
 | **Default Workflow Permissions** | **Read-only** | Least privilege for GITHUB_TOKEN - See note | ☐ |
 | **Allow Actions to Create PRs** | **Disable** | Prevent automated PR creation/approval | ☐ |

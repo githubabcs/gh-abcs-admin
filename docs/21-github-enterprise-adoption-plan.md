@@ -571,7 +571,7 @@ Since ADO Advanced Security is already in place:
 | Policy | Setting | Status |
 |---|---|---|
 | Actions availability | **Enable for all organizations** | ☐ |
-| Allowed actions | **Restrict**: Enterprise + GitHub + verified creators | ☐ |
+| Allowed actions | **Restrict**: Enterprise + GitHub + explicitly allowlisted actions only (disable verified creators) | ☐ |
 | Require SHA pinning | **Enforce via ruleset on workflow files + CI lint** (use `zizmor` or StepSecurity Harden-Runner — no native toggle exists) | ☐ |
 | Default workflow permissions | **Read-only** | ☐ |
 | Allow Actions to create PRs | **Disable** | ☐ |

@@ -190,13 +190,15 @@ Controls which Actions and reusable workflows can be used across the enterprise:
 
 - **Allow all actions:** No restrictions (generally inappropriate for enterprises)
 - **Allow local only:** Only Actions and workflows defined within the enterprise
-- **Allow select actions:** Explicitly approved list of actions from GitHub Marketplace and verified creators
+- **Allow select actions:** Explicitly approved allowlist of specific actions and reusable workflows
 - **Disable GitHub Actions:** Completely disable Actions capability
 
 The select actions policy requires enterprise administrators to maintain an allowlist of approved actions, typically including:
-- Verified creator actions from GitHub
-- Actions from trusted organizations
+- Specific GitHub-authored actions (e.g., `actions/checkout`, `actions/setup-node`)
+- Actions from trusted organizations that have been security-reviewed
 - Enterprise-internal actions published to private repositories
+
+> **⚠️ Important:** Do not rely on the "verified creators" setting. A verified creator badge does not guarantee an action is secure or appropriate for your environment. Always explicitly allowlist only the specific actions your organization has reviewed and approved.
 
 **Actions Policy Inheritance Example**
 
@@ -940,7 +942,7 @@ Actions Permissions:
 
 Allowed Actions:
 ├── Allow actions created by GitHub: enabled
-├── Allow actions by verified creators: enabled  
+├── Allow actions by verified creators: disabled  
 ├── Allow specified actions and reusable workflows:
 │   ├── actions/checkout@v4
 │   ├── actions/setup-node@v4

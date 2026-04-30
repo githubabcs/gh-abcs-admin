@@ -297,7 +297,7 @@ The Settings area provides access to critical configuration options:
 
 **GitHub Actions Policies**
 - Actions usage limits and spending caps
-- Allowed actions and verified creator restrictions
+- Allowed actions restricted to an explicit allowlist only
 - Required workflows for organizational compliance
 - Runner group management and registration
 
