@@ -521,6 +521,34 @@ The pool is a single Azure resource serving many LOBs, so direct tagging cannot 
 > [!WARNING]
 > The detailed usage report — the one that includes `username` and `workflow_path` — is **not exposed by the REST API**. It must be requested in the GitHub web UI and is delivered by email. **This design does not consume the detailed report in the automated pipeline** — see [Chargeback granularity — design decision](#chargeback-granularity--design-decision). The detailed report remains available in the UI for ad-hoc finance investigations only.
 
+### Cost summary surfaces — where to look
+
+The chargeback pipeline is the system of record, but day-to-day cost questions are answered in the GitHub UI. Sign in as **enterprise owner** or **billing manager**, then `Your enterprises` → select the enterprise → **Settings** → **Billing & licensing**. The table below maps the common questions to the surface that answers them.
+
+| Question | UI surface | What it shows | Export path |
+|---|---|---|---|
+| What did each LOB cost this month? | **Usage** page → *Group by* **Cost center** | Stacked bar and time-series of net spend per cost center, broken down by product (Actions, Copilot, Codespaces, Packages, LFS, GHAS, premium requests) | **Get report** → Summarized CSV; same data as REST `/usage/summary` |
+| Who and what is in a given cost center? | **Cost centers** → click the cost center name | Members (users), repositories, organizations, attached Azure subscription, current-period usage by SKU, attached budgets and consumption | History tab for member / sub binding events |
+| Where do I attach the Azure subscription to a cost center? | **Cost centers** → \[name\] → **Attach subscription** | The manual Azure-attach gate referenced throughout this design (Section 9). Requires Azure billing-account admin in the same Microsoft tenant | Audited via the Cost center event history |
+| Which user consumed what (Actions, Codespaces, premium requests, …)? | **Usage** page → **Get report** → **Detailed** | Per-line-item rows including `username`, `workflow_path`, `cost_center_name`, `repository_name` | **CSV by email**, **31-day window**, **UI only** — ad-hoc, not part of the automated pipeline |
+| Which user consumed how many Copilot premium requests? | **Usage** page filtered to Copilot premium requests, or the per-user audit table in the warehouse | Per-user requests, model, quota, exceedance flag | REST `/premium_request/usage` (also feeds the [Per-user premium-request audit table](#per-user-premium-request-audit-table-restricted-access)) |
+| Which seats are assigned to whom? | **Licensing** → **Enterprise seats** and **Copilot** → **Seat assignments** | One row per assigned seat with the user identity | REST + UI |
+| Did an LOB cross its budget? | **Budgets** → filter by cost center | Current consumption against each defined budget threshold (50 / 75 / 90 / 100 percent) | REST `/enterprises/{enterprise}/settings/billing/budgets` (preview) |
+| Has a cost center binding changed mid-period? | **Cost centers** → \[name\] → History | Member, repo, sub-attach, and detach events with timestamp and actor | Feeds the Section 9 audit query |
+
+> [!IMPORTANT]
+> The **Detailed** report is the only first-party surface that breaks cost down to the individual user. It is **UI-only**, **email-delivered**, **31-day max window**, and **one report per account at a time**. Requests for per-user cost should be triaged by the platform team rather than self-served by every LOB cost owner — both for access control and to avoid stepping on each other's outstanding requests.
+
+### Per-user cost — how this design exposes it
+
+Per-user cost is offered at two fidelities and one of them is restricted:
+
+* **Per-user license cost** (Enterprise seat, Copilot seat) — directly attributable from the seat assignment lists. Each user is in exactly one LOB cost center, so each seat rolls up to one LOB and one user simultaneously. Available via REST and UI.
+* **Per-user Copilot premium-request cost** — published as the [Per-user premium-request audit table](#per-user-premium-request-audit-table-restricted-access). Restricted access (platform FinOps + LOB cost owner scoped to their LOB only). Sourced from REST.
+* **Per-user Actions / Codespaces / Packages / LFS cost** — **only** available through the UI Detailed report (31-day window). Used ad-hoc on platform-team request; not persisted in the chargeback warehouse and not in the column contract. If a finance question needs this, the platform team requests the Detailed report, joins it to the LOB roster offline, and returns the answer to the LOB cost owner without persisting the per-user rows.
+
+This split is intentional. The chargeback report stays at LOB granularity (the contract finance signed off on); per-user breakdown is a **drill-down** for the LOB cost owner's internal showback to teams, not a chargeback line item.
+
 ### Chargeback granularity — design decision
 
 This design **uses summarized REST data only**. The detailed usage report (which adds `username` and `workflow_path`) is UI- and email-only and is not consumed by the automated chargeback pipeline.
