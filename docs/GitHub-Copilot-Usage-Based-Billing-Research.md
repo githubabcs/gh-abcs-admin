@@ -8,7 +8,7 @@
 > [!IMPORTANT]
 > ## ⚠️ Critical update — billing model changes June 1, 2026
 >
-> Since this document was first written, GitHub announced a **complete replacement** of the premium-request billing model. Starting **June 1, 2026**, Copilot Business and Copilot Enterprise move from per-seat + premium-request allowances to a **token-based metered model** denominated in **GitHub AI Credits** (1 credit = $0.01 USD). See [section 8](#8-new-model-effective-june-1-2026--github-ai-credits) for full details.
+> Since this document was first written, GitHub announced a **complete replacement** of the premium-request billing model. Starting **June 1, 2026**, Copilot Business and Copilot Enterprise move from per-seat + premium-request allowances to a **token-based metered model** denominated in **GitHub AI Credits** (1 credit = $0.01 USD). See [section 7](#7-new-model-effective-june-1-2026--github-ai-credits) for full details.
 >
 > Sections 1–7 of this document describe the **request-based model** that remains in effect **through May 31, 2026**. Existing customers should read both halves to plan the transition. Source: [Usage-based billing for organizations and enterprises](https://docs.github.com/en/copilot/concepts/billing/usage-based-billing-for-organizations-and-enterprises).
 
@@ -19,7 +19,7 @@
 GitHub Copilot is no longer a flat per-seat product. As of mid-2025, GitHub introduced a **two-layer billing model**:
 
 1. **Per-seat license** — unchanged in concept ($19/user/month Business; $39/user/month Enterprise). Gives every user unlimited use of "included" models (currently GPT-5 mini, GPT-4.1, GPT-4o — note GPT-4.1 is on a published deprecation path as of May 7, 2026), plus a monthly allowance of **premium requests**.
-2. **Premium-request usage** — a metered allowance (300/user/month for Business, 1,000/user/month for Enterprise). When a user picks an "advanced" model (e.g. Claude Sonnet 4.5/4.6, Claude Opus 4.5–4.7, GPT-5.4/5.5, Gemini 2.5 Pro / 3.1 Pro / 3 Flash) or uses certain agentic features (Copilot cloud agent, Spark, Code Review with premium models, etc.), the request is multiplied by a model-specific factor and counted against the allowance. **Overage is billed at $0.04 per premium request** if the org admin has the "Premium request paid usage" policy enabled.
+2. **Premium-request usage** — a metered allowance (300/user/month for Business, 1,000/user/month for Enterprise). When a user picks an "advanced" model (e.g. Claude Sonnet 4.5/4.6, Claude Opus 4.5–4.7, GPT-5.3-Codex, GPT-5.4/5.5, Gemini 2.5 Pro / 3.1 Pro / 3 Flash) or uses certain agentic features (Copilot cloud agent, Spark, Code Review with premium models, etc.), the request is multiplied by a model-specific factor and counted against the allowance. **Overage is billed at $0.04 per premium request** if the org admin has the "Premium request paid usage" policy enabled.
 
 For an org that is already paying for Business or Enterprise seats, the practical impact is:
 
@@ -28,7 +28,7 @@ For an org that is already paying for Business or Enterprise seats, the practica
 - **Two new admin levers** must be configured: (a) the *Premium request paid usage* policy and (b) **budgets** (bundled or per-SKU). Budgets are the only hard cap that prevents runaway overage spend.
 - **From November 1, 2025**, premium requests are split into **three SKUs** — Copilot premium requests, Spark premium requests, and Copilot cloud agent premium requests — for cleaner cost attribution.
 - **GitHub Enterprise Cloud with data residency or FedRAMP** adds an **additional +10% multiplier** on premium requests routed through that compliant infrastructure (it does not create a separate flat charge).
-- **From June 1, 2026**, this entire request-based model is **replaced by GitHub AI Credits** (token-metered, pooled at the billing entity). See [section 8](#8-new-model-effective-june-1-2026--github-ai-credits).
+- **From June 1, 2026**, this entire request-based model is **replaced by GitHub AI Credits** (token-metered, pooled at the billing entity). See [section 7](#7-new-model-effective-june-1-2026--github-ai-credits).
 
 ---
 
@@ -67,11 +67,11 @@ Source: [Requests in GitHub Copilot](https://docs.github.com/en/copilot/concepts
 ### 2.4 What counts as a premium request?
 
 - **Included models** (GPT-5 mini, GPT-4.1, GPT-4o) on a paid plan → **0 premium requests** (rate-limited but free).
-- Any other model → **1 × multiplier** premium requests per prompt. Multipliers vary by model; advanced reasoning models can be 5×, 7.5× (GPT-5.5), 15× (Claude Opus 4.7) or more. Some lightweight models are <1× (Claude Haiku 4.5 is 0.33×, Grok Code Fast 1 is 0.25×, GPT-5.4 nano is 0.25×).
+- Any other model → **1 × multiplier** premium requests per prompt. Multipliers vary by model; advanced reasoning models can be 5×, 7.5× (GPT-5.5), 15× (Claude Opus 4.7) or more (Claude Opus 4.6 fast mode preview is 30×). Codex coding models (GPT-5.3-Codex, GPT-5.2-Codex) and frontier coding/chat models (Sonnet 4.5/4.6, Gemini 2.5 Pro / 3.1 Pro, GPT-5.2/5.4) are 1×. Some lightweight models are <1× (Claude Haiku 4.5 = 0.33×, Gemini 3 Flash = 0.33×, GPT-5.4 mini = 0.33×, Grok Code Fast 1 = 0.25×, GPT-5.4 nano = 0.25×). Multipliers stack multiplicatively with the auto-select discount and the data-residency adder — e.g. Sonnet 4.6 with auto-select on a data-resident tenant ≈ 1 × 0.9 × 1.1 = 0.99×.
 - **Copilot cloud agent** (incl. custom agents): 1 premium request per *session* (a session starts when you assign Copilot to an issue or prompt it to undertake a task), multiplied by the model rate. Each real-time steering comment in an active session also costs 1 × multiplier. Also consumes GitHub Actions minutes.
 - **Spark**: each prompt costs a **fixed 4 premium requests** (not multiplier-based).
 - **Auto model selection** in VS Code chat, Copilot CLI, or Copilot cloud agent on a paid plan: **10% multiplier discount** (e.g. Sonnet 4.6 billed at 0.9× instead of 1×).
-- **Data residency / FedRAMP enforcement on GitHub Enterprise Cloud**: **+10% multiplier** on every premium request.
+- **Data residency / FedRAMP enforcement on GitHub Enterprise Cloud**: **+10% multiplier** on every premium request. Data residency in **both US and EU regions** plus FedRAMP-authorized models reached **GA on April 13, 2026** — see [Data residency (US + EU) and FedRAMP-authorized models now available in Copilot](https://github.blog/changelog/2026-04-13-copilot-data-residency-in-us-eu-and-fedramp-compliance-now-available).
 - **Tool calls** an agent makes autonomously inside a single prompt do **not** each count — only the user prompt counts.
 
 Source: [Requests in GitHub Copilot — Model multipliers](https://docs.github.com/en/copilot/concepts/billing/copilot-requests#model-multipliers), [GitHub Copilot with data residency — pricing changes](https://docs.github.com/en/enterprise-cloud@latest/admin/data-residency/github-copilot-with-data-residency#pricing-changes).
@@ -136,7 +136,7 @@ Source: [Manage premium requests for your enterprise](https://docs.github.com/en
 4. **Pull a usage report monthly** for the first few cycles. Identify the top-decile consumers — they are the candidates for upgrade to Copilot Enterprise (1,000 req/mo) or for coaching on model choice.
 5. **Treat the Copilot cloud agent as a separate cost center** — it draws from both premium requests (1/session) and GitHub Actions minutes, and has its own SKU since Nov 1, 2025.
 6. **If you operate under data residency or FedRAMP**, add the **+10% multiplier** to every forecast.
-7. **Plan the AI Credits transition now.** Download the new April 2026 usage reports from your billing dashboard (released May 12, 2026) to model your projected June 1, 2026 AI-credit consumption. See [section 8](#8-new-model-effective-june-1-2026--github-ai-credits).
+7. **Plan the AI Credits transition now.** Download the new April 2026 usage reports from your billing dashboard (released May 12, 2026) to model your projected June 1, 2026 AI-credit consumption. See [section 7](#7-new-model-effective-june-1-2026--github-ai-credits).
 8. **Note the Copilot code review change** — starting June 1, 2026, code review consumes GitHub Actions minutes in addition to AI credits. Forecast Actions capacity accordingly.
 
 ---
@@ -155,70 +155,43 @@ Source: [Manage premium requests for your enterprise](https://docs.github.com/en
 - **NEW — [Usage-based billing for individuals (effective June 1, 2026)](https://docs.github.com/en/copilot/concepts/billing/usage-based-billing-for-individuals)**
 - **NEW — [Models and pricing for GitHub Copilot (per-token rates)](https://docs.github.com/en/copilot/reference/copilot-billing/models-and-pricing)**
 - **NEW — [Preparing your organization for usage-based billing](https://docs.github.com/en/copilot/how-tos/manage-and-track-spending/prepare-for-usage-based-billing)**
+- **NEW — [Copilot billing preview tool (interactive AI-credit estimator)](https://copilot-billing-preview.github.com/)**
+- **NEW — [Mario Rodriguez — "Copilot is moving to usage-based billing" (announcement blog post)](https://gh.io/copilot-billing-blog)**
 - [Copilot code review will consume GitHub Actions minutes from June 1, 2026 (changelog)](https://github.blog/changelog/2026-04-27-github-copilot-code-review-will-start-consuming-github-actions-minutes-on-june-1-2026)
+- [Data residency (US + EU) and FedRAMP-authorized models GA — April 13, 2026 (changelog)](https://github.blog/changelog/2026-04-13-copilot-data-residency-in-us-eu-and-fedramp-compliance-now-available)
 
 ---
 
-## 6. Provenance & validation
+## 6. Provenance & validation history
 
-> **Generated:** 2026-05-05 by **GitHub Copilot CLI** powered by **Claude Opus 4.7 (1M context)** (model id `claude-opus-4.7-1m-internal`).
+> **Generated:** 2026-05-05 by GitHub Copilot CLI (Claude Opus 4.7, 1M context).
+> **Last re-validated:** 2026-05-14 against live [GitHub docs](https://docs.github.com) and the [GitHub Copilot Changelog](https://github.blog/changelog/label/copilot/).
 >
-> **Re-validated:** 2026-05-14 against live GitHub documentation and the [GitHub Copilot Changelog](https://github.blog/changelog/label/copilot/). Findings from the re-validation are recorded in [section 7](#7-multi-agent-validation-log) (entries marked **2026-05-14 RE-VALIDATION**).
->
-> **Validation:** This document was independently fact-checked in parallel by **5 sub-agents running on different LLMs** (see section 7 for results). Every numeric claim, date, URL, and policy statement was cross-checked against the live GitHub documentation linked above.
->
-> **Caveat:** GitHub updates premium-request multipliers, included models, and SKU structure frequently. The model lineup in particular has churned heavily between the original research date and the re-validation date (Sonnet 4 deprecated 2026-05-07; GPT-4.1 deprecation announced 2026-05-07; GPT-5.2 / 5.2-Codex deprecation announced 2026-05-01; Grok Code Fast 1 deprecation announced 2026-05-08; GPT-5.5 GA 2026-04-24; Claude Opus 4.7 GA 2026-04-16). Verify the multiplier table and the Plans page before committing budget decisions. Pricing in this document is in USD and reflects the public list price as of the re-validation date.
+> **Caveat for budget decisions:** Multipliers, included models, and AI-credit pricing change frequently. Before committing budget, re-verify against the live [model-multiplier table](https://docs.github.com/en/copilot/concepts/billing/copilot-requests#model-multipliers), the [Plans page](https://docs.github.com/en/copilot/about-github-copilot/subscription-plans-for-github-copilot), and (post-June 1) the [Models and pricing](https://docs.github.com/en/copilot/reference/copilot-billing/models-and-pricing) reference.
+
+| Date | Pass | Result |
+|---|---|---|
+| 2026-05-05 | Initial generation + 5 parallel LLM validators (Claude Sonnet 4.5, Haiku 4.5, GPT-5.5, 5.4, 5.3-Codex) fact-checking against `docs.github.com` and `github.blog` | All technical claims verified after wording fixes (SKU naming, data-residency phrasing, Gemini model names) |
+| 2026-05-14 | Single-agent freshness diff (Claude Opus 4.7) against current live docs | 10 findings (2 CRITICAL, 3 HIGH, 3 MEDIUM, 2 LOW) all applied. Largest: added section 7 (AI Credits) for the June 1, 2026 transition |
+| 2026-05-14 | 3 parallel Researcher subagents on disjoint scopes (AI Credits / request-based / operational) re-checking against live sources | 55/58 verifiable claims PASS; 11 fixes applied (Mario Rodriguez announcement citation, GPT-5.3-Codex multiplier, billing preview tool, annual-plan migration options, +10% data-residency GA citation) |
+
+**To re-validate this document:** re-fetch every URL in [section 5](#5-primary-references-all-official-github-documentation) plus the [GitHub Copilot Changelog](https://github.blog/changelog/label/copilot/) for the period since the last re-validation date above, then diff against the claims in sections 1-5 and 7. Re-validate before any budget decision and at minimum monthly given the pace of GitHub Copilot pricing changes.
 
 ---
 
-## 7. Multi-agent validation log
-
-The draft was sent in parallel to **5 independent validator sub-agents**, each instructed to fact-check every numeric claim, date, URL, and policy statement against `docs.github.com` and `github.blog`. Each ran on a different LLM:
-
-| # | Validator model | Verdict | Key finding(s) acted on |
-|---|---|---|---|
-| 1 | Claude Sonnet 4.5 | APPROVED | All technical claims verified. |
-| 2 | Claude Haiku 4.5 | APPROVED | All technical claims verified. Noted GitHub's own sources are inconsistent on whether GPT-5 mini is in the "included" list (blog vs docs); document follows the live docs. |
-| 3 | GPT-5.5 | APPROVED WITH FIXES | SKU name should be **"Copilot cloud agent"** (not "coding agent"); data-residency wording should clarify it is a multiplier not a flat charge; data-residency anchor was wrong. **All applied.** |
-| 4 | GPT-5.4 | APPROVED WITH FIXES | Same SKU naming issue ("cloud agent"). **Applied.** |
-| 5 | GPT-5.3-Codex | APPROVED WITH FIXES | Gemini model names should be **"Gemini 2.5 Pro / 3.1 Pro"** (not "2.5/3 Pro"). **Applied.** |
-
-Final consolidated state after fixes: **all 5 validators' technical findings have been incorporated**. Remaining unverifiable items are the provenance statements in section 6 (which describe this generation/validation process itself and have no external source).
-
-### 7.1 2026-05-14 RE-VALIDATION findings
-
-A single re-validator (Claude Opus 4.7, 1M context) reviewed the document against live GitHub docs and the [GitHub Copilot Changelog](https://github.blog/changelog/label/copilot/) on 2026-05-14. Findings:
-
-| # | Severity | Finding | Action |
-|---|---|---|---|
-| 1 | **CRITICAL** | Document title says "Usage-Based Billing" but describes the **request-based** model. GitHub officially renamed the new June 1, 2026 token-credit model "Usage-based billing"; the model documented in sections 1–7 is now called "request-based billing". | Added **section 8** describing the new GitHub AI Credits model + critical-update banner at the top. |
-| 2 | **CRITICAL** | Major missing event: **June 1, 2026** \u2014 GitHub replaces premium requests with GitHub AI Credits (token-metered) for Business and Enterprise. | Added to section 2.3 and full new section 8. |
-| 3 | **HIGH** | Model lineup outdated. Document references "Claude Sonnet 4.x", but Sonnet 4 is deprecated as of 2026-05-07. Current Claude lineup: Sonnet 4.5, 4.6; Opus 4.5, 4.6, 4.7; Haiku 4.5. GPT lineup: GPT-5.4, 5.5, 5.4 mini, 5.4 nano, 5.3-Codex, 5.2 (deprecating). Gemini lineup: 2.5 Pro, 3 Flash, 3.1 Pro. | Updated model references in sections 1, 2.4, 3.2, 4. |
-| 4 | **HIGH** | Missing: **April 22, 2026** sign-up pause for Copilot Business self-serve on GitHub Free / GitHub Team plans, and **April 20, 2026** pause for Pro / Pro+ / Student. | Added to section 2.3. |
-| 5 | **HIGH** | Missing: **June 1, 2026** \u2014 Copilot code review starts consuming GitHub Actions minutes (announced 2026-04-27). | Added to section 2.3 and recommendation 8. |
-| 6 | **MEDIUM** | Spark multiplier not specified. Spark is a **fixed 4 premium requests per prompt** (not multiplier-based). | Added to section 2.4 and worked examples. |
-| 7 | **MEDIUM** | Auto model selection 10% discount applies to Copilot Chat, **Copilot CLI**, AND **Copilot cloud agent** \u2014 document only mentioned VS Code chat. | Corrected in section 2.4. |
-| 8 | **MEDIUM** | Cloud agent steering comments also count as premium requests (1 \u00d7 multiplier per real-time steering comment in an active session). | Added to section 2.4. |
-| 9 | **LOW** | Multiplier ceiling claim "5\u00d7 or more" understated current peaks: GPT-5.5 = 7.5\u00d7, Claude Opus 4.7 = 15\u00d7, Claude Opus 4.6 fast mode preview = 30\u00d7. | Updated section 2.4 and recommendation 3. |
-| 10 | **LOW** | Worked examples used deprecated model names. | Updated to Sonnet 4.6, Opus 4.7, Spark in section 3.2. |
-
-All findings applied. Document now accurately reflects state of GitHub Copilot billing as of 2026-05-14.
-
----
-
-## 8. New model effective June 1, 2026 — GitHub AI Credits
+## 7. New model effective June 1, 2026 — GitHub AI Credits
 
 > [!IMPORTANT]
-> **Effective June 1, 2026**, GitHub is replacing the premium-request model documented in sections 1–7 with a token-based **GitHub AI Credits** system for Copilot Business and Copilot Enterprise. Existing customers are auto-migrated; no admin action is required to migrate, but **you should re-baseline budgets and policies before that date**.
+> **Effective June 1, 2026**, GitHub is replacing the premium-request model documented in sections 1–5 with a token-based **GitHub AI Credits** system for Copilot Business and Copilot Enterprise. Existing customers are auto-migrated; no admin action is required to migrate, but **you should re-baseline budgets and policies before that date**.
 
-### 8.1 Core concept
+### 7.1 Core concept
 
 - **Unit of billing**: GitHub AI Credit. **1 AI credit = $0.01 USD**.
 - **What it measures**: actual tokens consumed by the model — input tokens (sent to the model), output tokens (generated by the model), and cached tokens (reused context). Each token has a per-token price set per model; the total is converted to AI credits.
 - **What still uses AI credits**: Copilot Chat, Copilot CLI, Copilot cloud agent, Copilot Spaces, Spark, third-party coding agents.
 - **What does NOT use AI credits**: Code completions and next-edit suggestions remain **unlimited** for all paid plans (same as today).
 
-### 8.2 Included AI credits per license (Business / Enterprise)
+### 7.2 Included AI credits per license (Business / Enterprise)
 
 | License | Standard included AI credits / user / month | Equivalent USD value |
 |---|---|---|
@@ -234,29 +207,30 @@ All findings applied. Document now accurately reflects state of GitHub Copilot b
 
 After Sept 1, 2026, the standard amounts above apply.
 
-### 8.3 Pooled allowance — major change vs request-based model
+### 7.3 Pooled allowance — major change vs request-based model
 
 Unlike the per-user premium-request bucket, **AI credits are pooled at the billing-entity level**. An enterprise with 100 Copilot Business licenses gets a shared pool of **190,000 AI credits/month** (not 100 individual buckets of 1,900). Power users can draw more; lighter users offset that consumption automatically. This is a meaningful operational improvement for teams with uneven AI usage.
 
 - Adding licenses mid-cycle **increases** the pool immediately.
 - Removing licenses mid-cycle **does not shrink** the pool until the start of the next cycle.
 
-### 8.4 Overage and budgets
+### 7.4 Overage and budgets
 
 - **Additional usage allowed**: usage continues at published per-credit rates ($0.01/credit), billed to the org/enterprise.
 - **Additional usage not allowed**: usage blocks until the next monthly cycle.
 - **Budget levels**: enterprise, organization, cost center, **user** (NEW \u2014 user-level budgets are explicit in this model). A `$0` user-level budget = no Copilot access for that user, even if the org pool has capacity. **There is no automatic fallback to lower-cost models when a user budget is exhausted.**
 
-### 8.5 What admins should do before June 1, 2026
+### 7.5 What admins should do before June 1, 2026
 
 1. **Download the April 2026 usage report** (released 2026-05-12) to understand your current premium-request consumption and project it into AI credits. The report exposes per-feature, per-user, per-model token consumption needed to forecast the new model.
 2. **Decide your overage posture** in the new world: allow additional usage with a budget, or block at the included pool.
-3. **Set enterprise-, org-, and cost-center-level budgets in USD** before the cutover. Existing premium-request budgets do not transfer 1:1.
-4. **Identify power users** likely to be limited under the standard AI-credit allowance (Business 1,900/mo standard ≈ same dollar value as today's seat). Consider Enterprise upgrades or user-level budgets for them.
-5. **Communicate the change to developers** \u2014 model choice now directly affects token cost (not just a multiplier on a request count). Lighter models save more in this model than they do under request-based billing.
-6. **Plan for Copilot code review consuming Actions minutes** from June 1, 2026 \u2014 this is a separate cost line from AI credits.
+3. **Set enterprise-, org-, cost-center-, and (NEW) user-level budgets in USD** before the cutover. Existing premium-request budgets carry over automatically into AI-credit budgets per the official preparation guide, but you should re-baseline thresholds since the unit of measurement changes from requests to dollars-of-tokens. A `$0` user-level budget completely blocks a user, even when the org pool has capacity.
+4. **Use the official [Copilot billing preview tool](https://copilot-billing-preview.github.com/)** to model your projected AI-credit consumption from your historical premium-request data before the June 1 cutover.
+5. **Identify power users** likely to be limited under the standard AI-credit allowance (Business 1,900/mo standard ≈ same dollar value as today's seat). Consider Enterprise upgrades or higher user-level budgets for them.
+6. **Communicate the change to developers** — model choice now directly affects token cost (not just a multiplier on a request count). Lighter models save more in this model than they do under request-based billing.
+7. **Plan for Copilot code review consuming Actions minutes** from June 1, 2026 — this is a separate cost line from AI credits. The change applies to Pro / Pro+ / Business / Enterprise; reviews on **public repositories remain free**.
 
-### 8.6 Individual plans (Pro / Pro+ / Free / new Max)
+### 7.6 Individual plans (Pro / Pro+ / Free / new Max)
 
 For completeness \u2014 individuals also move to AI credits on June 1, 2026 with the following allowances:
 
@@ -266,6 +240,6 @@ For completeness \u2014 individuals also move to AI credits on June 1, 2026 with
 | Copilot Pro+ | $39 | 3,900 | 3,100 | 7,000 |
 | **Copilot Max (NEW)** | $100 | 10,000 | 10,000 | 20,000 |
 
-Copilot Free will continue to include 2,000 code completions per month plus a small AI-credits allowance and auto model selection. Annual Pro / Pro+ subscribers will not auto-renew and will receive options to cancel (prorated refund) or downgrade to Free; if they continue on annual billing with request-based billing, model multipliers will change.
+Copilot Free will continue to include 2,000 code completions per month plus a small AI-credits allowance and auto model selection. Annual Pro / Pro+ subscribers will not auto-renew and have **three options**: (a) cancel and receive a prorated refund, (b) downgrade to Free at renewal, or (c) **convert to monthly billing with prorated credits before expiration**. Subscribers who continue on annual billing under the legacy request-based model will see **model-multiplier increases** on June 1, 2026 — see the official [Model multipliers for annual plans](https://docs.github.com/en/copilot/reference/copilot-billing/model-multipliers-for-annual-plans) table for exact pre/post values. **Subscribers who originally purchased Pro or Pro+ through GitHub Mobile (iOS / Android) cannot purchase additional AI credits.**
 
-Source: [Usage-based billing for organizations and enterprises](https://docs.github.com/en/copilot/concepts/billing/usage-based-billing-for-organizations-and-enterprises), [Usage-based billing for individuals](https://docs.github.com/en/copilot/concepts/billing/usage-based-billing-for-individuals), [Models and pricing for GitHub Copilot](https://docs.github.com/en/copilot/reference/copilot-billing/models-and-pricing).
+Source: [Mario Rodriguez — "Copilot is moving to usage-based billing" (GitHub Blog, April 27, 2026)](https://gh.io/copilot-billing-blog), [Usage-based billing for organizations and enterprises](https://docs.github.com/en/copilot/concepts/billing/usage-based-billing-for-organizations-and-enterprises), [Usage-based billing for individuals](https://docs.github.com/en/copilot/concepts/billing/usage-based-billing-for-individuals), [Models and pricing for GitHub Copilot](https://docs.github.com/en/copilot/reference/copilot-billing/models-and-pricing), [Copilot billing preview tool](https://copilot-billing-preview.github.com/).
