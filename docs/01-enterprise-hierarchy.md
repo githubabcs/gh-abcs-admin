@@ -1,5 +1,28 @@
 # GitHub Enterprise Cloud Hierarchy
 
+> **Document status**
+>
+> - **Last reviewed:** 2026-05-19
+> - **Authorship:** Drafted with AI assistance (GitHub Copilot, multi-model review) and reviewed by a human maintainer before publication.
+> - **Sources:** Based on public documentation — primarily [docs.github.com](https://docs.github.com), [learn.microsoft.com](https://learn.microsoft.com), and official vendor blogs cited inline.
+> - **Verify before acting:** GitHub and Microsoft update product documentation continuously. Re-confirm against the live source pages before relying on this content for production decisions.
+
+## Table of Contents
+
+- [Overview](#overview)
+- [Enterprise Account Capabilities](#enterprise-account-capabilities)
+- [Hierarchy Levels](#hierarchy-levels)
+- [Enterprise Roles](#enterprise-roles)
+- [Enterprise Settings and Dashboard Navigation](#enterprise-settings-and-dashboard-navigation)
+- [Multi-Organization Management Patterns](#multi-organization-management-patterns)
+- [Enterprise Admin Responsibilities Flow](#enterprise-admin-responsibilities-flow)
+- [Enterprise Audit Log and Compliance Features](#enterprise-audit-log-and-compliance-features)
+- [Best Practices for Enterprise Administration](#best-practices-for-enterprise-administration)
+- [Advanced Topics](#advanced-topics)
+- [Migration and Onboarding Strategies](#migration-and-onboarding-strategies)
+- [Troubleshooting Common Issues](#troubleshooting-common-issues)
+- [References](#references)
+
 ## Overview
 
 GitHub Enterprise Cloud (GHEC) provides a multi-tiered organizational structure that enables large organizations to manage multiple teams, projects, and repositories under a unified enterprise account. This hierarchical model facilitates centralized governance, billing, and policy enforcement while maintaining organizational autonomy and flexibility.
@@ -15,7 +38,7 @@ An enterprise account on GitHub Enterprise Cloud delivers advanced administrativ
 **Centralized Management**
 - Unified dashboard providing real-time visibility across all organizations
 - Consolidated user management with enterprise-level identity provisioning
-- Single sign-on (SSO) enforcement via SAML 2.0 or OIDC
+- Single sign-on (SSO) enforcement via SAML 2.0 (all enterprises); OIDC available for Enterprise Managed Users (EMU) enterprises only
 - Centralized billing with cost allocation and usage analytics
 
 **Security and Compliance**
@@ -27,7 +50,7 @@ An enterprise account on GitHub Enterprise Cloud delivers advanced administrativ
 
 **Policy Enforcement**
 - Repository policy management across organizations
-- Branch protection rules inheritance
+- Repository Rulesets (applicable at enterprise → organization → repository scope)
 - Required workflows for GitHub Actions
 - Custom repository roles and permissions
 - Dependency management and security advisories
@@ -302,7 +325,7 @@ The Settings area provides access to critical configuration options:
 - Runner group management and registration
 
 **Audit Log**
-- Searchable event log with 180+ day retention
+- Searchable event log with 180-day retention (extendable via log streaming to external SIEM)
 - Export capabilities (JSON, CSV)
 - Real-time event streaming to SIEM platforms
 - Compliance reporting and anomaly detection
@@ -626,7 +649,7 @@ For long-term retention and advanced analytics, configure audit log streaming:
 EMU provides complete lifecycle management of user identities through your Identity Provider:
 
 **Key Characteristics**
-- GitHub manages user accounts on your behalf
+- User accounts are provisioned and managed by your identity provider (IdP) via SCIM
 - Users can only authenticate via enterprise SSO
 - No personal GitHub account interactions
 - Usernames follow configurable pattern (e.g., `octocat_corp`)

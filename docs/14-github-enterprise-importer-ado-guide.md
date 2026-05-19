@@ -1,10 +1,13 @@
 # GitHub Enterprise Importer: Azure DevOps to GitHub Migration Guide
 
 > **Purpose:** High-level reference guide for migrating repositories from Azure DevOps Cloud to GitHub Enterprise Cloud using GitHub Enterprise Importer.
+
+> **Document status**
 >
-> **Source:** Official GitHub Documentation
->
-> **Last Updated:** February 2026
+> - **Last reviewed:** 2026-05-19
+> - **Authorship:** Drafted with AI assistance (GitHub Copilot, multi-model review) and reviewed by a human maintainer before publication.
+> - **Sources:** Based on public documentation — primarily [docs.github.com](https://docs.github.com), [learn.microsoft.com](https://learn.microsoft.com), and official vendor blogs cited inline.
+> - **Verify before acting:** GitHub and Microsoft update product documentation continuously. Re-confirm against the live source pages before relying on this content for production decisions.
 
 ---
 
@@ -92,7 +95,7 @@ The following assets **remain in Azure DevOps** and are NOT migrated:
 
 | Limit | Value |
 |-------|-------|
-| Maximum Git repository size | 40 GiB (source code only) |
+| Maximum Git repository size | 40 GiB (source code only, public preview) |
 | Maximum file size during migration | 400 MiB |
 
 ### Additional Limitations
@@ -137,7 +140,7 @@ The following assets **remain in Azure DevOps** and are NOT migrated:
 | Identity (Read) | ✅ Yes |
 | Build (Read) | Only for `--rewire-pipelines` flag |
 
-**Note:** For `inventory-report` and `integrate-boards` flags, grant full access to the PAT.
+**Note:** We recommend that you grant full access so you can use the `inventory-report` flag.
 
 ### The Migrator Role
 

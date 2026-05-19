@@ -13,6 +13,13 @@ ms.topic: overview
 
 > For a concise 2-page overview suitable for executive stakeholders, see [Executive Summary](20-ai-sdlc-executive-summary.md).
 
+> **Document status**
+>
+> - **Last reviewed:** 2026-05-19
+> - **Authorship:** Drafted with AI assistance (GitHub Copilot, multi-model review) and reviewed by a human maintainer before publication.
+> - **Sources:** Based on public documentation — primarily [docs.github.com](https://docs.github.com), [learn.microsoft.com](https://learn.microsoft.com), and official vendor blogs cited inline.
+> - **Verify before acting:** GitHub and Microsoft update product documentation continuously. Re-confirm against the live source pages before relying on this content for production decisions.
+
 ---
 
 ## Table of Contents
@@ -40,7 +47,7 @@ ms.topic: overview
 
 ## 1. Executive Summary
 
-We will stand up a **central AI SDLC Platform Team** that productizes an **"Agent Factory"** - a governed catalog of AI agents (GitHub Copilot coding agent, custom agents, MCP servers, skills, prompts) embedded into every stage of the SDLC. Consuming dev teams adopt these agents via **golden paths** on our Internal Developer Platform (IDP). All usage is policy-gated, observable, and measured against DORA (DevOps Research & Assessment) / SPACE (Satisfaction and well-being, Performance, Activity, Communication and collaboration, Efficiency and flow) + AI-specific KPIs.
+We will stand up a **central AI SDLC Platform Team** that productizes an **"Agent Factory"** - a governed catalog of AI agents (GitHub Copilot cloud agent, custom agents, MCP servers, skills, prompts) embedded into every stage of the SDLC. Consuming dev teams adopt these agents via **golden paths** on our Internal Developer Platform (IDP). All usage is policy-gated, observable, and measured against DORA (DevOps Research & Assessment) / SPACE (Satisfaction and well-being, Performance, Activity, Communication and collaboration, Efficiency and flow) + AI-specific KPIs.
 
 **North-star outcomes (12-18 months):**
 
@@ -60,7 +67,7 @@ We will stand up a **central AI SDLC Platform Team** that productizes an **"Agen
 | Acronyms (first-use inventory) | GHAS (GitHub Advanced Security), SSO (Single Sign-On), SCIM (System for Cross-domain Identity Mgmt), DLP (Data Loss Prevention), SAST (Static App Security Testing), SCA (Software Composition Analysis), HITL (Human-in-the-Loop), SBOM (Software Bill of Materials), AUP (Acceptable Use Policy), PRD (Product Requirements Doc), ADR (Architecture Decision Record), OPA (Open Policy Agent), APM (Agent Package Manager), RPI (Research/Plan/Implement/Review), MCP (Model Context Protocol), A2A (Agent-to-Agent), DPIA (Data Protection Impact Assessment) | Expansion table referenced throughout |
 | Dev productivity | **DORA**, **SPACE**, **DevEx** | Baseline + impact measurement |
 | Platform Eng. | Team Topologies, CNCF Platform WG | Platform-as-a-product operating model |
-| GitHub stack | Copilot Enterprise, Coding Agent, Custom Agents, `AGENTS.md`, MCP, spec-kit, GHAS, Advanced Security, Actions, Audit Log, Copilot Metrics API | Core tooling |
+| GitHub stack | Copilot Enterprise, Cloud agent, Custom Agents, `AGENTS.md`, MCP, spec-kit, GHAS, Advanced Security, Actions, Audit Log, Copilot Metrics API | Core tooling |
 | Responsible AI | Microsoft RAI Standard, Google SAIF | Ethics, fairness, transparency controls |
 
 ---
@@ -96,7 +103,7 @@ We organize the platform as **three independent planes**, following the control-
 | Plane | Responsibility | Owner team | Key components in our stack | Primary authorization surface |
 |---|---|---|---|---|
 | **Control plane** | *Rules, registries, and governance decisions.* Decides **who** may run **what**, with which limits, and captures every decision. No application data flows through here. | AI Governance Board + Platform (Governance pod) | Agent catalog * Policy-as-code (OPA/Rego) * Identity (Entra/SSO, SCIM) * Approvals workflow * Eval registry * Model allowlist * Secrets broker * Kill switches * Audit log streaming * Foundry Control Plane (cross-project fleet view) | Azure RBAC `actions`, GitHub Enterprise policies, OPA decisions |
-| **Agent plane** | *Runtime execution of agents* - the reasoning loop, tool calls, orchestration, A2A handoffs. Inherits policy from the control plane; never re-implements it. | Platform (Agent Engineering pod) | GitHub Copilot coding agent (cloud, ephemeral runners) * Azure AI Foundry Agent Service (managed runtime) * Microsoft Agent Framework (code-first orchestration, successor to Semantic Kernel + AutoGen) * Custom agents (APM, Squad) * Agent identity (Microsoft Entra Agent Identity) | Azure RBAC `dataActions` * GitHub App tokens * Foundry agent identity |
+| **Agent plane** | *Runtime execution of agents* - the reasoning loop, tool calls, orchestration, A2A handoffs. Inherits policy from the control plane; never re-implements it. | Platform (Agent Engineering pod) | GitHub Copilot cloud agent (cloud, ephemeral runners) * Azure AI Foundry Agent Service (managed runtime) * Microsoft Agent Framework (code-first orchestration, successor to Semantic Kernel + AutoGen) * Custom agents (APM, Squad) * Agent identity (Microsoft Entra Agent Identity) | Azure RBAC `dataActions` * GitHub App tokens * Foundry agent identity |
 | **Data/tool plane** | *The things agents touch* - read/write tools, knowledge, telemetry. Lives close to the data it serves. | Product squads + Platform (Data/Tools pod) | MCP servers (internal APIs, Jira/ADO, K8s, Splunk, ServiceNow) * A2A endpoints (agent interop) * Repos & CI/CD * Vector / knowledge indexes (tenant-isolated) * Telemetry sinks (OpenTelemetry GenAI) * Eval harnesses * RAG datastores | MCP tool-call allowlists * least-privilege tokens * ruleset-protected config files |
 
 **Why the separation matters at 1,000 devs:**
@@ -123,7 +130,7 @@ We organize the platform as **three independent planes**, following the control-
  | policy decisions + identity tokens
  +=======================+========================+
  | AGENT PLANE (runtime) | <- reasoning loops
- | Copilot coding agent * Copilot chat/edit |
+ | Copilot cloud agent * Copilot chat/edit |
  | Foundry Agent Service * MS Agent Framework |
  | Custom agents (APM/Squad) * A2A interop |
  +=======================+========================+
@@ -158,7 +165,7 @@ Cross-cutting (instrument all three planes):
 
 ### 4.4 Surfaces & tool integrations
 
-Developer-facing surfaces (IDE / GitHub.com / Chat / CLI) invoke agents in the **agent plane** via GitHub Copilot and Foundry SDKs. All invocations are identity-bound (Microsoft Entra Agent Identity for Foundry agents; GitHub App tokens for Copilot coding agent) and policy-gated by the **control plane** before any **data/tool plane** resource is touched.
+Developer-facing surfaces (IDE / GitHub.com / Chat / CLI) invoke agents in the **agent plane** via GitHub Copilot and Foundry SDKs. All invocations are identity-bound (Microsoft Entra Agent Identity for Foundry agents; GitHub App tokens for Copilot cloud agent) and policy-gated by the **control plane** before any **data/tool plane** resource is touched.
 
 ---
 
@@ -171,7 +178,7 @@ Each agent is published as a versioned product in the internal catalog with an `
 | 1 | **Product/Spec Agent** | Ideate | Phase 2 | Turn PRDs -> specs, user stories, acceptance criteria (spec-kit) | Jira/ADO, Confluence |
 | 2 | **Architect Agent** | Design | Phase 2 | ADRs, C4 diagrams, tech option analysis, threat-model drafts | Backstage, Miro |
 | 3 | **Scaffolder Agent** | Design->Build | Phase 2 | Golden-path scaffolds (service, lib, IaC) | Backstage templates, Cookiecutter |
-| 4 | **Coder Agent** (Copilot Coding Agent) | Build | **Phase 1** | Implements issues -> PRs autonomously | GitHub Issues/PRs |
+| 4 | **Coder Agent** (Copilot cloud agent) | Build | **Phase 1** | Implements issues -> PRs autonomously | GitHub Issues/PRs |
 | 5 | **Test Agent** | Test | **Phase 1** | Unit/integration/contract/e2e generation, coverage gap fixer | Playwright, Pact, JUnit |
 | 6 | **Reviewer Agent** | Review | **Phase 1** | PR review, style, logic, security hints (non-blocking suggestions + blocking checks) | GitHub PR API |
 | 7 | **Security Agent** | Review/Deploy | Phase 2 | SAST/SCA triage, secret-scan triage, LLM-specific risks (OWASP LLM) | GHAS, CodeQL, Dependabot |
@@ -491,7 +498,7 @@ All metrics land in a central **AI SDLC data warehouse** with Looker/Power BI da
 ### Phase 3 - Scale (12-20 weeks, all ~1,000 devs)
 
 * Add SRE/Incident, FinOps, Migration, Knowledge, Data/ML agents (#11-15)
-* Enable Coding Agent for autonomous issue->PR on approved repos
+* Enable Cloud agent for autonomous issue->PR on approved repos
 * T3/T4 workflows with HITL gates live
 * Quarterly governance reviews; cost optimization pass
 
@@ -590,6 +597,8 @@ observability: {logs: true, traces: true, prompts: redacted}
 sla: {p95_latency_s: 120, availability: 99.5}
 ```
 
+> **Note:** The model version strings shown are illustrative of the naming pattern. Resolve actual available versions from the Copilot model picker or the API at the time of catalog authoring.
+
 ### B. Suggested repo layout
 ```
 ai-sdlc/
@@ -607,7 +616,7 @@ ai-sdlc/
 - NIST AI RMF 1.0 * ISO/IEC 42001 * EU AI Act
 - OWASP Top 10 for LLM Applications * MITRE ATLAS
 - DORA 2024 Report * SPACE framework * DevEx (Noda/Forsgren/Storey)
-- GitHub Copilot Enterprise & Coding Agent docs * `AGENTS.md` / spec-kit
+- GitHub Copilot Enterprise & Cloud agent docs * `AGENTS.md` / spec-kit
 - CNCF Platform Engineering WG whitepaper * Team Topologies
 
 ---
@@ -666,8 +675,8 @@ Every claim in this plan is traceable to a primary source. Sources were retrieve
 #### S8 - *Agentic DevOps - Reimagining every phase of the developer lifecycle*
 - **URL:** https://developer.microsoft.com/blog/reimagining-every-phase-of-the-developer-lifecycle
 - **Announced at:** Microsoft Build 2025 keynote
-- **What we used:** Microsoft's canonical phase model - (1) Ideation with Copilot on GitHub.com (PRD -> prototype), (2) Copilot coding agent assigned issues via drafts/PRs, (3) Design-to-code via Figma MCP, (4) E2E testing via Playwright MCP, (5) Monitoring + Azure SRE Agent, (6) App modernization (Copilot upgrade for .NET/Java). Octopets demo app used as reference narrative.
-- **Named products adopted in our architecture:** GitHub Copilot (web), Copilot coding agent, Copilot agent mode (VS Code/Visual Studio/Xcode/Eclipse/JetBrains), MCP servers, Azure SRE Agent, Copilot app modernization.
+- **What we used:** Microsoft's canonical phase model - (1) Ideation with Copilot on GitHub.com (PRD -> prototype), (2) Copilot cloud agent assigned issues via drafts/PRs, (3) Design-to-code via Figma MCP, (4) E2E testing via Playwright MCP, (5) Monitoring + Azure SRE Agent, (6) App modernization (Copilot upgrade for .NET/Java). Octopets demo app used as reference narrative.
+- **Named products adopted in our architecture:** GitHub Copilot (web), Copilot cloud agent, Copilot agent mode (VS Code/Visual Studio/Xcode/Eclipse/JetBrains), MCP servers, Azure SRE Agent, Copilot app modernization.
 
 #### S9 - GitHub Blog, *How Copilot helps build the GitHub platform*
 - **URL:** https://github.blog/ai-and-ml/github-copilot/how-copilot-helps-build-the-github-platform/
@@ -791,7 +800,6 @@ This plan was independently validated by four LLMs in parallel - **Claude Opus 4
 - Per-phase **Gate Cards** with numeric thresholds + named rollback conditions.
 
 ### 17.4 Mechanical / hygiene (Haiku) - v2 cleanup
-- Standardize **"Coder Agent (Copilot Coding Agent)"** naming throughout; remove "Coding Agent" bare form after section 5.
 - Reconcile section 5B.3 (GitHub-native `.github/` pattern) with section 15B (`ai-sdlc/` monorepo layout) - document the dual pattern explicitly (centralized platform repo vs. distributed per-team repos + central registry).
 - Add a **<=300-line cap** for `AGENTS.md` / `CLAUDE.md` / `GEMINI.md` in section 5B.3 to make "thin harness" enforceable.
 - Tie **section 11 Maturity Model levels to numeric KPIs** (adoption %, eval pass rate, P1 count, DORA deltas).
@@ -871,7 +879,7 @@ Re-run the four-model validation process if **any** of the following occur:
 - A source in section 16.1 publishes a new version or a material breaking change (watch: WellArchitected REC numbering, Microsoft Foundry Control Plane GA, OWASP LLM Top 10 next edition, NIST AI RMF updates, EU AI Act secondary legislation).
 - A **new regulatory framework** lands in your jurisdiction (EU AI Act GPAI code of practice, US executive orders on AI, sector-specific rules for FSI/healthcare/public sector).
 - Any section 17.2 blocking gap (B1-B10) is resolved - update section 17 and this stamp.
-- The **Microsoft Agent Framework**, **Foundry Agent Service**, or **GitHub Copilot coding agent** ships a capability that changes the agent-plane design (e.g., native A2A, new policy engine, new identity model).
+- The **Microsoft Agent Framework**, **Foundry Agent Service**, or **GitHub Copilot cloud agent** ships a capability that changes the agent-plane design (e.g., native A2A, new policy engine, new identity model).
 - 6-month scheduled refresh reaches due date (**Oct 22, 2026**).
 
 ### 18.5 Change log

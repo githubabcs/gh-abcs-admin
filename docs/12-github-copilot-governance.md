@@ -2,7 +2,12 @@
 
 This document provides comprehensive guidance for configuring GitHub Copilot policies, settings, and best practices for enterprise deployments. Following these recommendations will help establish secure and effective AI-assisted development practices following the principle of "security by default."
 
-> **Last Updated:** January 18, 2026
+> **Document status**
+>
+> - **Last reviewed:** 2026-05-19
+> - **Authorship:** Drafted with AI assistance (GitHub Copilot, multi-model review) and reviewed by a human maintainer before publication.
+> - **Sources:** Based on public documentation — primarily [docs.github.com](https://docs.github.com), [learn.microsoft.com](https://learn.microsoft.com), and official vendor blogs cited inline.
+> - **Verify before acting:** GitHub and Microsoft update product documentation continuously. Re-confirm against the live source pages before relying on this content for production decisions.
 
 ---
 
@@ -18,7 +23,7 @@ This document provides comprehensive guidance for configuring GitHub Copilot pol
 8. [License Management](#license-management)
 9. [Driving Enterprise Adoption](#driving-enterprise-adoption)
 10. [Best Practices for Using Copilot](#best-practices-for-using-copilot)
-11. [Copilot Coding Agent Governance](#copilot-coding-agent-governance)
+11. [Copilot cloud agent governance](#copilot-cloud-agent-governance)
 12. [Audit and Compliance](#audit-and-compliance)
 13. [Troubleshooting](#troubleshooting)
 14. [References](#references)
@@ -45,11 +50,11 @@ GitHub offers multiple Copilot subscription plans tailored for different organiz
 |---------|------------------|-------------------|
 | **Target Audience** | Organizations requiring centralized management | Large enterprises needing advanced features |
 | **Code Completions** | Unlimited | Unlimited |
-| **Chat Capabilities** | IDE and CLI | IDE, CLI, and GitHub.com |
+| **Chat Capabilities** | IDE, CLI, and GitHub.com | IDE, CLI, and GitHub.com |
 | **Model Selection** | Standard models | Premium and advanced models |
 | **Copilot Code Review** | ✓ | ✓ |
-| **Copilot Coding Agent** | ✓ | ✓ |
-| **Knowledge Bases** | ✗ | ✓ |
+| **Copilot cloud agent** | ✓ | ✓ |
+| **Copilot Spaces** | ✓ | ✓ |
 | **Custom Instructions** | Organization-level | Enterprise-wide |
 | **Admin Controls** | Organization policies | Enterprise policies + audit logs |
 | **Content Exclusions** | ✓ | ✓ |
@@ -124,7 +129,7 @@ GitHub Copilot policies are organized into three categories:
 - Copilot Chat in GitHub Mobile
 - Copilot CLI
 - Copilot code review
-- Copilot coding agent
+- Copilot cloud agent
 - Agent mode in IDE
 - MCP servers support
 
@@ -187,7 +192,7 @@ For enterprise deployments following security-by-default principles, the followi
 | Copilot Chat in GitHub.com | **Enabled** | Enables web-based chat for GitHub workflows | [Managing Copilot policies](https://docs.github.com/en/enterprise-cloud@latest/copilot/managing-copilot/managing-copilot-for-your-enterprise/managing-policies-and-features-for-copilot-in-your-enterprise) |
 | Copilot CLI | **Enabled** | Useful for command-line workflows | [GitHub Copilot policies](https://docs.github.com/en/enterprise-cloud@latest/copilot/concepts/policies) |
 | Copilot code review | **Enabled** | Improves code quality and security | [GitHub Copilot policies](https://docs.github.com/en/enterprise-cloud@latest/copilot/concepts/policies) |
-| Copilot coding agent | **Disabled** or **No Policy** | Requires careful evaluation; allows autonomous code changes | [About coding agent](https://docs.github.com/en/copilot/concepts/agents/coding-agent/about-coding-agent) |
+| Copilot cloud agent | **Disabled** or **No Policy** | Requires careful evaluation; allows autonomous code changes | [About Copilot cloud agent](https://docs.github.com/en/copilot/concepts/agents/coding-agent/about-coding-agent) |
 | Agent mode in IDE | **No Policy** | Let organizations decide based on security posture | [GitHub Copilot policies](https://docs.github.com/en/enterprise-cloud@latest/copilot/concepts/policies) |
 | MCP servers | **Disabled** | External integrations require security review | [MCP documentation](https://docs.github.com/en/copilot/concepts/mcp) |
 
@@ -204,7 +209,7 @@ For enterprise deployments following security-by-default principles, the followi
 
 | Policy | Security-by-Default Setting | Rationale | Reference |
 |--------|----------------------------|-----------|----------|
-| Default model | **GPT-4o** or latest stable | Use stable, well-tested models | [GitHub Copilot policies](https://docs.github.com/en/enterprise-cloud@latest/copilot/concepts/policies) |
+| Default model | Included models on paid plans: **GPT-5 mini, GPT-4.1, GPT-4o** (zero premium-request cost). GPT-5 and Claude Sonnet 4.5 available via premium request quota. | Use stable, well-tested models | [GitHub Copilot policies](https://docs.github.com/en/enterprise-cloud@latest/copilot/concepts/policies) |
 | Premium models | **No Policy** | Let organizations decide based on cost/benefit | [GitHub Copilot policies](https://docs.github.com/en/enterprise-cloud@latest/copilot/concepts/policies) |
 
 ### Configuring Policies Step-by-Step
@@ -284,10 +289,10 @@ When content is excluded:
 
 **Important Limitations**: Content exclusions do not currently apply to:
 - GitHub Copilot CLI
-- Copilot coding agent
+- Copilot cloud agent
 - Agent mode in Copilot Chat
 
-> **⚠️ Security Warning**: Because content exclusions do not apply to Copilot coding agent and Agent mode, organizations with sensitive codebases should carefully evaluate enabling these features. Consider disabling them at the enterprise level if content exclusion is critical for compliance.
+> **⚠️ Security Warning**: Because content exclusions do not apply to Copilot cloud agent and Agent mode, organizations with sensitive codebases should carefully evaluate enabling these features. Consider disabling them at the enterprise level if content exclusion is critical for compliance.
 
 ### Repository-Level Exclusions
 
@@ -763,15 +768,15 @@ Maintain security when using Copilot:
 - Review suggestions for license compatibility
 - Document Copilot-assisted code appropriately
 
-## Copilot Coding Agent Governance
+## Copilot cloud agent governance
 
-### Understanding Copilot Coding Agent
+### Understanding Copilot cloud agent
 
-Copilot coding agent is an autonomous AI capability that can make code changes, create pull requests, and implement features with minimal human intervention. Due to its autonomous nature, it requires careful governance.
+Copilot cloud agent is an autonomous AI capability that can make code changes, create pull requests, and implement features with minimal human intervention. Due to its autonomous nature, it requires careful governance.
 
-> **⚠️ Security Consideration**: Copilot coding agent operates with repository permissions and can create commits, branches, and pull requests. Organizations should carefully evaluate the security implications before enabling.
+> **⚠️ Security Consideration**: Copilot cloud agent operates with repository permissions and can create commits, branches, and pull requests. Organizations should carefully evaluate the security implications before enabling.
 
-### Coding Agent Security Controls
+### Copilot cloud agent security controls
 
 | Control | Recommendation | Rationale |
 |---------|----------------|----------|
@@ -781,17 +786,17 @@ Copilot coding agent is an autonomous AI capability that can make code changes, 
 | **Status Checks** | **Required** | Ensure CI/CD validation of agent changes |
 | **CODEOWNERS** | **Configured** | Domain experts must review changes |
 
-### When to Enable Coding Agent
+### When to enable Copilot cloud agent
 
-Consider enabling Copilot coding agent when:
+Consider enabling Copilot cloud agent when:
 - Strong branch protection and review processes are in place
 - Teams have experience with Copilot and understand its limitations
 - Repositories have comprehensive test coverage
 - Clear guidelines exist for acceptable agent use cases
 
-### When to Keep Coding Agent Disabled
+### When to keep Copilot cloud agent disabled
 
-Keep coding agent disabled when:
+Keep Copilot cloud agent disabled when:
 - Repositories contain highly sensitive or regulated code
 - Content exclusions are critical for compliance
 - Teams lack experience with Copilot
@@ -808,12 +813,12 @@ GitHub Enterprise Cloud provides comprehensive audit logging for Copilot activit
 - License assignments and revocations
 - Content exclusion configuration changes
 - Feature enablement/disablement
-- Coding agent activity and PR creation
+- Copilot cloud agent activity and PR creation
 
 **Accessing Audit Logs**:
 1. Navigate to enterprise settings
 2. Click **Audit log** in the sidebar
-3. Filter for Copilot-related events using `action:copilot*`
+3. Filter for Copilot-related events using `action:copilot`
 
 ### Compliance Considerations
 
@@ -875,7 +880,7 @@ GitHub provides guidance on responsible use of Copilot features:
 |----------|-----------------|-------------|
 | **Critical** | Privacy Policies | Block suggestions matching public code, block prompt/suggestion collection |
 | **Critical** | Content Exclusions | Configure enterprise-wide exclusions for secrets, credentials, PII, and regulated data |
-| **Critical** | Coding Agent | Disable or require org evaluation; ensure branch protection for agent PRs |
+| **Critical** | Copilot cloud agent | Disable or require org evaluation; ensure branch protection for agent PRs |
 | **High** | Feature Policies | Enable core features (IDE, Chat, Code Review); carefully evaluate autonomous features |
 | **High** | Network Security | Configure firewall allowlist, SSL certificates for corporate proxies |
 | **High** | License Governance | Implement approval workflows, monitor usage, reclaim inactive licenses |
@@ -958,14 +963,6 @@ This document is part of the GitHub Enterprise Cloud Administration series:
 - [GitHub Blog - Copilot Changelog](https://github.blog/changelog/label/copilot/)
 - [Training and Onboarding Developers on GitHub Copilot Whitepaper](https://github.com/resources/whitepapers/training-and-onboarding-developers-on-github-copilot)
 - [Copilot Survey Engine](https://github.com/github/copilot-survey-engine)
-
----
-
-## Version History
-
-| Version | Date | Changes |
-|---------|------|--------|
-| 1.0 | January 2026 | Initial document creation |
 
 ---
 

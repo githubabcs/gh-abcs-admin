@@ -4,7 +4,13 @@ This document describes how to attribute and charge back all GitHub Enterprise C
 
 The design is grounded in the GitHub-native **Cost Centers** capability on the enhanced billing platform and is tuned for the constraints captured during requirements gathering: an EMU enterprise, a single monolithic organization, IdP-managed group membership, repository custom properties, and the goal of **true chargeback** to per-LOB Azure subscriptions.
 
-> **Last Updated:** May 14, 2026
+> **Document status**
+>
+> - **Last reviewed:** 2026-05-19
+> - **Authorship:** Drafted with AI assistance (GitHub Copilot, multi-model review) and reviewed by a human maintainer before publication.
+> - **Sources:** Based on public documentation — primarily [docs.github.com](https://docs.github.com), [learn.microsoft.com](https://learn.microsoft.com), and official vendor blogs cited inline.
+> - **Verify before acting:** GitHub and Microsoft update product documentation continuously. Re-confirm against the live source pages before relying on this content for production decisions.
+
 > **Owner:** Platform / GitHub Admin team
 > **Status:** Design — pending stakeholder review
 
@@ -140,8 +146,7 @@ flowchart LR
 
 The design assumes the following confirmed inputs:
 
-> [!NOTE]
-> These are **prerequisites this design depends on**, not universal requirements of GitHub or Azure. They were confirmed during requirements gathering. If any change — different IdP, multiple Entra tenants, classic PATs banned by security policy, no per-LOB Azure subscription, multi-currency billing, no change-management system — the corresponding section of the design must be revisited before implementation.
+> **Note:** These are **prerequisites this design depends on**, not universal requirements of GitHub or Azure. They were confirmed during requirements gathering. If any change — different IdP, multiple Entra tenants, classic PATs banned by security policy, no per-LOB Azure subscription, multi-currency billing, no change-management system — the corresponding section of the design must be revisited before implementation.
 
 | Area | Assumption |
 |---|---|
@@ -157,8 +162,7 @@ The design assumes the following confirmed inputs:
 | Products in scope | GitHub Enterprise seats, Copilot seats, Copilot premium requests, Actions hosted minutes, self-hosted runner infra, Git LFS, GitHub Advanced Security (Code Security, Secret Protection) |
 | Admin authority | A central platform team owns the enterprise, billing, and the chargeback automation |
 
-> [!IMPORTANT]
-> Cost Centers apply only to **metered usage** under the enhanced billing platform. Volume or pre-paid subscription billing is not affected. Confirm the enterprise has fully transitioned before relying on this design.
+> **Important:** Cost Centers apply only to **metered usage** under the enhanced billing platform. Volume or pre-paid subscription billing is not affected. Confirm the enterprise has fully transitioned before relying on this design.
 
 ## GitHub Cost Centers — Capability Summary
 
@@ -172,11 +176,9 @@ Each cost center can optionally be linked to a distinct **Azure subscription** f
 
 Cost centers are managed in the GitHub UI under **Enterprise → Billing & Licensing → Cost centers**, and through REST endpoints under `/enterprises/{enterprise}/settings/billing/cost-centers`. Once a resource is assigned, future usage attributes to the cost center; past usage is **not** retroactively re-allocated.
 
-> [!IMPORTANT]
-> **GitHub teams are not a cost center resource type.** Only users, organizations, and repositories can be attached. To allocate by team, the automation must expand each team to its user members and attach the users individually. The [github/cost-center-automation](https://github.com/github/cost-center-automation) tool's Teams Mode performs this expansion for you.
+> **Important:** **GitHub teams are not a cost center resource type.** Only users, organizations, and repositories can be attached. To allocate by team, the automation must expand each team to its user members and attach the users individually. The [github/cost-center-automation](https://github.com/github/cost-center-automation) tool's Teams Mode performs this expansion for you.
 
-> [!NOTE]
-> Outside collaborators and other unaffiliated users can be added to a cost center **only via the API**, not the UI. Pure-EMU enterprises do not have outside collaborators, so this is rarely relevant here, but worth noting if any partner identities exist.
+> **Note:** Outside collaborators and other unaffiliated users can be added to a cost center **only via the API**, not the UI. Pure-EMU enterprises do not have outside collaborators, so this is rarely relevant here, but worth noting if any partner identities exist.
 
 ## Documented Limits
 
@@ -191,6 +193,8 @@ These are the published platform limits as of May 2026; verify against the [Cost
 | Detailed usage report (UI) | Max 31-day window per request | Multi-month history must be persisted to a warehouse. Detailed reports are not available via REST. See [Long-Term Warehouse Strategy](#long-term-warehouse-strategy). |
 | Summarized usage report (REST) | Past 24 months accessible | The system of record for periods older than 24 months must live in your warehouse. |
 | Premium request usage report | Begins October 1, 2025 | No premium request data exists for periods earlier than this date. |
+
+> **Note:** Dedicated SKU-level tracking for Spark and Copilot cloud agent premium requests began on **November 1, 2025**, per GitHub billing docs. October 2025 records use a single aggregated premium-request SKU without the Copilot cloud agent / Spark sub-SKU breakdown.
 
 ## Allocation Rules per Product
 
@@ -213,8 +217,7 @@ This is the most important table in the design. Two assignment levers — *user*
 
 **Key implication:** every LOB needs both *its users* and *its repositories* assigned to its cost center. Assigning only one or the other will leave a category of cost falling through to "Enterprise Only" (unallocated) on the report.
 
-> [!NOTE]
-> When a user is directly assigned to a cost center, that takes priority over indirect assignment via organization membership. Use direct user assignment as the rule, not the exception, for license-based products.
+> **Note:** When a user is directly assigned to a cost center, that takes priority over indirect assignment via organization membership. Use direct user assignment as the rule, not the exception, for license-based products.
 
 ### Allocation edge cases
 
@@ -320,16 +323,13 @@ Consistent slugs are critical because the same LOB identifier is used in IdP gro
 | Pending onboarding cost center | `98 - Pending Onboarding` | (literal) |
 | Attribution defect cost center | `99 - Attribution Defect` | (literal) |
 
-> [!TIP]
-> If finance maintains stable LOB codes (for example, `LOB-042`), include the code in the cost center display name: `LOB-042 - Retail Banking`. Stable codes survive display-name renames and make finance reconciliation deterministic. Add the same code as a column in `config/lobs.yaml`.
+> **Tip:** If finance maintains stable LOB codes (for example, `LOB-042`), include the code in the cost center display name: `LOB-042 - Retail Banking`. Stable codes survive display-name renames and make finance reconciliation deterministic. Add the same code as a column in `config/lobs.yaml`.
 
 Maintain a single source-of-truth file — `config/lobs.yaml` in the **internal thin-wrapper repo** (not in upstream `github/cost-center-automation`, which has its own `config/config.yaml` for tool runtime settings) — listing every LOB with its slug, display name, finance code, IdP group, owner email, and budget defaults. The wrapper reads this file to derive the team mappings, repository custom-property mappings, and budget definitions that it then feeds into the upstream tool.
 
-> [!IMPORTANT]
-> **Azure subscription IDs are deliberately not stored in `lobs.yaml`.** The Azure-to-cost-center binding is a UI-only operation in GitHub, so a Git copy can never be automatically reconciled with the live state and would drift silently. The binding is governed instead by an Azure subscription tagging convention plus a monthly audit query (see [True Chargeback via Azure Subscription Linkage](#true-chargeback-via-azure-subscription-linkage)).
+> **Important:** **Azure subscription IDs are deliberately not stored in `lobs.yaml`.** The Azure-to-cost-center binding is a UI-only operation in GitHub, so a Git copy can never be automatically reconciled with the live state and would drift silently. The binding is governed instead by an Azure subscription tagging convention plus a monthly audit query (see [True Chargeback via Azure Subscription Linkage](#true-chargeback-via-azure-subscription-linkage)).
 
-> [!NOTE]
-> Two distinct config files exist and they are not interchangeable:
+> **Note:** Two distinct config files exist and they are not interchangeable:
 >
 > * **Upstream** `github/cost-center-automation/config/config.yaml` — the tool's own runtime configuration (mode, scope, naming patterns, budget amounts). One file per environment.
 > * **Internal** `<our-wrapper-repo>/config/lobs.yaml` — our LOB registry, owned by the platform team. The wrapper transforms entries here into the upstream tool's `team_mappings` / `repository_config.explicit_mappings` / `budgets.products` structures at run time.
@@ -437,8 +437,7 @@ Each LOB cost center is bound to its LOB's Azure subscription so GitHub usage al
 3. Going forward, GitHub-metered usage attributed to that cost center is invoiced against the LOB's Azure subscription rather than the central enterprise subscription.
 4. License-based products allocated to the cost center (Copilot seats, Enterprise seats, GHAS) bill the same way.
 
-> [!WARNING]
-> The Azure subscription assignment is **UI-only**. The chargeback automation cannot attach or rotate Azure billing identities programmatically. Treat this as a manual gate in the LOB onboarding runbook.
+> **Warning:** The Azure subscription assignment is **UI-only**. The chargeback automation cannot attach or rotate Azure billing identities programmatically. Treat this as a manual gate in the LOB onboarding runbook.
 
 ### Binding governance — how the link is kept correct without storing IDs in Git
 
@@ -501,11 +500,9 @@ The pool is a single Azure resource serving many LOBs, so direct tagging cannot 
 3. Join on the LOB slug; produce a single row per LOB per month with both columns: `github_invoiced_cost` and `self_hosted_runner_cost`.
 4. Surface both in the chargeback report and ledger feed.
 
-> [!TIP]
-> Where workflows mix hosted and self-hosted runners, allow LOBs to see both numbers in the same report. This is the most-asked-for capability from finance and engineering leads when chargeback launches.
+> **Tip:** Where workflows mix hosted and self-hosted runners, allow LOBs to see both numbers in the same report. This is the most-asked-for capability from finance and engineering leads when chargeback launches.
 
-> [!NOTE]
-> GitHub does not currently bill for self-hosted runner minutes; only Actions storage (artifacts and logs) is metered. A previously announced per-minute fee for self-hosted runners has been deferred and has no published GA date as of the report date. If GitHub introduces a meter, it will surface in the GitHub usage report keyed by org/repo and will flow through the existing cost center allocation without code changes.
+> **Note:** GitHub does not currently bill for self-hosted runner minutes; only Actions storage (artifacts and logs) is metered. A previously announced per-minute fee for self-hosted runners has been deferred and has no published GA date as of the report date. If GitHub introduces a meter, it will surface in the GitHub usage report keyed by org/repo and will flow through the existing cost center allocation without code changes.
 
 ## Reporting, Retention, and Invoice Reconciliation
 
@@ -518,8 +515,7 @@ The pool is a single Azure resource serving many LOBs, so direct tagging cannot 
 | Premium request usage (`/premium_request/usage`) | Yes | Per user, per model, per day | 24 months via API; data starts October 1, 2025 |
 | **Detailed usage report** (with `username` and `workflow_path`) | **No** | Per resource per day with user and workflow detail | Max 31-day window per request, **UI download only**, **emailed as CSV**, one report per account at a time |
 
-> [!WARNING]
-> The detailed usage report — the one that includes `username` and `workflow_path` — is **not exposed by the REST API**. It must be requested in the GitHub web UI and is delivered by email. **This design does not consume the detailed report in the automated pipeline** — see [Chargeback granularity — design decision](#chargeback-granularity--design-decision). The detailed report remains available in the UI for ad-hoc finance investigations only.
+> **Warning:** The detailed usage report — the one that includes `username` and `workflow_path` — is **not exposed by the REST API**. It must be requested in the GitHub web UI and is delivered by email. **This design does not consume the detailed report in the automated pipeline** — see [Chargeback granularity — design decision](#chargeback-granularity--design-decision). The detailed report remains available in the UI for ad-hoc finance investigations only.
 
 ### Cost summary surfaces — where to look
 
@@ -536,8 +532,7 @@ The chargeback pipeline is the system of record, but day-to-day cost questions a
 | Did an LOB cross its budget? | **Budgets** → filter by cost center | Current consumption against each defined budget threshold (50 / 75 / 90 / 100 percent) | REST `/enterprises/{enterprise}/settings/billing/budgets` (preview) |
 | Has a cost center binding changed mid-period? | **Cost centers** → \[name\] → History | Member, repo, sub-attach, and detach events with timestamp and actor | Feeds the Section 9 audit query |
 
-> [!IMPORTANT]
-> The **Detailed** report is the only first-party surface that breaks cost down to the individual user. It is **UI-only**, **email-delivered**, **31-day max window**, and **one report per account at a time**. Requests for per-user cost should be triaged by the platform team rather than self-served by every LOB cost owner — both for access control and to avoid stepping on each other's outstanding requests.
+> **Important:** The **Detailed** report is the only first-party surface that breaks cost down to the individual user. It is **UI-only**, **email-delivered**, **31-day max window**, and **one report per account at a time**. Requests for per-user cost should be triaged by the platform team rather than self-served by every LOB cost owner — both for access control and to avoid stepping on each other's outstanding requests.
 
 ### Per-user cost — how this design exposes it
 
@@ -598,8 +593,7 @@ The monthly report is the artifact finance consumes. Lock the schema early and v
 | `self_hosted_runner_cost_usd` | Azure Cost Mgmt | Only on rows where applicable |
 | `notes` | Calculated | Reconciliation flags, for example `RECONCILED`, `MISSING_LOB`, `REASSIGNED_MID_MONTH` |
 
-> [!NOTE]
-> The `username` and `workflow_path` columns from the detailed report are intentionally not in the contract. See [Chargeback granularity — design decision](#chargeback-granularity--design-decision).
+> **Note:** The `username` and `workflow_path` columns from the detailed report are intentionally not in the contract. See [Chargeback granularity — design decision](#chargeback-granularity--design-decision).
 
 ### Per-user premium-request audit table (restricted access)
 
@@ -658,8 +652,7 @@ Four landing-zone options are realistic for this design. The choice is downstrea
 | 3. Power BI direct from CSV exports | Daily exports written to a SharePoint / OneDrive / blob folder, ingested by Power BI dataflows or imported datasets. No lakehouse. | Lowest infra cost; fastest to stand up; finance and platform team can own end-to-end. | Limited multi-year history; no easy join with high-volume Azure cost exports; refresh and dataset size limits in Power BI Pro / Premium. |
 | 4. Existing internal FinOps platform | Push GitHub exports as a new source into whatever the organization already runs (Apptio Cloudability, Vantage, CloudZero, Finout, internal showback). | Reuses existing finance integrations and chargeback workflow; no parallel BI surface to maintain. | Vendor-specific connectors and FOCUS support vary; depends on whether the platform supports cost center as a dimension; some products map GitHub via "Virtual Tags" rather than native cost centers. |
 
-> [!IMPORTANT]
-> The chargeback automation — cost center sync, budget creation, monthly export — is **independent** of the warehouse choice. Land that work first against simple file exports, then route the same exports into whichever option finance ratifies.
+> **Important:** The chargeback automation — cost center sync, budget creation, monthly export — is **independent** of the warehouse choice. Land that work first against simple file exports, then route the same exports into whichever option finance ratifies.
 
 Minimum schema to persist per usage row:
 
@@ -718,8 +711,7 @@ Each budget should:
 
 Set very high enterprise-scope budgets that act as a circuit breaker — they should never trip in normal operation, but they catch a runaway budget misconfiguration in a cost center.
 
-> [!WARNING]
-> Avoid low enterprise-wide budgets that overlap with cost center budgets. Enterprise limits are evaluated independently and a low enterprise budget can stop usage in an LOB that has not yet hit its own cost center budget.
+> **Warning:** Avoid low enterprise-wide budgets that overlap with cost center budgets. Enterprise limits are evaluated independently and a low enterprise budget can stop usage in an LOB that has not yet hit its own cost center budget.
 
 ## Build vs. Buy — Automation
 
@@ -747,8 +739,7 @@ Adopt `github/cost-center-automation` for stages 4a (user sync) and 4b (repo syn
 * Self-hosted runner cost merging
 * Approval workflow before applying changes that affect more than N users or M repos in one run
 
-> [!IMPORTANT]
-> The wrapper **cannot** automate Azure billing identity attachment per cost center. That step is UI-only today and remains a manual gate in the LOB onboarding runbook.
+> **Important:** The wrapper **cannot** automate Azure billing identity attachment per cost center. That step is UI-only today and remains a manual gate in the LOB onboarding runbook.
 
 Document the internal wrapper in this repo. Treat the upstream tool as a managed dependency, pinned to a known release.
 
@@ -764,11 +755,9 @@ Document the internal wrapper in this repo. Treat the upstream tool as a managed
 | Manage budgets | Classic PAT | `manage_billing:enterprise` |
 | Read repository custom properties at scale | Classic PAT or GitHub App | `repo` (read) |
 
-> [!IMPORTANT]
-> Fine-grained PATs are **not supported** for the billing usage and budget endpoints at the time of writing. Use a classic PAT created by an enterprise owner or billing manager service account, stored as a GitHub Actions secret with restricted environment access.
+> **Important:** Fine-grained PATs are **not supported** for the billing usage and budget endpoints at the time of writing. Use a classic PAT created by an enterprise owner or billing manager service account, stored as a GitHub Actions secret with restricted environment access.
 
-> [!CAUTION]
-> **Classic PATs are a security prerequisite, not just an implementation detail.** Many enterprises restrict or ban classic PATs by policy. Before Phase 1, confirm with the security team that:
+> **Caution:** **Classic PATs are a security prerequisite, not just an implementation detail.** Many enterprises restrict or ban classic PATs by policy. Before Phase 1, confirm with the security team that:
 >
 > * Issuing a classic PAT to a designated EMU service account is permitted (or a documented exception is granted).
 > * Compensating controls are in place: PAT scoped to the minimum (`manage_billing:enterprise`, `read:org`, `repo` read), stored as a GitHub Actions environment secret with restricted environment access, every API call audited via the chargeback workflow run ID, and rotation on a published cadence.
@@ -776,8 +765,7 @@ Document the internal wrapper in this repo. Treat the upstream tool as a managed
 >
 > If classic PATs are not permitted and no exception is granted, this design cannot proceed — the upstream `github/cost-center-automation` tool requires this scope today.
 
-> [!NOTE]
-> Cost centers can also be created by **organization owners** for their own org, not only by enterprise owners. In a monolithic-org topology this distinction is moot — the platform team holds both roles — but worth noting if the topology evolves to multi-org or if a sub-org delegation model is introduced later.
+> **Note:** Cost centers can also be created by **organization owners** for their own org, not only by enterprise owners. In a monolithic-org topology this distinction is moot — the platform team holds both roles — but worth noting if the topology evolves to multi-org or if a sub-org delegation model is introduced later.
 
 ### Endpoint inventory
 
@@ -794,8 +782,7 @@ Document the internal wrapper in this repo. Treat the upstream tool as a managed
 | Org teams (members) | GET | `/orgs/{org}/teams/{team_slug}/members` |
 | Repo custom properties | GET | `/orgs/{org}/properties/values` |
 
-> [!NOTE]
-> The Budgets endpoints are in **public preview** and require the API version header `X-GitHub-Api-Version: 2026-03-10`. Pin the version in the automation and review the changelog before upgrading. The version header value should be re-verified against the [github/cost-center-automation](https://github.com/github/cost-center-automation) source code at upgrade time, since the public docs page for the budgets endpoint has been intermittently unavailable.
+> **Note:** The Budgets endpoints are in **public preview** and require the API version header `X-GitHub-Api-Version: 2026-03-10`. Pin the version in the automation and review the changelog before upgrading. The version header value should be re-verified against the [github/cost-center-automation](https://github.com/github/cost-center-automation) source code at upgrade time, since the public docs page for the budgets endpoint has been intermittently unavailable.
 
 ### Service account model
 
@@ -854,8 +841,7 @@ The close is a multi-team workflow. Each step names the responsible role and the
 | 9. Push the per-LOB ledger feed to the finance system | Finance ops | Ledger system write | Idempotent ledger post |
 | 10. Close the snapshot bundle as immutable | Platform team | Warehouse admin | Snapshot frozen, hash recorded |
 
-> [!IMPORTANT]
-> Steps 1–2 and 4–5 require GitHub billing manager / admin rights and cannot be executed by finance ops alone. Steps 6–7 require Azure access on each LOB subscription; if the platform team cannot obtain Cost Management Reader on a given LOB sub, the LOB's Azure subscription owner must export their own Cost Management view for that period and hand it off, otherwise the close is blocked for that LOB until access is granted. The platform team owns the orchestration; finance owns the verification and the ledger push. Document **named role groups** (not individuals) in `config/lobs.yaml` so handoffs survive turnover.
+> **Important:** Steps 1–2 and 4–5 require GitHub billing manager / admin rights and cannot be executed by finance ops alone. Steps 6–7 require Azure access on each LOB subscription; if the platform team cannot obtain Cost Management Reader on a given LOB sub, the LOB's Azure subscription owner must export their own Cost Management view for that period and hand it off, otherwise the close is blocked for that LOB until access is granted. The platform team owns the orchestration; finance owns the verification and the ledger push. Document **named role groups** (not individuals) in `config/lobs.yaml` so handoffs survive turnover.
 
 ### Failure handling and recovery
 
@@ -1040,7 +1026,7 @@ All URLs verified during the research and review cycles for this design (May 202
 
 ### GitHub Copilot and premium requests
 
-* [About billing for GitHub Copilot](https://docs.github.com/en/billing/managing-billing-for-your-products/about-billing-for-github-copilot)
+* [About billing for GitHub Copilot](https://docs.github.com/en/billing/managing-billing-for-github-copilot/about-billing-for-github-copilot)
 * [Premium request behavior, quotas, and multipliers](https://docs.github.com/en/copilot/managing-copilot/monitoring-usage-and-entitlements/about-premium-requests)
 * [Managing Copilot policies for the enterprise](https://docs.github.com/en/enterprise-cloud@latest/copilot/managing-copilot/managing-copilot-for-your-enterprise)
 
@@ -1083,12 +1069,6 @@ All URLs verified during the research and review cycles for this design (May 202
 
 ## Document provenance
 
-> ℹ️ **AI-assisted authoring disclosure**
+> **Source corpus:** Official GitHub documentation, the `github/cost-center-automation` repository, Microsoft Learn (Azure Cost Management, Fabric, FinOps Toolkit), the FinOps Foundation framework, and the FOCUS specification. Multiple AI models cross-checked the design against the live documentation before publication.
 >
-> This document was drafted, fact-checked, and revised with significant generative AI assistance inside Visual Studio Code with GitHub Copilot. A human platform engineer directed the work, supplied the enterprise context, made every architectural trade-off, and reviewed each revision before sharing.
->
-> Source corpus: official GitHub documentation, the `github/cost-center-automation` repository, Microsoft Learn (Azure Cost Management, Fabric, FinOps Toolkit), the FinOps Foundation framework, and the FOCUS specification. Multiple AI models cross-checked the design against the live documentation before publication.
->
-> Document version: **2026-05-14**.
->
-> Re-confirm the live GitHub documentation pages cited above before relying on this design for production rollout — GitHub updates billing and enterprise documentation continuously, and any divergence between this document and the live pages should be resolved in favor of the live pages.
+> **Document version date:** 2026-05-14

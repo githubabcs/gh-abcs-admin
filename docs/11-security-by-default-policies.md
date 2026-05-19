@@ -2,7 +2,12 @@
 
 This document provides comprehensive security policy and settings recommendations for GitHub Enterprise Cloud across three hierarchical levels: **Enterprise**, **Organization**, and **Repository**. Following these recommendations will help establish a strong security posture following the principle of "security by default."
 
-> **Last Updated:** January 20, 2026
+> **Document status**
+>
+> - **Last reviewed:** 2026-05-19
+> - **Authorship:** Drafted with AI assistance (GitHub Copilot, multi-model review) and reviewed by a human maintainer before publication.
+> - **Sources:** Based on public documentation — primarily [docs.github.com](https://docs.github.com), [learn.microsoft.com](https://learn.microsoft.com), and official vendor blogs cited inline.
+> - **Verify before acting:** GitHub and Microsoft update product documentation continuously. Re-confirm against the live source pages before relying on this content for production decisions.
 
 > ⚠️ **Important Compliance Note:** These recommendations are based on official GitHub documentation and the GitHub Well-Architected Framework. Settings may vary based on your enterprise type (EMU vs. standard), compliance requirements, and organizational needs. Always verify current documentation at [docs.github.com](https://docs.github.com) before implementing. Some policies behave differently for Enterprise Managed Users (EMU) enterprises vs. standard enterprises.
 
@@ -53,7 +58,7 @@ Enterprise policies provide the highest level of governance and cascade down to 
 
 | Level | Policy/Setting | Description | Recommended Setting | Reference |
 |-------|---------------|-------------|---------------------|-----------|
-| Enterprise | **GitHub Advanced Security** | Controls availability of GHAS features (GitHub Secret Protection, GitHub Code Security, GitHub Code Quality) | **Enable for all organizations** - Allow organizations to enable advanced security features. **Note:** This policy only impacts repository administrators; organization owners and security managers can always enable security features | [Enforcing policies for code security and analysis](https://docs.github.com/en/enterprise-cloud@latest/admin/enforcing-policies/enforcing-policies-for-your-enterprise/enforcing-policies-for-code-security-and-analysis-for-your-enterprise) |
+| Enterprise | **GitHub Advanced Security** | Controls availability of GHAS features (GitHub Secret Protection, GitHub Code Security, GitHub Code Quality (public preview)). **Note:** GitHub Code Quality is in public preview as of mid-2026; availability and billing may differ from GA products. | **Enable for all organizations** - Allow organizations to enable advanced security features. **Note:** This policy only impacts repository administrators; organization owners and security managers can always enable security features | [Enforcing policies for code security and analysis](https://docs.github.com/en/enterprise-cloud@latest/admin/enforcing-policies/enforcing-policies-for-your-enterprise/enforcing-policies-for-code-security-and-analysis-for-your-enterprise) |
 | Enterprise | **Dependabot Alerts** | Controls who can enable/disable Dependabot alerts | **Allow** - Enable for repository admins to manage Dependabot alerts | [Enforcing a policy to manage the use of Dependabot alerts](https://docs.github.com/en/enterprise-cloud@latest/admin/enforcing-policies/enforcing-policies-for-your-enterprise/enforcing-policies-for-code-security-and-analysis-for-your-enterprise#enforcing-a-policy-to-manage-the-use-of-dependabot-alerts-in-your-enterprise) |
 | Enterprise | **Secret Scanning** | Automatically scans for exposed secrets | **Enable** - Enable secret scanning across all repositories | [About Secret Scanning](https://docs.github.com/en/enterprise-cloud@latest/code-security/secret-scanning/introduction/about-secret-scanning) |
 | Enterprise | **Code Scanning (CodeQL)** | Automated security analysis of code | **Enable** - Enable CodeQL analysis for supported languages | [About code scanning with CodeQL](https://docs.github.com/en/enterprise-cloud@latest/code-security/code-scanning/introduction-to-code-scanning/about-code-scanning-with-codeql) |
@@ -157,7 +162,7 @@ Organization settings provide granular control within the boundaries set by ente
 |-------|---------------|-------------|---------------------|-----------|
 | Organization | **Actions Permissions** | Controls which actions can run | **Restrict** - Allow only explicitly allowlisted actions (do not rely on verified creators) | [Disabling or limiting GitHub Actions](https://docs.github.com/en/enterprise-cloud@latest/organizations/managing-organization-settings/disabling-or-limiting-github-actions-for-your-organization) |
 | Organization | **Runner Groups** | Organizes self-hosted runners | **Configure** - Create runner groups limited to specific repositories | [GitHub Well-Architected - Governance Policies](https://wellarchitected.github.com/library/governance/recommendations/governance-policies-best-practices/) |
-| Organization | **Required Workflows** | Enforces workflows across repositories | **Configure** - Define required security/compliance workflows | [Required workflows](https://docs.github.com/en/enterprise-cloud@latest/actions/using-workflows/required-workflows) |
+| Organization | **Required Workflows** | Enforces workflows across repositories | **Configure** - Define required security/compliance workflows | [Required workflows](https://docs.github.com/en/enterprise-cloud@latest/organizations/managing-organization-settings/disabling-or-limiting-github-actions-for-your-organization) |
 
 ### Webhooks and Integrations
 

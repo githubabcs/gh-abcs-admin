@@ -1,16 +1,27 @@
 # GitHub Copilot — Usage-Based Billing Model & Impact on Existing Business / Enterprise Customers
 
-> **Research date:** 2026-05-05
-> **Last reviewed / re-validated:** 2026-05-14 against [docs.github.com](https://docs.github.com) and the [GitHub Changelog](https://github.blog/changelog/label/copilot/).
-> **Audience:** Decision-makers and admins of organizations already on GitHub Copilot Business or Copilot Enterprise.
-> **Scope:** High-level overview of the **request-based ("premium request")** billing model still in effect through May 31, 2026, **and** the new **GitHub AI Credits** usage-based model that replaces it on **June 1, 2026**.
+> **Document status**
+>
+> - **Last reviewed:** 2026-05-19
+> - **Authorship:** Drafted with AI assistance (GitHub Copilot, multi-model review) and reviewed by a human maintainer before publication.
+> - **Sources:** Based on public documentation — primarily [docs.github.com](https://docs.github.com), [learn.microsoft.com](https://learn.microsoft.com), and official vendor blogs cited inline.
+> - **Verify before acting:** GitHub and Microsoft update product documentation continuously. Re-confirm against the live source pages before relying on this content for production decisions.
 
-> [!IMPORTANT]
-> ## ⚠️ Critical update — billing model changes June 1, 2026
+> **⚠️ Important — Critical update: billing model changes June 1, 2026**
 >
 > Since this document was first written, GitHub announced a **complete replacement** of the premium-request billing model. Starting **June 1, 2026**, Copilot Business and Copilot Enterprise move from per-seat + premium-request allowances to a **token-based metered model** denominated in **GitHub AI Credits** (1 credit = $0.01 USD). See [section 7](#7-new-model-effective-june-1-2026--github-ai-credits) for full details.
 >
 > Sections 1–7 of this document describe the **request-based model** that remains in effect **through May 31, 2026**. Existing customers should read both halves to plan the transition. Source: [Usage-based billing for organizations and enterprises](https://docs.github.com/en/copilot/concepts/billing/usage-based-billing-for-organizations-and-enterprises).
+
+## Table of Contents
+
+- [1. Executive summary](#1-executive-summary)
+- [2. The new billing model in detail](#2-the-new-billing-model-in-detail)
+- [3. Impact on an organization already on Copilot Business or Enterprise](#3-impact-on-an-organization-already-on-copilot-business-or-enterprise)
+- [4. Recommendations for existing Business / Enterprise customers](#4-recommendations-for-existing-business--enterprise-customers)
+- [5. Primary references (all official GitHub documentation)](#5-primary-references-all-official-github-documentation)
+- [6. Provenance & validation history](#6-provenance--validation-history)
+- [7. New model effective June 1, 2026 — GitHub AI Credits](#7-new-model-effective-june-1-2026--github-ai-credits)
 
 ---
 
@@ -181,8 +192,7 @@ Source: [Manage premium requests for your enterprise](https://docs.github.com/en
 
 ## 7. New model effective June 1, 2026 — GitHub AI Credits
 
-> [!IMPORTANT]
-> **Effective June 1, 2026**, GitHub is replacing the premium-request model documented in sections 1–5 with a token-based **GitHub AI Credits** system for Copilot Business and Copilot Enterprise. Existing customers are auto-migrated; no admin action is required to migrate, but **you should re-baseline budgets and policies before that date**.
+> **Important:** **Effective June 1, 2026**, GitHub is replacing the premium-request model documented in sections 1–5 with a token-based **GitHub AI Credits** system for Copilot Business and Copilot Enterprise. Existing customers are auto-migrated; no admin action is required to migrate, but **you should re-baseline budgets and policies before that date**.
 
 ### 7.1 Core concept
 
@@ -240,6 +250,15 @@ For completeness \u2014 individuals also move to AI credits on June 1, 2026 with
 | Copilot Pro+ | $39 | 3,900 | 3,100 | 7,000 |
 | **Copilot Max (NEW)** | $100 | 10,000 | 10,000 | 20,000 |
 
-Copilot Free will continue to include 2,000 code completions per month plus a small AI-credits allowance and auto model selection. Annual Pro / Pro+ subscribers will not auto-renew and have **three options**: (a) cancel and receive a prorated refund, (b) downgrade to Free at renewal, or (c) **convert to monthly billing with prorated credits before expiration**. Subscribers who continue on annual billing under the legacy request-based model will see **model-multiplier increases** on June 1, 2026 — see the official [Model multipliers for annual plans](https://docs.github.com/en/copilot/reference/copilot-billing/model-multipliers-for-annual-plans) table for exact pre/post values. **Subscribers who originally purchased Pro or Pro+ through GitHub Mobile (iOS / Android) cannot purchase additional AI credits.**
+Copilot Free will continue to include 2,000 code completions per month plus a small AI-credits allowance and auto model selection.
+
+Annual Pro / Pro+ subscribers will not auto-renew and have **two options** confirmed by current GitHub documentation:
+
+- **(a)** Cancel and receive a prorated refund.
+- **(b)** Wait to be downgraded to Copilot Free at renewal.
+
+> A previously mentioned third option — converting to monthly billing with prorated credits before expiration — is not present in the current `usage-based-billing-for-individuals` documentation. Verify against the live billing settings UI before communicating to users.
+
+Subscribers who continue on annual billing under the legacy request-based model will see **model-multiplier increases** on June 1, 2026 — see the official [Model multipliers for annual plans](https://docs.github.com/en/copilot/reference/copilot-billing/model-multipliers-for-annual-plans) table for exact pre/post values. **Subscribers who originally purchased Pro or Pro+ through GitHub Mobile (iOS / Android) cannot purchase additional AI credits.**
 
 Source: [Mario Rodriguez — "Copilot is moving to usage-based billing" (GitHub Blog, April 27, 2026)](https://gh.io/copilot-billing-blog), [Usage-based billing for organizations and enterprises](https://docs.github.com/en/copilot/concepts/billing/usage-based-billing-for-organizations-and-enterprises), [Usage-based billing for individuals](https://docs.github.com/en/copilot/concepts/billing/usage-based-billing-for-individuals), [Models and pricing for GitHub Copilot](https://docs.github.com/en/copilot/reference/copilot-billing/models-and-pricing), [Copilot billing preview tool](https://copilot-billing-preview.github.com/).

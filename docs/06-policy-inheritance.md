@@ -1,5 +1,27 @@
 # Policy Enforcement and Inheritance
 
+> **Document status**
+>
+> - **Last reviewed:** 2026-05-19
+> - **Authorship:** Drafted with AI assistance (GitHub Copilot, multi-model review) and reviewed by a human maintainer before publication.
+> - **Sources:** Based on public documentation — primarily [docs.github.com](https://docs.github.com), [learn.microsoft.com](https://learn.microsoft.com), and official vendor blogs cited inline.
+> - **Verify before acting:** GitHub and Microsoft update product documentation continuously. Re-confirm against the live source pages before relying on this content for production decisions.
+
+## Table of Contents
+
+- [Overview](#overview)
+- [Policy Enforcement Model](#policy-enforcement-model)
+- [Enterprise-Level Policies](#enterprise-level-policies)
+- [Organization-Level Policies](#organization-level-policies)
+- [Repository-Level Settings](#repository-level-settings)
+- [Policy Conflict Resolution](#policy-conflict-resolution)
+- [Policy Change Auditing](#policy-change-auditing)
+- [Advanced Policy Patterns](#advanced-policy-patterns)
+- [Key Policy Areas Deep Dive](#key-policy-areas-deep-dive)
+- [Cross-Hierarchy Policy Scenarios](#cross-hierarchy-policy-scenarios)
+- [Related Documentation](#related-documentation)
+- [References](#references)
+
 ## Overview
 
 GitHub Enterprise Cloud implements a hierarchical policy enforcement model that enables enterprise administrators to establish guardrails across the entire enterprise while allowing organizational flexibility where appropriate. This three-tiered enforcement architecture—spanning enterprise, organization, and repository levels—provides the foundation for enterprise governance, security compliance, and operational consistency.
@@ -751,7 +773,7 @@ resource "github_enterprise_policy" "actions_policy" {
     
     allowed_actions_config {
       github_owned_allowed = true
-      verified_allowed = true
+      verified_allowed = false
       patterns_allowed = [
         "actions/checkout@*",
         "actions/setup-node@*",
@@ -938,7 +960,7 @@ Actions Permissions:
 ├── Default workflow permissions: read
 ├── Allow workflows to approve pull requests: disabled
 ├── Fork pull request workflows: require approval for all outside collaborators
-└── Required workflows: enforce security scanning and compliance checks
+└── Required workflows: enforce security scanning and compliance checks via organization rulesets ("Require workflows" rule), which replaces the deprecated standalone Required Workflows feature.
 
 Allowed Actions:
 ├── Allow actions created by GitHub: enabled

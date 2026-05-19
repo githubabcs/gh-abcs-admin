@@ -4,6 +4,13 @@ render_with_liquid: false
 
 # Azure Pipelines with GitHub Repositories: Impact Analysis After Migration
 
+> **Document status**
+>
+> - **Last reviewed:** 2026-05-19
+> - **Authorship:** Drafted with AI assistance (GitHub Copilot, multi-model review) and reviewed by a human maintainer before publication.
+> - **Sources:** Based on public documentation — primarily [docs.github.com](https://docs.github.com), [learn.microsoft.com](https://learn.microsoft.com), and official vendor blogs cited inline.
+> - **Verify before acting:** GitHub and Microsoft update product documentation continuously. Re-confirm against the live source pages before relying on this content for production decisions.
+
 ## Executive Summary
 
 When migrating repositories from Azure DevOps Repos to GitHub while continuing to use Azure Pipelines for CI/CD, organizations face significant challenges related to **cross-repository references**, **pipeline templates**, and **service connections**. This document provides a deep analysis of the impacts, challenges, and solutions for maintaining Azure Pipelines functionality after repository migration.
@@ -220,15 +227,16 @@ steps:
 
 | Connection Type | Use Case | Recommendations |
 |-----------------|----------|-----------------|
-| **GitHub App** | CI/CD pipelines | ✅ **Recommended** - Uses Azure Pipelines identity |
-| **OAuth** | Personal repos | ⚠️ Uses personal GitHub identity |
-| **PAT** | Automation scenarios | ⚠️ Security risk, avoid if possible |
+| **Grant authorization (OAuth, includes Azure Pipelines GitHub App)** | Standard Azure Pipelines GitHub connections | ✅ **Recommended** - Uses the OAuth flow that creates the Azure Pipelines GitHub App installation |
+| **Personal access token** | Automation scenarios | ⚠️ Security risk, avoid if possible |
+
+**Note:** The GitHub service connection in Azure DevOps exposes two authentication options in the UI: 'Grant authorization' (the OAuth flow that creates the Azure Pipelines GitHub App installation) and 'Personal access token'. Treat GitHub App and OAuth as a single connection type, accessed through 'Grant authorization'.
 
 ### Creating a GitHub Service Connection
 
 1. **Azure DevOps Portal** → Project Settings → Service connections
 2. **New service connection** → GitHub
-3. Choose authentication type (GitHub App recommended)
+3. Choose **Grant authorization** (recommended) or **Personal access token**
 4. Authorize and configure repository access
 
 ### GitHub App Authentication Benefits
@@ -359,7 +367,7 @@ For Azure Pipelines GitHub integration:
 
 | PAT Type | Supported | Notes |
 |----------|-----------|-------|
-| Classic PAT | ✅ Yes | Required scopes: `repo`, `admin:repo_hook`, `read:user`, `user:email` |
+| Classic PAT | ✅ Yes | Required scopes: `repo`, `user`, `admin:repo_hook` |
 | Fine-grained PAT | ⚠️ Limited | May not work for all scenarios |
 
 ### Required Permissions for GitHub App
@@ -509,7 +517,7 @@ pr:
 Azure DevOps → Project Settings → Service connections → New → GitHub
 ```
 
-Choose **Azure Pipelines GitHub App** (recommended)
+Choose **Grant authorization** (recommended)
 
 #### Step 2: Update Repository Resource Definitions
 

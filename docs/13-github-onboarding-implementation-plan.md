@@ -3,8 +3,13 @@
 > **Purpose:** Priority task list for a successful GitHub onboarding focusing on governance, compliance, settings, configuration, repository rules, and migration enablement.
 > 
 > **Target State:** Enable secure repository migration from other platforms to GitHub, with security-by-default features, PR validation, and GitHub Copilot full features ready for developers.
-> 
-> **Last Updated:** January 28, 2026
+
+> **Document status**
+>
+> - **Last reviewed:** 2026-05-19
+> - **Authorship:** Drafted with AI assistance (GitHub Copilot, multi-model review) and reviewed by a human maintainer before publication.
+> - **Sources:** Based on public documentation — primarily [docs.github.com](https://docs.github.com), [learn.microsoft.com](https://learn.microsoft.com), and official vendor blogs cited inline.
+> - **Verify before acting:** GitHub and Microsoft update product documentation continuously. Re-confirm against the live source pages before relying on this content for production decisions.
 
 ---
 
@@ -57,7 +62,7 @@
 | **No Public Repository Contributions** | Developers cannot contribute to open source from EMU accounts | Developers use separate personal accounts for OSS | ☐ |
 | **No Personal Repositories** | EMU accounts cannot have personal repos | Use Sandbox org for experiments | ☐ |
 | **No GitHub Certifications** | EMU users cannot access certification program | Use personal accounts for certifications | ☐ |
-| **No Copilot Pro/Free Signup** | Requires enterprise Copilot Business/Enterprise license | Ensure enterprise Copilot licensing in place | ☐ |
+| **No Copilot Free/Student/Pro/Pro+ Signup** | Requires enterprise Copilot Business or Copilot Enterprise license | Ensure enterprise Copilot licensing in place | ☐ |
 | **No GitHub-Hosted Runners for User Repos** | Runners not available in personal EMU repos | All CI/CD in organization repositories | ☐ |
 | **Limited Codespaces Access** | Cannot create codespaces for repos outside orgs | Organization-owned repos only | ☐ |
 | **IdP Dependency** | IdP outage blocks all GitHub access | Ensure IdP high availability; document setup user recovery | ☐ |
@@ -589,7 +594,7 @@ updates:
 |------|-------------|-------|--------|
 | **Define Coding Standards** | Document enterprise coding conventions | Architecture Team | ☐ |
 | **Create Custom Instructions** | Configure Copilot to follow enterprise patterns | Platform Team | ☐ |
-| **Configure Knowledge Bases** (Enterprise only) | Set up knowledge bases for Copilot context | Platform Team | ☐ |
+| **Configure Copilot Spaces** | Set up [Copilot Spaces](https://docs.github.com/en/copilot/using-github-copilot/copilot-spaces/about-organizing-and-sharing-context-with-copilot-spaces) for Copilot context | Platform Team | ☐ |
 
 ---
 

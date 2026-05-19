@@ -4,6 +4,31 @@ render_with_liquid: false
 
 # Security and Compliance
 
+> **Document status**
+>
+> - **Last reviewed:** 2026-05-19
+> - **Authorship:** Drafted with AI assistance (GitHub Copilot, multi-model review) and reviewed by a human maintainer before publication.
+> - **Sources:** Based on public documentation — primarily [docs.github.com](https://docs.github.com), [learn.microsoft.com](https://learn.microsoft.com), and official vendor blogs cited inline.
+> - **Verify before acting:** GitHub and Microsoft update product documentation continuously. Re-confirm against the live source pages before relying on this content for production decisions.
+
+## Table of Contents
+
+- [Overview](#overview)
+- [GitHub Advanced Security (GHAS)](#github-advanced-security-ghas)
+- [Code Scanning with CodeQL](#code-scanning-with-codeql)
+- [Secret Scanning](#secret-scanning)
+- [Dependency Management](#dependency-management)
+- [Security Policies and Vulnerability Reporting](#security-policies-and-vulnerability-reporting)
+- [Supported Versions](#supported-versions)
+- [Reporting a Vulnerability](#reporting-a-vulnerability)
+- [Response Expectations](#response-expectations)
+- [Security Contact](#security-contact)
+- [Audit Logging and SIEM Integration](#audit-logging-and-siem-integration)
+- [Compliance Certifications](#compliance-certifications)
+- [Enterprise-Scale Security Implementation](#enterprise-scale-security-implementation)
+- [Security Operations Workflows](#security-operations-workflows)
+- [References](#references)
+
 ## Overview
 
 GitHub Enterprise Cloud provides enterprise-grade security capabilities and compliance controls that enable organizations to protect intellectual property, secure software supply chains, and meet regulatory requirements. The GitHub Advanced Security (GHAS) suite delivers integrated security features that operate natively within the development workflow, enabling security teams to shift left while maintaining developer velocity.
@@ -20,48 +45,40 @@ This document explores the technical architecture, configuration patterns, and o
 
 GitHub Advanced Security represents an integrated security platform built directly into the GitHub development workflow. Unlike bolt-on security tools that operate externally, GHAS features are embedded in the code review process, pull request workflows, and repository security tabs, creating a frictionless security experience that encourages adoption and remediation.
 
-GHAS consists of three primary security scanning capabilities:
+GHAS provides two paid security capabilities—**code scanning** and **secret scanning**—and adds enhanced **dependency review** on top of free Dependabot alerts and security updates.
 
 **Code Scanning** analyzes source code for security vulnerabilities, coding errors, and quality issues using semantic analysis engines. The primary engine, CodeQL, performs deep static analysis by treating code as queryable data, enabling complex security pattern detection that goes beyond simple pattern matching.
 
-**Secret Scanning** monitors repositories for accidentally committed credentials, API keys, tokens, and other sensitive data. It operates continuously, scanning historical commits, new pushes, and pull requests. Push protection extends this capability by preventing secrets from being committed in the first place.
+**Secret Scanning** detects exposed credentials across the full repository surface: source code (historical commits and new pushes), pull request titles/descriptions/comments, issue titles/descriptions/comments, GitHub Discussions, wikis, and gists (including secret gists). Push protection extends this capability by preventing supported secrets from being committed in the first place.
 
-**Dependency Scanning** through Dependabot identifies vulnerable dependencies in project manifests and lockfiles across multiple ecosystems. It provides automated pull requests for dependency updates, security patches, and version upgrades, enabling proactive vulnerability management.
+**Dependabot alerts and security updates** identify vulnerable dependencies in project manifests and lockfiles across multiple ecosystems. These core Dependabot capabilities are free for all repositories. The GHAS-gated capability in this space is **dependency review** in pull requests, plus custom auto-triage rules and related premium dependency-management features available with GitHub Code Security.
 
-These three pillars work together to provide comprehensive security coverage across the software development lifecycle, from initial commit through production deployment.
+Together, these capabilities provide comprehensive security coverage across the software development lifecycle, from initial commit through pull request review and remediation.
 
 ### Licensing and Enablement
 
-GitHub Advanced Security is licensed per active committer at the enterprise level. An active committer is defined as any user who has made at least one commit to a GHAS-enabled repository in the previous 90 days. This consumption-based licensing model ensures organizations only pay for security coverage on actively developed codebases.
+As of 2025–2026, GitHub Advanced Security is offered as two separately purchasable SKUs: **GitHub Secret Protection** (secret scanning + push protection + Copilot secret scanning + custom patterns + delegated bypass) and **GitHub Code Security** (code scanning with CodeQL, dependency review, premium Dependabot features, custom auto-triage, security overview enhancements). The original bundled GHAS license remains available. All variants are billed per unique active committer (90-day rolling window) per product enabled.
 
 Enablement follows the enterprise policy hierarchy:
 
 ```mermaid
 graph TD
-    A[Enterprise GHAS License] -->|Allocates Seats| B[Organization Enablement]
-    B -->|Enables Features| C[Repository Configuration]
-    
-    A -->|Policy: Enforced| D[All Orgs Must Use]
-    A -->|Policy: Allowed| E[Org Chooses Enable/Disable]
-    
-    D -->|Automatic| F[GHAS Active All Repos]
-    E -->|Manual| G[Per-Repo Enablement]
-    
-    F --> H[Code Scanning Active]
-    F --> I[Secret Scanning Active]
-    F --> J[Dependabot Active]
-    
-    G --> K[Selective Feature Enable]
-    K --> H
-    K --> I
-    K --> J
-    
-    style A fill:#e1f5ff
+    A[Enterprise security policies] --> B[Organization enablement]
+    C[GitHub Code Security] -->|License / seats| B
+    D[GitHub Secret Protection] -->|License / seats| B
+    E[Dependabot alerts and security updates] -->|Free baseline| F[Repository security baseline]
+
+    B -->|Enable Code Security| G[Code scanning active]
+    B -->|Enable Code Security| H[Dependency review active]
+    B -->|Enable Secret Protection| I[Secret scanning active]
+    F --> J[Dependabot alerts active]
+
+    style C fill:#e1f5ff
+    style D fill:#e1f5ff
     style F fill:#d4edda
-    style K fill:#fff3cd
 ```
 
-Enterprise administrators can enforce GHAS enablement through enterprise policies, requiring organizations to enable features on all repositories, or allow organizations to selectively enable GHAS on specific repositories based on criticality, compliance requirements, or development maturity.
+Enterprise administrators can enforce GitHub Code Security and Secret Protection through enterprise policies, requiring organizations to enable those paid capabilities on all repositories, or allow organizations to selectively enable them based on criticality, compliance requirements, or development maturity. Dependabot alerts and security updates remain available independently of GHAS licensing.
 
 ### Security Configurations at Scale
 
@@ -138,7 +155,7 @@ jobs:
       - uses: actions/checkout@v3
       
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v2
+        uses: github/codeql-action/init@v4
         with:
           languages: ${{ matrix.language }}
           build-mode: ${{ matrix.build-mode }}
@@ -151,7 +168,7 @@ jobs:
           ./build-scripts/compile.sh
       
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v2
+        uses: github/codeql-action/analyze@v4
         with:
           category: "/${{ matrix.language }}-analysis"
 ```
@@ -225,23 +242,28 @@ Each security level has an associated Cost of Remediation Index (CRI):
 
 ### Build Mode and Multi-Language Analysis
 
-CodeQL analysis requires understanding the source code structure, which varies by language:
+CodeQL supports the following languages and workflow targets:
 
-**Interpreted Languages** (Python, JavaScript, TypeScript, Ruby):
-- Source code directly analyzed without compilation
-- Build mode: `none` or `autobuild`
-- Faster analysis, no build artifacts required
+- **C/C++**
+- **C#**
+- **Go**
+- **Java/Kotlin** using the `java-kotlin` specifier
+- **JavaScript/TypeScript** using the `javascript-typescript` specifier
+- **Python**
+- **Ruby**
+- **Rust**
+- **Swift**
+- **GitHub Actions workflows**
 
-**Compiled Languages** (Java, C/C++, Go, C#):
-- Source code must be compiled to generate AST
-- Build mode: `autobuild` (GitHub attempts to detect build process) or `manual` (explicit build commands)
-- Requires compilation success for accurate analysis
+TypeScript is analyzed together with JavaScript; Kotlin is analyzed together with Java.
+
+Build requirements still vary by language. Interpreted ecosystems such as Python and JavaScript/TypeScript can often use `none` or `autobuild`, while compiled ecosystems typically require `autobuild` or `manual` builds so CodeQL can observe the build process accurately.
 
 **Database Caching** improves analysis performance:
 
 ```yaml
 - name: CodeQL Analysis with Caching
-  uses: github/codeql-action/analyze@v2
+  uses: github/codeql-action/analyze@v4
   with:
     upload: always
     category: "/${{ matrix.language }}"
@@ -685,26 +707,15 @@ Audit logs record:
 
 GitHub Enterprise Cloud can stream audit logs in real-time to Security Information and Event Management (SIEM) systems:
 
-**Supported Streaming Protocols**:
-- **Syslog over TLS**: Standard syslog protocol with TLS encryption, compatible with most SIEMs
-- **Webhook**: HTTPS webhook delivery, best for high-volume environments
-- **HTTP API**: Polling API for periodic retrieval
+**Supported Streaming Destinations**:
+- **Amazon S3**
+- **Azure Blob Storage**
+- **Azure Event Hubs**
+- **Datadog**
+- **Google Cloud Storage**
+- **Splunk**
 
-Configuration example:
-
-```yaml
-# Syslog Streaming Configuration
-name: "Production SIEM"
-type: "syslog"
-server: "siem.organization.com"
-port: 6514
-protocol: "tls"
-certificate_verification: true
-ca_path: "/etc/ssl/certs/organization-ca.pem"
-event_batch_size: 500
-retry_policy: "exponential_backoff"
-max_retries: 3
-```
+Audit logs can also be retrieved via the REST API (`GET /enterprises/{enterprise}/audit-log`), the GraphQL API, or polled by external systems. Polling is not a streaming destination — for near-real-time delivery, configure one of the six supported destinations.
 
 SIEM integration enables:
 - **Centralized Log Aggregation**: All GitHub audit events in one searchable location
@@ -1103,7 +1114,7 @@ Continuous monitoring ensures security posture remains compliant:
 
 ### GitHub Enterprise Cloud Security
 - [Enterprise Security Documentation](https://docs.github.com/en/enterprise-cloud@latest/admin/security)
-- [Audit Log API Reference](https://docs.github.com/en/enterprise-cloud@latest/admin/monitoring-managing-and-maintaining-your-instance/reviewing-audit-logs-for-your-enterprise)
+- [Audit Log API Reference](https://docs.github.com/en/enterprise-cloud@latest/admin/monitoring-activity-in-your-enterprise/reviewing-audit-logs-for-your-enterprise/about-the-audit-log-for-your-enterprise)
 - [Private Vulnerability Reporting](https://docs.github.com/en/code-security/security-advisories/guidance-on-reporting-and-writing-information-about-vulnerabilities/privately-reporting-a-security-vulnerability)
 
 ### Compliance and Certifications
@@ -1114,7 +1125,7 @@ Continuous monitoring ensures security posture remains compliant:
 
 ### Integration Patterns
 - [GitHub Actions Security](https://docs.github.com/en/actions/security-guides)
-- [SIEM Integration Best Practices](https://docs.github.com/en/enterprise-cloud@latest/admin/monitoring-managing-and-maintaining-your-instance/streaming-the-audit-log-for-your-enterprise)
+- [SIEM Integration Best Practices](https://docs.github.com/en/enterprise-cloud@latest/admin/monitoring-activity-in-your-enterprise/reviewing-audit-logs-for-your-enterprise/streaming-the-audit-log-for-your-enterprise)
 - [GitHub Apps for Security Integration](https://docs.github.com/en/developers/apps)
 
 ### Policy and Process Documentation

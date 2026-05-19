@@ -1,10 +1,25 @@
 # Low-volume private Python packages on GitHub — alternatives to JFrog and SaaS
 
-*Research compiled 2026-04-21. Backing reports in `./files/research-low-volume-python-hosting.md` (Claude Sonnet 4.6) and `./files/research-private-actions-poetry.md` (GPT-5.3-Codex).*
-
 **Scenario:** 5–20 private Python packages, ~10 pushes/month, ~100 installs/month. GitHub-hosted org, Poetry + pip. You want to avoid JFrog/Cloudsmith/Gemfury costs at this scale.
 
----
+> **Document status**
+>
+> - **Last reviewed:** 2026-05-19
+> - **Authorship:** Drafted with AI assistance (GitHub Copilot, multi-model review) and reviewed by a human maintainer before publication.
+> - **Sources:** Based on public documentation — primarily [docs.github.com](https://docs.github.com), [learn.microsoft.com](https://learn.microsoft.com), and official vendor blogs cited inline.
+> - **Verify before acting:** GitHub and Microsoft update product documentation continuously. Re-confirm against the live source pages before relying on this content for production decisions.
+
+## Table of Contents
+
+- [TL;DR — answer to both your questions](#tldr--answer-to-both-your-questions)
+- [Option 1 — Azure Artifacts free tier *(my top pick for your profile)*](#option-1--azure-artifacts-free-tier-my-top-pick-for-your-profile)
+- [Option 2 — Azure Blob Storage as a static PEP 503 index](#option-2--azure-blob-storage-as-a-static-pep-503-index)
+- [Option 3 — Private composite GitHub Action + Poetry git-deps](#option-3--private-composite-github-action--poetry-git-deps)
+- [Why ACR/GHCR via ORAS is *not* a good primary choice](#why-acrghcr-via-oras-is-not-a-good-primary-choice)
+- [Decision flow for your profile](#decision-flow-for-your-profile)
+- [My recommendation for your stated scenario](#my-recommendation-for-your-stated-scenario)
+- [Source reports](#source-reports)
+- [Validation and accuracy](#validation-and-accuracy)
 
 ## TL;DR — answer to both your questions
 
@@ -42,7 +57,7 @@
 
 **Trade-offs you must accept:**
 - You're creating an Azure DevOps org even if you don't use ADO otherwise. (Free; 5 min setup.)
-- Auth is PAT-based for pip/Poetry workflows. GitHub OIDC → Azure managed identity → Azure DevOps personal access token is doable but requires a Microsoft token-exchange step.
+- Auth is PAT-based for pip/Poetry workflows. GitHub OIDC → Azure managed identity → Azure DevOps personal access token is doable but requires a Microsoft token-exchange step. Alternatively, the `artifacts-keyring` PyPI package enables Microsoft Entra ID token-based authentication for pip and Poetry without a stored PAT, suitable for managed-identity and federated-credential scenarios.
 
 **Poetry config:**
 ```toml
@@ -251,7 +266,7 @@ You want OSS + self-host + full PyPI semantics?
  └── Use Option 6 (pypiserver or devpi on Azure Container Apps free tier). $0–$15/mo.
 
 Your package count or inter-dependency complexity grew past ~5 packages?
- └── Graduate to Cloudsmith or Azure Artifacts paid tier, or JFrog if you truly need enterprise features.
+ └── Stay on the Azure Artifacts free tier (2 GiB/organization) until you exceed its storage, then evaluate Azure Artifacts paid, Cloudsmith, or JFrog Artifactory for enterprise features.
 ```
 
 ---

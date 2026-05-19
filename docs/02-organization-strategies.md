@@ -1,5 +1,24 @@
 # Organization Design Patterns and Strategies
 
+> **Document status**
+>
+> - **Last reviewed:** 2026-05-19
+> - **Authorship:** Drafted with AI assistance (GitHub Copilot, multi-model review) and reviewed by a human maintainer before publication.
+> - **Sources:** Based on public documentation — primarily [docs.github.com](https://docs.github.com), [learn.microsoft.com](https://learn.microsoft.com), and official vendor blogs cited inline.
+> - **Verify before acting:** GitHub and Microsoft update product documentation continuously. Re-confirm against the live source pages before relying on this content for production decisions.
+
+## Table of Contents
+
+- [Overview](#overview)
+- [Single Organization Pattern](#single-organization-pattern)
+- [Multi-Organization Patterns](#multi-organization-patterns)
+- [Organization Naming Conventions](#organization-naming-conventions)
+- [Migration Strategies Between Patterns](#migration-strategies-between-patterns)
+- [Organization Strategy Decision Matrix](#organization-strategy-decision-matrix)
+- [Organization Lifecycle Management](#organization-lifecycle-management)
+- [Cross-References](#cross-references)
+- [References](#references)
+
 ## Overview
 
 Organization architecture represents one of the most critical design decisions in GitHub Enterprise Cloud (GHEC) deployment. The organizational structure directly impacts security boundaries, policy enforcement, cost allocation, compliance posture, and operational efficiency. This document provides expert-level guidance on selecting, implementing, and evolving organization design patterns for enterprise-scale GitHub deployments.
@@ -159,7 +178,7 @@ graph TD
 
 ### Red-Green-Sandbox-Archive Pattern
 
-The Red-Green-Sandbox-Archive pattern is GitHub's **recommended multi-organization model** for enterprises that need more than a single organization. This pattern is based on **visibility and access control levels**, not deployment environments.
+The Red-Green-Sandbox-Archive pattern is a well-established multi-organization model widely used in GitHub Enterprise Cloud deployments. This pattern is based on **visibility and access control levels**, not deployment environments.
 
 > **Reference:** This pattern is officially documented in [Strategies for using organizations in GitHub Enterprise Cloud](https://resources.github.com/learn/pathways/administration-governance/essentials/strategies-for-using-organizations-github-enterprise-cloud/).
 
@@ -269,7 +288,7 @@ The Sandbox organization provides a **shared space where any user can create and
 - Abandoned experiments are periodically cleaned up or archived
 - No expectation of long-term maintenance
 
-> **Note:** A Sandbox organization is especially important if you configure GHEC to prevent developers from creating personal repositories.
+> **Note:** A Sandbox organization is especially important if you use Enterprise Managed Users (EMU) and configure the enterprise policy to block user-namespace repository creation. Note: This policy is EMU-only; in personal-account enterprises, GitHub cannot prevent personal repository creation.
 
 #### Archive Organization (Optional)
 

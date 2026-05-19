@@ -10,6 +10,24 @@ ms.topic: overview
 
 > **Full plan:** [Governed AI SDLC - Enterprise Adoption Plan](20-governed-ai-sdlc-plan.md)
 
+> **Document status**
+>
+> - **Last reviewed:** 2026-05-19
+> - **Authorship:** Drafted with AI assistance (GitHub Copilot, multi-model review) and reviewed by a human maintainer before publication.
+> - **Sources:** Based on public documentation — primarily [docs.github.com](https://docs.github.com), [learn.microsoft.com](https://learn.microsoft.com), and official vendor blogs cited inline.
+> - **Verify before acting:** GitHub and Microsoft update product documentation continuously. Re-confirm against the live source pages before relying on this content for production decisions.
+
+## Table of Contents
+
+- [The opportunity](#the-opportunity)
+- [North-star outcomes (12-18 months)](#north-star-outcomes-12-18-months)
+- [What we are building](#what-we-are-building)
+- [Phased rollout](#phased-rollout)
+- [Governance at a glance](#governance-at-a-glance)
+- [Risk posture](#risk-posture)
+- [Investment required](#investment-required)
+- [Immediate asks (first 30-60 days)](#immediate-asks-first-30-60-days)
+
 ### The opportunity
 
 AI-assisted development is no longer experimental. GitHub's own engineering team uses Copilot to generate PRs across their core platform — from typo sweeps (161 fixes in one PR) to new REST endpoints and database migrations. The value is *"not starting from zero"*: letting AI handle the tedious 80% so engineers focus on the critical 20%.

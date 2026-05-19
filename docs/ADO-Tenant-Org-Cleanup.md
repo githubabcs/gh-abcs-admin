@@ -1,18 +1,11 @@
 # Cleaning up Azure DevOps organizations connected to a Microsoft Entra tenant
 
-> Scope: a Microsoft Entra tenant administrator (Global Administrator and/or
-> Azure DevOps Administrator) needs to inventory, govern, or remove Azure
-> DevOps organizations that end users created inside the tenant — including
-> organizations that are **not** orphaned (i.e., the owner is still active in
-> Entra ID).
+> **Document status**
 >
-> Sources: §1–§7 reference only official Microsoft Learn pages and the
-> Microsoft Entra built-in roles reference. §8 additionally references
-> public Microsoft support channels (Microsoft Q&A, Stack Overflow,
-> and the Azure DevOps Developer Community) to demonstrate that the
-> limitation and its supported workarounds are widely-confirmed
-> Microsoft positions, not tenant-specific configuration. Each section
-> ends with the citations backing its claims.
+> - **Last reviewed:** 2026-05-19
+> - **Authorship:** Drafted with AI assistance (GitHub Copilot, multi-model review) and reviewed by a human maintainer before publication.
+> - **Sources:** Based on public documentation — primarily [docs.github.com](https://docs.github.com), [learn.microsoft.com](https://learn.microsoft.com), and official vendor blogs cited inline.
+> - **Verify before acting:** GitHub and Microsoft update product documentation continuously. Re-confirm against the live source pages before relying on this content for production decisions.
 
 ---
 
@@ -663,14 +656,6 @@ Ticket: https://developercommunity.visualstudio.com/t/delete-azure-devops-organi
 
 ## Document provenance
 
-> ℹ️ **AI-assisted authoring disclosure**
->
-> This document was drafted, fact-checked, and revised with the help
-> of generative AI inside the GitHub Copilot CLI. A human author
-> (the Microsoft Entra tenant administrator named in the engagement)
-> directed the work, supplied the scope and customer context, and
-> reviewed every revision before sharing.
->
 > | Item | Detail |
 > |---|---|
 > | Primary authoring agent | **Anthropic Claude Opus 4.7** running inside the GitHub Copilot CLI. Initial drafting, fact-check round, and §8 community sweep were performed under the *Extra high reasoning* configuration (model ID `claude-opus-4.7-xhigh`); subsequent revisions (TOC, this provenance footer) under the *1M context* configuration (model ID `claude-opus-4.7-1m-internal`). |

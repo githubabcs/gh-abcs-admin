@@ -10,6 +10,13 @@ Identity and Access Management (IAM) is the foundational pillar of GitHub Enterp
 
 GitHub Enterprise Cloud offers two distinct enterprise types with fundamentally different IAM architectures. The choice between enterprise types has far-reaching implications for authentication flows, user lifecycle management, security boundaries, and operational complexity.
 
+> **Document status**
+>
+> - **Last reviewed:** 2026-05-19
+> - **Authorship:** Drafted with AI assistance (GitHub Copilot, multi-model review) and reviewed by a human maintainer before publication.
+> - **Sources:** Based on public documentation — primarily [docs.github.com](https://docs.github.com), [learn.microsoft.com](https://learn.microsoft.com), and official vendor blogs cited inline.
+> - **Verify before acting:** GitHub and Microsoft update product documentation continuously. Re-confirm against the live source pages before relying on this content for production decisions.
+
 ## Table of Contents
 
 - [Enterprise Type Selection](#enterprise-type-selection)
@@ -103,7 +110,7 @@ flowchart TD
 
 **Architecture Characteristics:**
 - Users authenticate with GitHub-managed personal accounts
-- Optional SAML SSO configured per organization (not enterprise-wide)
+- Optional SAML SSO configured at enterprise or per-organization level
 - Users may belong to multiple enterprises with single account
 - SCIM provisioning only manages organization membership, not accounts
 - Users retain full control over username, profile, and personal repositories
@@ -157,15 +164,13 @@ flowchart TD
 - Limitation: Does not support nested group provisioning
 
 **Okta:**
-- SAML 2.0 authentication only (OIDC is **not supported** for EMU)
+- SAML 2.0 only — OIDC for EMU is supported exclusively with Microsoft Entra ID, not Okta
 - Native GitHub EMU application with SCIM provisioning
 - Support for group push and role assignment
 - Extensive attribute mapping capabilities
 
 **PingFederate:**
-- SAML 2.0 authentication (partner support)
-- SCIM provisioning via REST API (not native application)
-- Requires manual configuration of SCIM endpoints
+- Partner IdP — SAML 2.0 authentication with dedicated provisioning connector. No OIDC support for EMU.
 
 **Critical Restriction:**
 > ⚠️ **Mixing Okta and Entra ID for SSO and SCIM (in either direction) is explicitly unsupported.** GitHub's SCIM API returns errors when this combination is detected. Choose one partner IdP for both authentication and provisioning.
@@ -279,7 +284,7 @@ SAML (Security Assertion Markup Language) enables federated authentication by al
 ### IdP Setup: Microsoft Entra ID
 
 #### Prerequisites
-- Azure AD Premium P1/P2 license (for CAP support with OIDC)
+- Microsoft Entra ID P1/P2 license (for CAP support with OIDC)
 - Global Administrator or Application Administrator role
 - GitHub Enterprise Cloud with EMU (for enterprise-level SSO)
 
@@ -870,7 +875,7 @@ GitHub supports IdP group → GitHub team synchronization:
 
 ### Token Types
 
-**1. Fine-Grained Personal Access Tokens (Beta)**
+**1. Fine-Grained Personal Access Tokens**
 - Granular repository and permission scope
 - Expiration required (1-365 days, or custom)
 - Organization-level approval workflow
@@ -1343,7 +1348,7 @@ Common integrations for automated IAM:
 - [About Enterprise Managed Users](https://docs.github.com/en/enterprise-cloud@latest/admin/identity-and-access-management/understanding-iam-for-enterprises/about-enterprise-managed-users)
 - [Choose an Enterprise Type](https://docs.github.com/en/enterprise-cloud@latest/enterprise-onboarding/getting-started-with-your-enterprise/choose-an-enterprise-type)
 - [Configuring SAML SSO for Your Enterprise](https://docs.github.com/en/enterprise-cloud@latest/admin/identity-and-access-management/using-saml-for-enterprise-iam/configuring-saml-single-sign-on-for-your-enterprise)
-- [Configuring SCIM Provisioning for EMU](https://docs.github.com/en/enterprise-cloud@latest/admin/identity-and-access-management/using-enterprise-managed-users-and-saml-for-iam/configuring-scim-provisioning-for-enterprise-managed-users)
+- [Configuring SCIM Provisioning for EMU](https://docs.github.com/en/enterprise-cloud@latest/admin/identity-and-access-management/using-enterprise-managed-users-for-iam/configuring-scim-provisioning-for-enterprise-managed-users)
 - [Managing Team Memberships with IdP Groups](https://docs.github.com/en/enterprise-cloud@latest/admin/identity-and-access-management/using-enterprise-managed-users-for-iam/managing-team-memberships-with-identity-provider-groups)
 - [Enforcing Policies for Security Settings](https://docs.github.com/en/enterprise-cloud@latest/admin/policies/enforcing-policies-for-your-enterprise/enforcing-policies-for-security-settings-in-your-enterprise)
 - [About SSH Certificate Authorities](https://docs.github.com/en/enterprise-cloud@latest/organizations/managing-git-access-to-your-organizations-repositories/about-ssh-certificate-authorities)
@@ -1357,9 +1362,9 @@ Common integrations for automated IAM:
 ### External Resources
 
 #### Microsoft Entra ID (Azure AD)
-- [Tutorial: Azure AD SSO Integration with GitHub](https://learn.microsoft.com/en-us/azure/active-directory/saas-apps/github-tutorial)
-- [Configure SCIM Provisioning with GitHub EMU](https://learn.microsoft.com/en-us/azure/active-directory/saas-apps/github-enterprise-managed-user-provisioning-tutorial)
-- [Conditional Access Policies Overview](https://learn.microsoft.com/en-us/azure/active-directory/conditional-access/overview)
+- [Tutorial: Azure AD SSO Integration with GitHub](https://learn.microsoft.com/en-us/entra/identity/saas-apps/github-enterprise-cloud-enterprise-account-tutorial)
+- [Configure SCIM Provisioning with GitHub EMU](https://learn.microsoft.com/en-us/entra/identity/saas-apps/github-enterprise-managed-user-provisioning-tutorial)
+- [Conditional Access Policies Overview](https://learn.microsoft.com/en-us/entra/identity/conditional-access/overview)
 
 #### Okta
 - [Okta GitHub EMU Integration Guide](https://saml-doc.okta.com/SAML_Docs/How-to-Configure-SAML-2.0-for-GitHub-Enterprise-Managed-User.html)

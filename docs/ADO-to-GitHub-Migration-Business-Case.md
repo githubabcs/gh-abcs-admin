@@ -1,12 +1,31 @@
 # Business Case: Azure DevOps to GitHub Migration
 
-## Executive Summary
+> **Document status**
+>
+> - **Last reviewed:** 2026-05-19
+> - **Authorship:** Drafted with AI assistance (GitHub Copilot, multi-model review) and reviewed by a human maintainer before publication.
+> - **Sources:** Based on public documentation — primarily [docs.github.com](https://docs.github.com), [learn.microsoft.com](https://learn.microsoft.com), and official vendor blogs cited inline.
+> - **Verify before acting:** GitHub and Microsoft update product documentation continuously. Re-confirm against the live source pages before relying on this content for production decisions.
 
-**Prepared:** March 2026
+## Table of Contents
+
+- [Executive Summary](#executive-summary)
+- [1. Strategic Context: Why Now?](#1-strategic-context-why-now)
+- [2. Pillar 1 -- Development Practice Modernisation](#2-pillar-1----development-practice-modernisation)
+- [3. Pillar 2 -- Standardisation](#3-pillar-2----standardisation)
+- [4. Pillar 3 -- Governance & Security](#4-pillar-3----governance--security)
+- [5. Pillar 4 -- Agentic DevOps & the AI-Native SDLC](#5-pillar-4----agentic-devops--the-ai-native-sdlc)
+- [6. Financial Analysis](#6-financial-analysis)
+- [7. Migration Approach: The Hybrid Strategy](#7-migration-approach-the-hybrid-strategy)
+- [8. Risk Assessment & Mitigation](#8-risk-assessment--mitigation)
+- [9. Executive Recommendation](#9-executive-recommendation)
+- [10. References & Sources](#10-references--sources)
 
 ---
 
-Microsoft's strategic direction is unequivocal: **GitHub is the AI-native software development platform** and the recommended home for source code. With 180+ million developers worldwide, GitHub Copilot powering 20 million users (90% of Fortune 100 companies), and Microsoft's own engineering teams migrating to GitHub, the convergence of innovation, AI, and developer productivity is happening on GitHub -- not Azure DevOps.
+## Executive Summary
+
+Microsoft's strategic direction is unequivocal: **GitHub is the AI-native software development platform** and the recommended home for source code. With 180+ million developers worldwide, GitHub Copilot powering 20+ million users (per latest publicly reported figure; see GitHub Octoverse and Microsoft earnings for current statistics) (90% of Fortune 100 companies), and Microsoft's own engineering teams migrating to GitHub, the convergence of innovation, AI, and developer productivity is happening on GitHub -- not Azure DevOps.
 
 This business case presents the strategic, technical, and financial rationale for migrating source code repositories from Azure DevOps to GitHub Enterprise Cloud while continuing to leverage Azure Boards, Pipelines, and Test Plans where appropriate (the "hybrid model"). The migration unlocks **agentic DevOps**, **development practice modernisation**, **enterprise governance at scale**, and **standardisation** across the engineering organisation.
 
@@ -190,8 +209,8 @@ GitHub Advanced Security provides an integrated, developer-first security platfo
 
 | Product | Price | Capabilities |
 |---------|-------|-------------|
-| GitHub Secret Protection | $19/user/month | Secret scanning, AI password detection, push protection, custom patterns |
-| GitHub Code Security | $30/user/month | CodeQL scanning, Copilot Autofix, supply chain protection, security campaigns |
+| GitHub Secret Protection | $19/active committer/month | Secret scanning, AI password detection, push protection, custom patterns |
+| GitHub Code Security | $30/active committer/month | CodeQL scanning, Copilot Autofix, supply chain protection, security campaigns |
 
 ### 4.1.1 Enterprise Managed Users (EMU)
 
@@ -386,8 +405,8 @@ Forrester's 2025 TEI study of GitHub Enterprise Cloud (composite: 5,000-develope
 | Item | Estimate |
 |------|----------|
 | Migration tooling | Free (GitHub Enterprise Importer, `gh ado2gh` CLI) |
-| Migration effort | 5-10 minutes per repository (automated script) |
-| Pipeline rewiring | Automated via `--rewire-pipelines` option |
+| Migration effort | Minutes (small repos) to several hours (large repos with thousands of PRs); run a trial migration to calibrate. See QA §4.2 for sizing detail. |
+| Pipeline rewiring | Script-assisted via `--rewire-pipelines`; expect manual validation and remediation per pipeline post-migration. Multi-repo pipelines, custom checkout steps, and environment-specific configurations typically need fixes. See QA §4.4. |
 | Training & enablement | Microsoft Learn paths + GitHub Learning Pathways (free) |
 | Expert services | Optional GitHub Expert Services for complex scenarios |
 | User reclamation | Post-migration mannequin remapping (one-time) |
@@ -461,9 +480,11 @@ Forrester's 2025 TEI study of GitHub Enterprise Cloud (composite: 5,000-develope
 | All branches and tags | [x] Yes |
 | Pull request metadata | [x] Yes |
 | Azure Pipelines functionality | [x] Yes (auto-rewired to GitHub) |
-| Azure Boards work items | [x] Yes (retained + integrated) |
-| Azure Test Plans | [x] Yes (retained) |
+| Azure Boards work items | 📌 Retained in ADO (not migrated to GitHub) |
+| Azure Test Plans | 📌 Retained in ADO (not migrated to GitHub) |
 | User attribution | [x] Yes (via mannequin reclaim) |
+
+> Note: Items marked 'Retained in ADO' stay in Azure DevOps; they are not migrated by GEI. PR-to-work-item links are preserved when migrating pull requests.
 
 ### 7.4 Success Metrics: DORA and Developer Productivity KPIs
 

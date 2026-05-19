@@ -20,10 +20,10 @@ Comprehensive L400-level technical documentation for GitHub Enterprise Cloud adm
 
 ### Repository Governance
 - [📦 Repository Governance](docs/07-repository-governance.md) - Rulesets, branch protection, templates
-- [🔒 Security & Compliance](docs/08-security-compliance.md) - GHAS, code scanning, audit logs
+- [🔒 Security & Compliance](docs/08-security-compliance.md) - GHAS split SKUs (Secret Protection + Code Security), code scanning, secret scanning, dependency review, audit logs
 
 ### Best Practices & Architecture
-- [✅ Best Practices & WAF](docs/09-best-practices-waf.md) - GitHub Well-Architected Framework principles
+- [✅ Best Practices & WAF](docs/09-best-practices-waf.md) - Azure WAF pillars applied to GitHub Enterprise Cloud (Reliability, Security, Operational Excellence, Performance Efficiency, Cost Optimization); see also wellarchitected.github.com for GitHub's native WAF
 - [🏗️ Reference Architecture](docs/10-reference-architecture.md) - Architecture diagrams and patterns
 
 ### Security Policies
@@ -31,7 +31,9 @@ Comprehensive L400-level technical documentation for GitHub Enterprise Cloud adm
 - [⚠️ GitHub Actions Security: Echo Command Injection](docs/17-github-actions-security-echo-command-injection.md) - Echo command injection vulnerability (HackerBot Claw attack) prevention in GitHub Actions workflows
 
 ### AI & Copilot Governance
-- [🤖 GitHub Copilot Governance](docs/12-github-copilot-governance.md) - Enterprise Copilot policies, settings, content exclusions, license management, and best practices
+- [🤖 GitHub Copilot Governance](docs/12-github-copilot-governance.md) - Enterprise Copilot policies, settings, content exclusions, license management, and best practices, including Copilot cloud agent governance and Copilot Spaces (formerly Knowledge Bases)
+- [💳 GitHub Copilot Usage-Based Billing Research](docs/GitHub-Copilot-Usage-Based-Billing-Research.md) - Premium requests, AI credits, cost-center allocation, and budget controls for Copilot consumption
+- [📊 GitHub Chargeback System Design](docs/22-github-chargeback-system-design.md) - Internal cost allocation framework for GitHub Enterprise spend (seats, Actions minutes, Copilot premium requests, GHAS committers)
 - [🔄 GitHub Organization Rename Impact](docs/18-github-rename-org-impact.md) - Impact analysis of renaming a GitHub organization on Copilot, EMU authentication, and post-rename actions
 
 ### Implementation Guides
@@ -48,6 +50,7 @@ Comprehensive L400-level technical documentation for GitHub Enterprise Cloud adm
 - [� Azure Pipelines with GitHub Repos Integration](docs/15-azure-pipelines-github-repos-integration.md) - Impact analysis of using Azure Pipelines with GitHub repositories after migration
 - [🔍 Azure DevOps to GitHub Migration Analysis](docs/16-azure-devops-to-github-migration-analysis.md) - Detailed technical analysis of the migration process
 - [🔑 ADO REST API Authentication Without PATs](docs/ado-rest-api-auth-without-pat.md) - Alternatives to Personal Access Tokens for Azure DevOps REST API authentication in CI/CD pipelines
+- [🧹 ADO Tenant & Org Cleanup](docs/ADO-Tenant-Org-Cleanup.md) - Post-migration cleanup of Azure DevOps tenant connections, PAT policies, orphaned orgs
 - [❓ ADO to GitHub Migration Q&A Guide](docs/ADO-to-GitHub-Migration-QA.md) - Detailed questions and answers about migrating from Azure DevOps to GitHub using GEI
 - [💬 Workshop FAQ](docs/FAQ-workshop.md) - Frequently asked questions from GitHub Enterprise Admin workshops, including migration-related topics
 
@@ -81,8 +84,8 @@ Practical exercises to reinforce GitHub administration concepts.
 > Additional resources to continue your GitHub Admin learning journey.
 
 ### Learning GitHub Admin
-- [Microsoft Learn - GitHub Administration Collection](https://docs.microsoft.com/en-us/users/githubtraining/collections/mom7u1gzjdxw03)
-- [GitHub Enterprise Onboarding Guide](https://resources.github.com/getting-started/enterprise/)
+- [Microsoft Learn - GitHub Administration Collection](https://learn.microsoft.com/en-us/users/githubtraining/collections/mom7u1gzjdxw03)
+- [GitHub Enterprise Onboarding Guide](https://docs.github.com/en/enterprise-cloud@latest/admin/overview/setting-up-a-trial-of-github-enterprise-cloud) (Enterprise Cloud)
 - [The Book on GitHub Enterprise Cloud Adoption](https://resources.github.com/devops/get-started-with-github-enterprise-cloud/)
 - [GitHub Skills](https://skills.github.com/)
 
@@ -90,7 +93,7 @@ Practical exercises to reinforce GitHub administration concepts.
 - [Enterprise administrators](https://docs.github.com/en/enterprise-cloud@latest/admin)
 - [Organizations](https://docs.github.com/en/enterprise-cloud@latest/organizations)
 - [Repositories](https://docs.github.com/en/enterprise-cloud@latest/repositories)
-- [Roles in an organization](https://docs.github.com/en/organizations/managing-peoples-access-to-your-organization-with-roles/roles-in-an-organization#permission-levels-for-an-organization)
+- [Roles in an organization](https://docs.github.com/en/organizations/managing-peoples-access-to-your-organization-with-roles/roles-in-an-organization#about-predefined-organization-roles)
 - [Configuring SCIM provisioning for Enterprise Managed Users](https://docs.github.com/en/enterprise-cloud@latest/admin/identity-and-access-management/using-enterprise-managed-users-and-saml-for-iam/configuring-scim-provisioning-for-enterprise-managed-users)
 - [About Enterprise Managed Users](https://docs.github.com/en/enterprise-cloud@latest/admin/identity-and-access-management/using-enterprise-managed-users-for-iam/about-enterprise-managed-users)
 - [Managing a branch protection rule](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/defining-the-mergeability-of-pull-requests/managing-a-branch-protection-rule)
@@ -103,6 +106,7 @@ Practical exercises to reinforce GitHub administration concepts.
 - [admin Archives | The GitHub Blog](https://github.blog/changelog/label/admin/)
 
 ### Videos
+> Note: The videos below are from GitHub Universe 2021 and may show superseded UI. For current sessions see https://www.youtube.com/githubtraining .
 - [What's new for GitHub Enterprise - GitHub Universe 2021 - YouTube](https://www.youtube-nocookie.com/embed/ZZviWZgrqhM)
 - [GitHub in the Enterprise - GitHub Universe 2021 - YouTube](https://www.youtube.com/watch?v=1-i39RqaxRs)
 - [Enforcing information security policy through GitHub Enterprise - GitHub Universe 2021 - YouTube](https://www.youtube-nocookie.com/embed/DCu-ZTT7WTI)
@@ -110,10 +114,10 @@ Practical exercises to reinforce GitHub administration concepts.
 
 ### Articles & Guides
 - [Best practices for organizations and teams using GitHub Enterprise Cloud](https://github.blog/2023-08-02-best-practices-for-organizations-and-teams-using-github-enterprise-cloud/)
-- [Everything new from GitHub Universe 2022](https://github.blog/2022-11-09-everything-new-from-github-universe-2022/)
+- [Everything new from GitHub Universe 2022](https://github.blog/2022-11-09-everything-new-from-github-universe-2022/) (2022 — refer to GitHub's blog for more recent announcements)
 - [Improved management for GitHub Enterprise owners | The GitHub Blog](https://github.blog/2022-03-10-improved-management-github-enterprise-owners/)
 - [How to secure your GitHub organization and enterprise account | The GitHub Blog](https://github.blog/2020-07-23-how-to-secure-your-github-organization-and-enterprise-account/)
-- [Connect GitHub Enterprise Cloud to Defender for Cloud Apps | Microsoft Docs](https://docs.microsoft.com/en-us/defender-cloud-apps/connect-github-ec)
-- [How Defender for Cloud Apps helps protect your GitHub Enterprise environment | Microsoft Docs](https://docs.microsoft.com/en-us/defender-cloud-apps/protect-github)
-- [GitHub Workflow Guide](https://github.github.com/services-workflow-guide/#/)
+- [Connect GitHub Enterprise Cloud to Defender for Cloud Apps | Microsoft Docs](https://learn.microsoft.com/en-us/defender-cloud-apps/connect-github-ec)
+- [How Defender for Cloud Apps helps protect your GitHub Enterprise environment | Microsoft Docs](https://learn.microsoft.com/en-us/defender-cloud-apps/protect-github)
+- [GitHub Workflow Guide](https://docs.github.com/en/get-started/using-github/github-flow)
 - [Removing sensitive data from a repository - GitHub Docs](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/removing-sensitive-data-from-a-repository)

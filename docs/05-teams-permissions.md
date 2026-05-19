@@ -1,5 +1,28 @@
 # Teams and Permissions
 
+> **Document status**
+>
+> - **Last reviewed:** 2026-05-19
+> - **Authorship:** Drafted with AI assistance (GitHub Copilot, multi-model review) and reviewed by a human maintainer before publication.
+> - **Sources:** Based on public documentation — primarily [docs.github.com](https://docs.github.com), [learn.microsoft.com](https://learn.microsoft.com), and official vendor blogs cited inline.
+> - **Verify before acting:** GitHub and Microsoft update product documentation continuously. Re-confirm against the live source pages before relying on this content for production decisions.
+
+## Table of Contents
+
+- [Overview](#overview)
+- [Team Types and Visibility](#team-types-and-visibility)
+- [Nested Teams and Hierarchy](#nested-teams-and-hierarchy)
+- [Team Synchronization with Identity Provider](#team-synchronization-with-identity-provider)
+- [Permission Levels](#permission-levels)
+- [Custom Repository Roles](#custom-repository-roles)
+- [Base Permissions Configuration](#base-permissions-configuration)
+- [CODEOWNERS and Automatic Review Assignment](#codeowners-and-automatic-review-assignment)
+- [Team Maintainers vs Organization Owners](#team-maintainers-vs-organization-owners)
+- [Advanced Permission Scenarios](#advanced-permission-scenarios)
+- [Audit and Compliance](#audit-and-compliance)
+- [Troubleshooting Common Issues](#troubleshooting-common-issues)
+- [References](#references)
+
 ## Overview
 
 GitHub's teams and permissions system provides a sophisticated framework for organizing members and controlling access across repositories and organizational resources. Understanding the intricacies of team hierarchies, permission inheritance, and role-based access control is essential for designing scalable access management strategies in enterprise environments.
@@ -64,17 +87,17 @@ Nested teams enable sophisticated organizational structures that mirror company 
 
 ```mermaid
 graph TD
-    A[Engineering Team<br/>Secret] --> B[Platform Team<br/>Visible]
-    A --> C[Product Teams<br/>Visible]
+    A[Engineering Team<br/>Secret] --> B[Platform Team<br/>Secret]
+    A --> C[Product Teams<br/>Secret]
     A --> D[Security Team<br/>Secret]
     
-    B --> B1[Infrastructure<br/>Visible]
-    B --> B2[DevOps<br/>Visible]
-    B --> B3[SRE<br/>Visible]
+    B --> B1[Infrastructure<br/>Secret]
+    B --> B2[DevOps<br/>Secret]
+    B --> B3[SRE<br/>Secret]
     
-    C --> C1[Mobile Team<br/>Visible]
-    C --> C2[Web Team<br/>Visible]
-    C --> C3[API Team<br/>Visible]
+    C --> C1[Mobile Team<br/>Secret]
+    C --> C2[Web Team<br/>Secret]
+    C --> C3[API Team<br/>Secret]
     
     D --> D1[AppSec<br/>Secret]
     D --> D2[Incident Response<br/>Secret]
@@ -83,14 +106,14 @@ graph TD
     style D fill:#ff6b6b
     style D1 fill:#ff6b6b
     style D2 fill:#ff6b6b
-    style B fill:#4ecdc4
-    style C fill:#4ecdc4
-    style B1 fill:#95e1d3
-    style B2 fill:#95e1d3
-    style B3 fill:#95e1d3
-    style C1 fill:#95e1d3
-    style C2 fill:#95e1d3
-    style C3 fill:#95e1d3
+    style B fill:#ff6b6b
+    style C fill:#ff6b6b
+    style B1 fill:#ff6b6b
+    style B2 fill:#ff6b6b
+    style B3 fill:#ff6b6b
+    style C1 fill:#ff6b6b
+    style C2 fill:#ff6b6b
+    style C3 fill:#ff6b6b
 ```
 
 ### Parent/Child Team Inheritance
@@ -206,7 +229,7 @@ sequenceDiagram
     Team->>Team: Add user to team
     Team->>Repo: Grant repository access<br/>based on team permissions
     
-    Note over IdP,Repo: Membership sync occurs every 40 minutes
+    Note over IdP,Repo: Membership sync occurs at least once every hour
     
     IdP->>SCIM: User removed from IdP group
     SCIM->>GH: SCIM DELETE request
@@ -221,6 +244,7 @@ sequenceDiagram
 - SCIM provisioning enabled
 - IdP group claim mapping configured
 - Identity provider supports group membership
+- For SAML team sync (personal-account enterprises): only Microsoft Entra ID (commercial tenants) and Okta are supported IdPs.
 
 **Setup Process:**
 
@@ -240,14 +264,15 @@ Members Synced: 24
 ```
 
 3. **Configure Sync Rules:**
-```json
+```jsonc
 {
   "team_sync": {
     "group_id": "engineering-backend",
     "provider": "azure_ad",
     "group_name": "Engineering-Backend",
     "sync_enabled": true,
-    "sync_frequency": "40_minutes",
+    // GitHub syncs team membership at least once per hour
+    "sync_frequency": "hourly",
     "remove_members_not_in_group": true
   }
 }
@@ -270,7 +295,7 @@ Members Synced: 24
 1. **Manual Members:** Users manually added to synced teams are removed on next sync
 2. **Team Maintainers:** Cannot manually manage membership of synced teams
 3. **Nested Teams:** Child team sync is independent of parent team sync
-4. **Multiple Groups:** One team can sync with one IdP group only
+4. **Multiple Groups:** For EMU enterprises, one team maps to one IdP group. For SAML team sync (personal-account enterprises), one GitHub team can connect to up to 5 IdP groups.
 5. **Sync Failures:** Check audit log for `team.add_member` and `team.remove_member` events
 
 ### Team Sync vs Manual Management
@@ -642,7 +667,7 @@ excludes:
 curl -X POST \
   -H "Accept: application/vnd.github+json" \
   -H "Authorization: Bearer <token>" \
-  https://api.github.com/orgs/ORG/custom_roles \
+  https://api.github.com/orgs/ORG/custom_repository_roles \
   -d '{
     "name": "security-reviewer",
     "description": "Security review role",
@@ -747,7 +772,8 @@ Organization Members:
 Outside Collaborators:
   - Bypass base permissions
   - Require explicit repository grants
-  - Not counted in license seats (with limits)
+  - On public repos, do not consume licenses
+  - On private/internal repos, consume a user license under Enterprise Cloud billing
   - Access via direct repository invitation
   - Cannot see private repositories without explicit access
 ```
@@ -1472,7 +1498,7 @@ gh api /orgs/ORG/teams/TEAM --jq '.synchronized'
 ```
 
 **Solutions:**
-1. **Team sync delay:** Wait up to 40 minutes for IdP sync
+1. **Team sync delay:** Wait up to 1 hour for IdP team sync
 2. **Base permissions conflict:** Check org base permission setting
 3. **Repository privacy:** Ensure user can access private repos
 4. **Team nesting:** Verify parent team has repository access

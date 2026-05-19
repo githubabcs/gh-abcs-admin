@@ -1,8 +1,23 @@
 # Python package management on GitHub — deep research & recommendation
 
-*Research compiled 2026-04-21. Consolidates three parallel model-diverse investigations (Claude Opus 4.7, GPT‑5.4, GPT‑5.3‑Codex) plus an independent rubber-duck cross-review. Full source reports are attached under `./files/` in the session workspace.*
+> **Document status**
+>
+> - **Last reviewed:** 2026-05-19
+> - **Authorship:** Drafted with AI assistance (GitHub Copilot, multi-model review) and reviewed by a human maintainer before publication.
+> - **Sources:** Based on public documentation — primarily [docs.github.com](https://docs.github.com), [learn.microsoft.com](https://learn.microsoft.com), and official vendor blogs cited inline.
+> - **Verify before acting:** GitHub and Microsoft update product documentation continuously. Re-confirm against the live source pages before relying on this content for production decisions.
 
----
+## Table of Contents
+
+- [TL;DR — for a team moving from Nexus OSS to GitHub, using pip + Poetry](#tldr--for-a-team-moving-from-nexus-oss-to-github-using-pip--poetry)
+- [1. Why doesn't GitHub Packages support Python natively?](#1-why-doesnt-github-packages-support-python-natively)
+- [2. What companies actually use for private Python packages](#2-what-companies-actually-use-for-private-python-packages)
+- [3. The GitHub‑native "no dedicated registry" patterns — and why they are not a platform](#3-the-githubnative-no-dedicated-registry-patterns--and-why-they-are-not-a-platform)
+- [4. Security and supply-chain considerations](#4-security-and-supply-chain-considerations)
+- [5. Migration path: Nexus OSS → new registry](#5-migration-path-nexus-oss--new-registry)
+- [6. Recommendation — best solution for your profile](#6-recommendation--best-solution-for-your-profile)
+- [Sources and underlying reports](#sources-and-underlying-reports)
+- [Validation and accuracy](#validation-and-accuracy)
 
 ## TL;DR — for a team moving from Nexus OSS to GitHub, using pip + Poetry
 

@@ -4,6 +4,26 @@
 
 Enterprise Managed Users (EMU) represents GitHub's most secure and enterprise-grade identity management solution, providing organizations with complete control over the entire user lifecycle through direct integration with corporate Identity Providers (IdP). EMU fundamentally transforms how enterprises manage GitHub access by treating user accounts as managed resources provisioned and controlled by the organization rather than independently owned personal accounts.
 
+> **Document status**
+>
+> - **Last reviewed:** 2026-05-19
+> - **Authorship:** Drafted with AI assistance (GitHub Copilot, multi-model review) and reviewed by a human maintainer before publication.
+> - **Sources:** Based on public documentation — primarily [docs.github.com](https://docs.github.com), [learn.microsoft.com](https://learn.microsoft.com), and official vendor blogs cited inline.
+> - **Verify before acting:** GitHub and Microsoft update product documentation continuously. Re-confirm against the live source pages before relying on this content for production decisions.
+
+## Table of Contents
+
+- [Overview](#overview)
+- [What are Enterprise Managed Users?](#what-are-enterprise-managed-users)
+- [EMU Value Proposition](#emu-value-proposition)
+- [EMU vs Personal Accounts: Detailed Comparison](#emu-vs-personal-accounts-detailed-comparison)
+- [EMU Limitations and Considerations](#emu-limitations-and-considerations)
+- [Supported Identity Providers](#supported-identity-providers)
+- [EMU Configuration Best Practices](#emu-configuration-best-practices)
+- [EMU Migration Strategies](#emu-migration-strategies)
+- [EMU Operational Excellence](#emu-operational-excellence)
+- [References](#references)
+
 ## What are Enterprise Managed Users?
 
 Enterprise Managed Users are GitHub user accounts that are fully owned, provisioned, and managed by an enterprise through an external Identity Provider. Unlike traditional personal GitHub accounts where users maintain independent control, EMU accounts are:
@@ -95,7 +115,7 @@ EMU dramatically reduces security risks through enterprise-grade controls:
 - Device compliance requirements
 
 **Attack Surface Reduction:**
-- No personal access tokens by default
+- PAT creation governed by enterprise PAT policy (classic PATs can be restricted or blocked; fine-grained PATs support optional approval workflow)
 - SSH keys managed centrally
 - OAuth app restrictions
 - GitHub App policies enforced
@@ -272,14 +292,14 @@ graph LR
 | Email Addresses | Any email domain | Enterprise domain | EMU for validation |
 | **Repository Access** |
 | Public Repos | Full read/write access | Read-only (no contributions) | Personal for OSS |
-| Private Personal Repos | Unlimited | Not available | Personal for personal work |
+| Private Personal Repos | Unlimited | Allowed only if enterprise policy permits (private, restricted to enterprise members) | Personal for personal work |
 | Enterprise Repos | Via invitation | Default access | EMU for enterprise |
 | Forking | To personal or org | Within enterprise only | Personal for flexibility |
 | External Contributions | Unrestricted | Blocked by default | Personal for OSS work |
 | **Collaboration** |
 | Outside Collaborators | Can invite freely | Enterprise policy controlled | EMU for governance |
 | External Teams | Can participate | Enterprise only | Personal for OSS |
-| Gists | Public/secret | Private to enterprise | Personal for sharing |
+| Gists | Public/secret | ❌ Not available (EMU users cannot create or comment on gists) | Personal for sharing |
 | GitHub Pages | Public hosting | Enterprise-approved only | Personal for portfolio |
 | GitHub Marketplace | Full access | Restricted access | Personal for tools |
 | **Security & Compliance** |
@@ -351,7 +371,7 @@ While EMU provides significant advantages, it's crucial to understand its constr
 - ⚠️ Read-only access to public repositories maintained
 
 **2. External Collaboration Constraints**
-- ❌ Cannot have personal repositories under managed account
+- ⚠️ User-owned personal repositories disabled by default; may be enabled via enterprise policy (private repos only, collaboration restricted to enterprise members)
 - ❌ Cannot be added to non-enterprise organizations
 - ❌ Cannot collaborate outside enterprise boundary (by default)
 - ⚠️ Requires separate personal account for OSS contributions
@@ -468,6 +488,8 @@ EMU integrates with enterprise-grade identity providers using standard protocols
 | **Okta** | ✅ | ❌ | ✅ | SAML-only (OIDC not supported) |
 | **PingFederate** | ✅ | ❌ | ✅ | SAML-only |
 | **Other IdPs** | ✅ | - | ✅ | Via REST API, SAML 2.0 required |
+
+> **PingFederate:** Partner IdP — SAML-only authentication (no OIDC for EMU); SCIM provisioning via partner connector.
 
 ### Protocol Comparison: OIDC vs SAML
 

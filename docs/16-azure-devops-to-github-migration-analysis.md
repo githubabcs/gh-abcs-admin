@@ -1,5 +1,12 @@
 # Azure DevOps to GitHub Migration: Pain Points Analysis and Solutions
 
+> **Document status**
+>
+> - **Last reviewed:** 2026-05-19
+> - **Authorship:** Drafted with AI assistance (GitHub Copilot, multi-model review) and reviewed by a human maintainer before publication.
+> - **Sources:** Based on public documentation — primarily [docs.github.com](https://docs.github.com), [learn.microsoft.com](https://learn.microsoft.com), and official vendor blogs cited inline.
+> - **Verify before acting:** GitHub and Microsoft update product documentation continuously. Re-confirm against the live source pages before relying on this content for production decisions.
+
 ## Executive Summary
 
 This document analyzes common pain points experienced with Azure DevOps Services and provides corresponding solutions available in GitHub Enterprise Cloud. The analysis covers security access control, team management, external collaborator handling, and non-human identity integrations.
@@ -352,10 +359,9 @@ For CI/CD and deployment scenarios:
 
 | Approach | Trade-off |
 |----------|-----------|
-| **Migrate work items via GEI** | Preserves history but may lose custom fields |
+| **Migrate work items via third-party tooling** | Tools such as `nkdAgility/azure-devops-migration-tools` migrate work items; GEI only migrates work-item *links embedded in pull requests*, not the work items themselves. Plan a separate migration track for Boards/work items. |
 | **Fresh start in GitHub** | Clean slate, no legacy debt |
 | **Keep ADO Boards temporarily** | Maintains history, allows gradual transition |
-| **Third-party tools** | Tools like Azure DevOps Migrator for complex scenarios |
 
 **Governance Consideration**: Decide whether work item history is required for compliance before choosing migration strategy.
 
@@ -392,7 +398,7 @@ For CI/CD and deployment scenarios:
 | **Mirror feeds** | Need to maintain both temporarily |
 | **Archive old versions** | Historical packages rarely accessed |
 
-**Security Enhancement**: GitHub Packages integrates with Dependabot for automatic vulnerability scanning—an improvement over Azure Artifacts.
+**Security Enhancement**: GitHub Packages integrates with Dependabot for automatic vulnerability scanning—an improvement over Azure Artifacts. Note: GitHub Packages does not provide a Python (PyPI) registry. Teams publishing Python packages on Azure Artifacts will need an external alternative such as Azure Artifacts (retained), Cloudsmith, JFrog Artifactory, or AWS CodeArtifact.
 
 ---
 

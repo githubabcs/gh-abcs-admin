@@ -7,6 +7,34 @@ render_with_liquid: false
 **Level:** L400 (Expert)  
 **Objective:** Master repository settings, rulesets, and governance patterns for enterprise-scale GitHub deployments
 
+> **Document status**
+>
+> - **Last reviewed:** 2026-05-19
+> - **Authorship:** Drafted with AI assistance (GitHub Copilot, multi-model review) and reviewed by a human maintainer before publication.
+> - **Sources:** Based on public documentation — primarily [docs.github.com](https://docs.github.com), [learn.microsoft.com](https://learn.microsoft.com), and official vendor blogs cited inline.
+> - **Verify before acting:** GitHub and Microsoft update product documentation continuously. Re-confirm against the live source pages before relying on this content for production decisions.
+
+## Table of Contents
+
+- [Overview](#overview)
+- [Repository Visibility Models](#repository-visibility-models)
+- [Repository Templates and Standardization](#repository-templates-and-standardization)
+- [Branch Protection Rules vs Repository Rulesets](#branch-protection-rules-vs-repository-rulesets)
+- [Repository Ruleset Deep Dive](#repository-ruleset-deep-dive)
+- [Tag Protection Rules](#tag-protection-rules)
+- [Push Rulesets and File Path Restrictions](#push-rulesets-and-file-path-restrictions)
+- [Merge Strategies and Settings](#merge-strategies-and-settings)
+- [Repository Lifecycle Management](#repository-lifecycle-management)
+- [Innersource Patterns with Internal Repositories](#innersource-patterns-with-internal-repositories)
+- [Vision](#vision)
+- [Maintainers](#maintainers)
+- [Contributing](#contributing)
+- [Support](#support)
+- [Usage Statistics](#usage-statistics)
+- [Governance at Scale](#governance-at-scale)
+- [Best Practices Summary](#best-practices-summary)
+- [References](#references)
+
 ## Overview
 
 Repository governance establishes the policies, standards, and controls that ensure consistency, security, and compliance across your organization's codebase. As organizations scale from dozens to thousands of repositories, governance shifts from manual configuration to automated policy enforcement using repository templates, rulesets, and organization-wide settings.
@@ -171,9 +199,9 @@ gh api \
 
 ## Branch Protection Rules vs Repository Rulesets
 
-GitHub provides two mechanisms for enforcing repository policies: legacy **Branch Protection Rules** and modern **Repository Rulesets**. Understanding when to use each is critical for scalable governance.
+GitHub provides two mechanisms for enforcing repository policies: **Branch Protection Rules** (traditional per-repository approach) and modern **Repository Rulesets**. Understanding when to use each is critical for scalable governance.
 
-### Branch Protection Rules (Legacy)
+### Branch Protection Rules (Traditional / per-repository approach)
 
 **Characteristics:**
 - Configured per repository
@@ -190,9 +218,11 @@ GitHub provides two mechanisms for enforcing repository policies: legacy **Branc
 - No import/export capability
 - Difficult to audit compliance across repos
 
+Branch protection rules remain fully supported by GitHub. Rulesets are recommended for organizations operating at scale that need import/export and shared targeting.
+
 **When to Use:**
 - Single repository or small organizations
-- Temporary one-off policies
+- Repository-specific policies that do not need shared targeting
 - Backward compatibility requirements
 - Simple linear branch workflows
 
@@ -466,9 +496,7 @@ SECURITY.md @org/security
 4. **Ownership Validation:**
    ```bash
    # Test CODEOWNERS syntax
-   gh api \
-     -X POST \
-     /repos/OWNER/REPO/code-scanning/codeowners/errors
+   gh api /repos/OWNER/REPO/codeowners/errors
    
    # Identify files without owners
    git ls-files | while read file; do
@@ -826,22 +854,9 @@ sequenceDiagram
 
 **Merge Queue Configuration:**
 
-```yaml
-# .github/merge_queue.yml
-merge_method: squash
-min_queue_size: 2
-max_queue_size: 10
-merge_group_batch_size: 5
-ci_status_timeout: 60
-```
-
-**Parameters:**
-
-- **Merge Method:** Enforces consistent merge strategy
-- **Minimum Queue Size:** Wait for N PRs before creating groups (batching)
-- **Maximum Queue Size:** Limit concurrent testing
-- **Batch Size:** Test multiple PRs together (faster but risk of failure)
-- **CI Timeout:** Cancel stalled checks
+> GitHub merge queues are configured exclusively via the repository UI or API (Settings → Branches → Branch protection rule → "Require merge queue", or the equivalent rulesets rule via the REST API). There is no `.github/merge_queue.yml` configuration file.
+>
+> Documentation: <https://docs.github.com/en/enterprise-cloud@latest/repositories/configuring-branches-and-merges-in-your-repository/configuring-pull-request-merges/managing-a-merge-queue>
 
 **When to Enable:**
 - High-frequency merges (multiple per hour)
@@ -1471,7 +1486,7 @@ gh api \
 ### Official Documentation
 
 - [Repository Settings and Features](https://docs.github.com/en/enterprise-cloud@latest/repositories/managing-your-repositorys-settings-and-features) - Comprehensive guide to repository configuration options
-- [Managing Branch Protection Rules](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/defining-the-mergeability-of-pull-requests/managing-a-branch-protection-rule) - Legacy branch protection configuration
+- [Managing Branch Protection Rules](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/defining-the-mergeability-of-pull-requests/managing-a-branch-protection-rule) - Traditional branch protection configuration
 - [About Repository Rulesets](https://docs.github.com/en/enterprise-cloud@latest/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/about-rulesets) - Modern ruleset capabilities and advantages
 - [Creating Rulesets for Repositories](https://docs.github.com/en/enterprise-cloud@latest/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/creating-rulesets-for-a-repository) - Step-by-step ruleset configuration
 - [Managing Code Review Settings](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/defining-the-mergeability-of-pull-requests/about-protected-branches#require-pull-request-reviews-before-merging) - Pull request review requirements

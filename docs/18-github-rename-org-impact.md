@@ -13,6 +13,27 @@ keywords:
 estimated_reading_time: 8
 ---
 
+> **Document status**
+>
+> - **Last reviewed:** 2026-05-19
+> - **Authorship:** Drafted with AI assistance (GitHub Copilot, multi-model review) and reviewed by a human maintainer before publication.
+> - **Sources:** Based on public documentation — primarily [docs.github.com](https://docs.github.com), [learn.microsoft.com](https://learn.microsoft.com), and official vendor blogs cited inline.
+> - **Verify before acting:** GitHub and Microsoft update product documentation continuously. Re-confirm against the live source pages before relying on this content for production decisions.
+
+## Table of Contents
+
+- [Overview](#overview)
+- [How GitHub Copilot Authentication Works](#how-github-copilot-authentication-works)
+- [Key Finding: No Re-authentication Required](#key-finding-no-re-authentication-required)
+- [What Is Automatically Handled](#what-is-automatically-handled)
+- [What Is NOT Automatically Handled](#what-is-not-automatically-handled)
+- [EMU-Specific Considerations](#emu-specific-considerations)
+- [Important Warning: Old Organization Name Reuse](#important-warning-old-organization-name-reuse)
+- [Permanent Name Retirement for High-Visibility Assets](#permanent-name-retirement-for-high-visibility-assets)
+- [Recommended Action Plan](#recommended-action-plan)
+- [Public Community Research](#public-community-research)
+- [Official Documentation References](#official-documentation-references)
+
 ## Overview
 
 This document analyzes the impact of renaming a GitHub organization in an Enterprise Managed Users (EMU) setup, with specific focus on GitHub Copilot continuity for IDE users. It provides verified findings backed by official GitHub documentation.

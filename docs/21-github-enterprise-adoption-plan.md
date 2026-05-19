@@ -9,6 +9,13 @@
 > **Goal:** Phase 1 — Repos migration; Phase 2 — Azure Pipelines → GitHub Actions; Phase 3 — DevSecOps in GitHub  
 > **Reference Repo:** [githubabcs/gh-abcs-admin](https://github.com/githubabcs/gh-abcs-admin/tree/main/docs)
 
+> **Document status**
+>
+> - **Last reviewed:** 2026-05-19
+> - **Authorship:** Drafted with AI assistance (GitHub Copilot, multi-model review) and reviewed by a human maintainer before publication.
+> - **Sources:** Based on public documentation — primarily [docs.github.com](https://docs.github.com), [learn.microsoft.com](https://learn.microsoft.com), and official vendor blogs cited inline.
+> - **Verify before acting:** GitHub and Microsoft update product documentation continuously. Re-confirm against the live source pages before relying on this content for production decisions.
+
 ---
 
 ## Table of Contents
@@ -46,7 +53,7 @@ This plan provides a structured, security-first approach to adopting GitHub Ente
 | **GitHub Secret Protection** | Per active committer/month | Secret scanning + push protection (formerly part of GHAS) |
 | **GitHub Code Security** | Per active committer/month | CodeQL + Dependabot + Copilot Autofix (formerly part of GHAS) |
 | **GitHub Copilot Business** | Per-seat/month | IDE + Chat + CLI |
-| **GitHub Actions** | Per-minute (hosted) or self-hosted | Linux $0.008/min; Windows $0.016/min; estimate from `gh actions-importer forecast` |
+| **GitHub Actions** | Per-minute (hosted) or self-hosted | Linux (2-core x64) $0.006/min; Windows (2-core x64) $0.010/min; larger SKUs and arm64 runners carry different rates—see the GitHub Actions billing reference for the full SKU list; estimate from `gh actions-importer forecast` |
 | **ADO overlap period** | Double licensing risk | ADO Advanced Security + GHAS run in parallel during transition |
 
 > ⚠️ **GHAS Unbundling:** As of 2024, GitHub Advanced Security was split into **GitHub Secret Protection** and **GitHub Code Security** — two separately-licensed SKUs. Budget and enable each independently. Contact GitHub Sales for current pricing.
@@ -175,7 +182,7 @@ Since this is an EMU enterprise, confirm the team is aware of these constraints:
 | Mannequins can ONLY be reclaimed to SCIM-provisioned users | All committers must be provisioned before migration | Complete SCIM provisioning in Phase 0.4 | ☐ |
 | GitHub App required for ADO service connections | PAT-based service connections do NOT work with EMU | Enterprise Owner must install GitHub App | ☐ |
 | IdP outage blocks all GitHub access | Single IdP dependency | Ensure IdP HA; document setup user recovery | ☐ |
-| OIDC supported (Entra ID or Okta only) | SAML also supported; choose one | Confirm current IdP protocol | ☐ |
+| OIDC supported with **Microsoft Entra ID only**; Okta and other IdPs authenticate via SAML 2.0 with EMU | SAML also supported; choose one | Confirm current IdP protocol | ☐ |
 
 > **Reference:** [EMU Limitations and Considerations](https://github.com/githubabcs/gh-abcs-admin/blob/main/docs/04-enterprise-managed-users.md)
 

@@ -1,12 +1,19 @@
 # Azure DevOps REST API Authentication Without PATs in CI/CD Pipelines
 
+> **Document status**
+>
+> - **Last reviewed:** 2026-05-19
+> - **Authorship:** Drafted with AI assistance (GitHub Copilot, multi-model review) and reviewed by a human maintainer before publication.
+> - **Sources:** Based on public documentation — primarily [docs.github.com](https://docs.github.com), [learn.microsoft.com](https://learn.microsoft.com), and official vendor blogs cited inline.
+> - **Verify before acting:** GitHub and Microsoft update product documentation continuously. Re-confirm against the live source pages before relying on this content for production decisions.
+
 ## Deep Research — April 2026
 
 ---
 
 ## Executive Summary
 
-Microsoft is actively steering customers away from Personal Access Tokens (PATs) toward Microsoft Entra–based authentication. As of April 2025, no new Azure DevOps OAuth app registrations are accepted, and the legacy OAuth platform is scheduled for full retirement in 2026. For CI/CD pipelines calling Azure DevOps REST APIs, there are now **five viable alternatives to PATs**, each with distinct trade-offs in security, cost, and complexity.
+Microsoft is actively steering customers away from Personal Access Tokens (PATs) toward Microsoft Entra–based authentication. As of April 2025, no new Azure DevOps OAuth app registrations are accepted, and the legacy OAuth platform is **targeted for retirement in 2026** (exact end-of-life date will be announced by Microsoft; see the [official ADO blog](https://devblogs.microsoft.com/devops/no-new-azure-devops-oauth-apps-beginning-february-2025/) for the latest status). For CI/CD pipelines calling Azure DevOps REST APIs, there are now **five viable alternatives to PATs**, each with distinct trade-offs in security, cost, and complexity.
 
 For the specific **Advanced Security API gating** scenario, the recommended path forward is a **Service Principal with an Azure DevOps Service Connection using Workload Identity Federation** — or the new native **Status Checks** feature (Sprint 271+) which eliminates the need for API calls entirely.
 
@@ -38,7 +45,7 @@ For the specific **Advanced Security API gating** scenario, the recommended path
 |--------|---------------|-------------------|-----------|-------------|----------|
 | **System.AccessToken** | Pipeline job duration | None (automatic) | ❌ No | Free (built-in) | Simple in-org API calls |
 | **Service Principal** | 1 hour (Entra) | Certificate or client secret | ✅ Yes | Basic license per org | Automation, cross-org, Advanced Security |
-| **Managed Identity** | 1–24 hours (auto-rotated, cached) | None (Azure-managed) | ⚠️ Same tenant only | Basic license per org | Azure-hosted agents/apps |
+| **Managed Identity** | ~1 hour (Azure Identity SDK auto-renews) | None (Azure-managed) | ⚠️ Same tenant only | Basic license per org | Azure-hosted agents/apps |
 | **ADO Service Connection (WIF)** | 1 hour (federated) | None (zero-secret) | ✅ Yes | Basic license per org | Modern pipeline REST API calls |
 | **Azure CLI Entra Token** | 1 hour | Depends on login method | ✅ Yes | Per identity type | Ad-hoc / scripted calls |
 | ~~PAT~~ | Up to 1 year | Manual rotation | ✅ Yes | Free | **⚠️ Discouraged** |
@@ -151,7 +158,7 @@ For Azure-hosted workloads (self-hosted agents on Azure VMs, Azure Functions, et
 ### Pros
 - **Zero secret management** — Azure rotates credentials automatically
 - **Simplest code** — `ManagedIdentityCredential` just works
-- **Same security benefits** as service principals (1-hour tokens, up to ~24 hours cached for managed identities, conditional access)
+- **Same security benefits** as service principals (~1-hour Entra tokens; the Azure Identity SDK transparently renews them so long-running apps don't need to re-authenticate. The actual token lifetime remains ~1 hour; conditional access still applies)
 - **Ideal for self-hosted agents on Azure VMs**
 
 ### Cons
@@ -339,7 +346,7 @@ Your customer uses the **Advanced Security REST APIs** in pipelines to create a 
 | **April 2025** | No new Azure DevOps OAuth app registrations | New apps must use Entra OAuth |
 | **2025** | "Generate Git Credentials" button removed from Repos/Wiki UI | Minor — PAT creation still possible manually |
 | **April 15, 2026** ⚠️ | Build identities blocked from Advanced Security APIs | Must migrate to SP/MI |
-| **2026** | Azure DevOps OAuth platform fully retired | All apps must use Entra OAuth |
+| **2026 (target)** | Azure DevOps OAuth platform end-of-life targeted; **specific date to be announced by Microsoft** | All apps must use Entra OAuth |
 | **Future** | PAT creation policies (allow-list only) | Org admins can restrict who creates PATs |
 
 ---
@@ -821,7 +828,7 @@ steps:
         # Acquire Entra token for the dedicated AdvSec SP
         $body = @{
           client_id     = "$(advsec-sp-client-id)"
-          scope         = "499b84ac-1321-427f-aa17-267ca6975798/.default"
+          scope         = "https://app.vssps.visualstudio.com/.default"
           client_secret = "$(advsec-sp-client-secret)"
           grant_type    = "client_credentials"
         }

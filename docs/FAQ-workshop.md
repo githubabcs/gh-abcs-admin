@@ -2,6 +2,13 @@
 
 This document contains questions and answers from the GitHub Admin - Enterprise workshop. It will be updated as new questions arise during workshop deliveries.
 
+> **Document status**
+>
+> - **Last reviewed:** 2026-05-19
+> - **Authorship:** Drafted with AI assistance (GitHub Copilot, multi-model review) and reviewed by a human maintainer before publication.
+> - **Sources:** Based on public documentation — primarily [docs.github.com](https://docs.github.com), [learn.microsoft.com](https://learn.microsoft.com), and official vendor blogs cited inline.
+> - **Verify before acting:** GitHub and Microsoft update product documentation continuously. Re-confirm against the live source pages before relying on this content for production decisions.
+
 ---
 
 ## Table of Contents
@@ -31,13 +38,14 @@ Is there an additional pay-per-use cost for Git LFS?
 | GitHub Team | 250 GiB | 250 GiB |
 | **GitHub Enterprise Cloud** | **250 GiB** | **250 GiB** |
 
-#### Pay-Per-Use Pricing (Data Packs)
+#### Metered Pay-Per-Use Pricing
 
-| Data Pack | Price | Storage Included | Bandwidth Included |
-|-----------|-------|------------------|--------------------|
-| Git LFS Data Pack | **$5 USD/month** | 50 GiB | 50 GiB |
+> **Note:** GitHub retired Git LFS pre-paid data packs and replaced them with **metered billing**. You pay only for usage above the free quota.
 
-You can purchase multiple data packs as needed.
+- **Storage**: Billed hourly at the per-GiB metered rate; usage tracked per organization.
+- **Bandwidth**: Billed per GiB downloaded.
+- **Budget controls**: Set a spending budget under **Billing & licensing → Budgets and alerts**. A budget of `$0` hard-blocks any metered usage; removing the budget allows unlimited metered spend.
+- See the current rates in the [pricing calculator](https://github.com/pricing/calculator?feature=lfs).
 
 #### How Costs are Calculated
 
@@ -48,15 +56,11 @@ You can purchase multiple data packs as needed.
 
 #### What Happens When You Exceed the Quota?
 
-**Without a payment method on file:**
-- You can still clone repositories with large assets
-- You will only retrieve pointer files (not actual large files)
-- You cannot push new files
-- Git LFS support is disabled until the next billing cycle (for bandwidth)
+**Overage behavior depends on your budget setting (not just payment method)**:
 
-**With a payment method on file:**
-- Additional usage is billed automatically
-- Spending may be limited by budgets you configure
+- **No active budget (or budget > $0)**: Additional usage is metered and billed at per-GiB rates against the payment method on file. A payment method is required for any paid metered usage.
+- **Budget set to $0**: Additional usage is blocked for the remainder of the calendar month and resets on the 1st.
+- **Free or Pro accounts without a payment method**: Storage uploads fail when the storage quota is reached and bandwidth downloads fail when the bandwidth quota is reached, until the next billing cycle (for bandwidth) or until storage is reclaimed.
 
 #### Maximum File Sizes for Git LFS
 

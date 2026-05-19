@@ -2,15 +2,51 @@
 render_with_liquid: false
 ---
 
-# GitHub Well-Architected Framework: Best Practices and Principles
+# GitHub Enterprise Cloud — Well-Architected Best Practices (Azure WAF Pillars)
+
+> **Document status**
+>
+> - **Last reviewed:** 2026-05-19
+> - **Authorship:** Drafted with AI assistance (GitHub Copilot, multi-model review) and reviewed by a human maintainer before publication.
+> - **Sources:** Based on public documentation — primarily [docs.github.com](https://docs.github.com), [learn.microsoft.com](https://learn.microsoft.com), and official vendor blogs cited inline.
+> - **Verify before acting:** GitHub and Microsoft update product documentation continuously. Re-confirm against the live source pages before relying on this content for production decisions.
+
+## Table of Contents
+
+- [Overview](#overview)
+- [Enterprise Deployment Pillars](#enterprise-deployment-pillars)
+- [Pillars Relationship](#pillars-relationship)
+- [Enterprise Setup Checklist](#enterprise-setup-checklist)
+- [Organization Design Recommendations](#organization-design-recommendations)
+- [Repository Naming and Structure Conventions](#repository-naming-and-structure-conventions)
+- [Branching Strategy Recommendations](#branching-strategy-recommendations)
+- [CI/CD Governance Best Practices](#cicd-governance-best-practices)
+- [Change Management Processes](#change-management-processes)
+- [Description](#description)
+- [Related Issues](#related-issues)
+- [Type of Change](#type-of-change)
+- [Testing Done](#testing-done)
+- [Checklist](#checklist)
+- [Screenshots/Demos](#screenshotsdemos)
+- [Deployment Notes](#deployment-notes)
+- [Rollback Plan](#rollback-plan)
+- [Disaster Recovery and Backup Strategies](#disaster-recovery-and-backup-strategies)
+- [Enterprise Maturity Model](#enterprise-maturity-model)
+- [Scaling Patterns for Large Enterprises](#scaling-patterns-for-large-enterprises)
+- [Common Anti-Patterns to Avoid](#common-anti-patterns-to-avoid)
+- [Incident Response Runbook](#incident-response-runbook)
+- [Key Performance Indicators (KPIs)](#key-performance-indicators-kpis)
+- [Implementation Roadmap](#implementation-roadmap)
+- [References](#references)
+- [Appendix: Configuration Templates](#appendix-configuration-templates)
 
 ## Overview
 
-The GitHub Well-Architected Framework (WAF) provides a comprehensive set of principles and best practices for designing, implementing, and operating enterprise-scale GitHub environments. This framework enables organizations to build secure, reliable, and efficient software delivery platforms that scale with business growth.
+This guide applies the Azure Well-Architected Framework (WAF) operational pillars to GitHub Enterprise Cloud to provide enterprise-focused principles and best practices for designing, implementing, and operating GitHub at scale. It is intended as a practical bridge between cloud architecture disciplines and GitHub platform operations.
 
-> **Note:** The official GitHub Well-Architected Framework ([wellarchitected.github.com](https://wellarchitected.github.com)) is organized around five pillars: **Productivity**, **Collaboration**, **Application Security**, **Governance**, and **Architecture**. This document presents an enterprise-focused perspective that maps these official pillars to operational concerns commonly addressed in enterprise deployments, drawing inspiration from cloud architecture frameworks while remaining aligned with GitHub's official guidance.
+> **Note on framework taxonomy:** This guide uses the **Azure Well-Architected Framework** pillars (Reliability, Security, Operational Excellence, Performance Efficiency, Cost Optimization) as an organizing structure to apply WAF principles to GitHub Enterprise Cloud. The official **GitHub Well-Architected Framework** ([wellarchitected.github.com](https://wellarchitected.github.com)) uses a different five-pillar taxonomy (Productivity, Collaboration, Application Security, Governance, Architecture). See the GitHub WAF directly for GitHub's native framing.
 
-The following sections organize best practices around operational pillars that enterprise administrators commonly address when deploying GitHub at scale.
+The following sections organize best practices around these operational pillars for enterprise GitHub deployments.
 
 ## Enterprise Deployment Pillars
 
@@ -176,7 +212,7 @@ graph TB
   - [ ] Configure enterprise-level IP allow lists
 
 - [ ] **Identity and Access Management**
-  - [ ] Configure SAML SSO with corporate IdP (Okta, Azure AD, Ping)
+  - [ ] Configure SAML SSO with corporate IdP (Okta, Microsoft Entra ID, Ping)
   - [ ] Enable SCIM provisioning for automated user lifecycle
   - [ ] Enforce 2FA/MFA for all enterprise members
   - [ ] Create initial team structure aligned with organizational hierarchy
@@ -714,7 +750,7 @@ jobs:
           fetch-depth: 0
       
       - name: Run CodeQL
-        uses: github/codeql-action/init@v2
+        uses: github/codeql-action/init@v4
         with:
           languages: ['javascript', 'python']
       
@@ -726,7 +762,7 @@ jobs:
           head: HEAD
       
       - name: CodeQL Analysis
-        uses: github/codeql-action/analyze@v2
+        uses: github/codeql-action/analyze@v4
 
   test:
     runs-on: ubuntu-latest
@@ -2325,8 +2361,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: github/codeql-action/init@v2
-      - uses: github/codeql-action/analyze@v2
+      - uses: github/codeql-action/init@v4
+      - uses: github/codeql-action/analyze@v4
       - uses: aquasecurity/trivy-action@master
         # Parallel with tests: 10-12 minutes total
 
@@ -3176,7 +3212,7 @@ GitHub Enterprise Setup:
   - Enable audit log streaming
 
 SAML SSO Configuration:
-  - Integrate with corporate IdP (Okta/Azure AD)
+  - Integrate with corporate IdP (Okta/Microsoft Entra ID)
   - Configure SCIM provisioning
   - Test SSO login
   - Enable MFA requirement
@@ -3425,7 +3461,7 @@ jobs:
       
       - name: Run CodeQL
         if: inputs.scan-type == 'full' || inputs.scan-type == 'codeql'
-        uses: github/codeql-action/init@v2
+        uses: github/codeql-action/init@v4
       
       - name: Run Secret Scanning
         uses: trufflesecurity/trufflehog@main

@@ -4,13 +4,18 @@ render_with_liquid: false
 
 # Azure DevOps to GitHub Migration Assessment
 
-## Comprehensive Analysis: ADO DevSecOps Recommendations Mapped to GitHub
+> **Document status**
+>
+> - **Last reviewed:** 2026-05-19
+> - **Authorship:** Drafted with AI assistance (GitHub Copilot, multi-model review) and reviewed by a human maintainer before publication.
+> - **Sources:** Based on public documentation — primarily [docs.github.com](https://docs.github.com), [learn.microsoft.com](https://learn.microsoft.com), and official vendor blogs cited inline.
+> - **Verify before acting:** GitHub and Microsoft update product documentation continuously. Re-confirm against the live source pages before relying on this content for production decisions.
 
 > **Context:** Organization currently uses Azure DevOps for **Repos and Pipelines only** (no Boards, no Artifacts) and **JIRA** for project management.
 >
 > **Source Document:** Azure DevOps DevSecOps Assessment — Recommendations and Optimizations
->
-> **Date:** March 2026
+
+## Comprehensive Analysis: ADO DevSecOps Recommendations Mapped to GitHub
 
 ---
 
@@ -32,7 +37,7 @@ render_with_liquid: false
   - [3.3 JIRA Integration: GitHub vs ADO](#33-jira-integration-github-vs-ado)
 - [4. Native AI and DevSecOps: GitHub vs ADO](#4-native-ai-and-devsecops-github-vs-ado)
   - [4.1 AI-Powered Development (Copilot)](#41-ai-powered-development-copilot)
-  - [4.2 DevSecOps: GHAS vs GHAzDO and Third-Party Tools](#42-devsecops-ghas-vs-ghazdo-and-third-party-tools)
+  - [4.2 GitHub Secret Protection + GitHub Code Security vs GHAzDO and Third-Party Tools](#42-github-secret-protection--github-code-security-vs-ghazdo-and-third-party-tools)
 - [5. All Advantages of Moving to GitHub](#5-all-advantages-of-moving-to-github)
 - [6. References](#6-references)
 
@@ -58,7 +63,7 @@ The following tables map each of the 71 recommendations from the ADO DevSecOps A
 | R01 | Review organization inventory linked to Entra tenant; restrict organization creation | P1 | Enterprise account provides a single governance boundary. Enterprise owners control org creation. With EMU, all accounts are provisioned/deprovisioned via SCIM from Entra ID. | Enterprise Managed Users (EMU) + SCIM provisioning from Entra ID | [EMU Docs](https://docs.github.com/en/enterprise-cloud@latest/admin/identity-and-access-management/understanding-iam-for-enterprises/about-enterprise-managed-users) |
 | R02 | Disable Application connection policies (SSH, OAuth) if not used | P2 | Enterprise policies allow restricting personal access tokens (classic and fine-grained), SSH certificate authorities, and OAuth app policies at the enterprise or org level. Fine-grained PATs can be required, and classic PATs can be blocked. | Enterprise → Policies → Personal access tokens; SSH certificate authorities | [PAT Policies](https://docs.github.com/en/enterprise-cloud@latest/admin/enforcing-policies/enforcing-policies-for-your-enterprise/enforcing-policies-for-personal-access-tokens-in-your-enterprise) |
 | R03 | Disable external guest access policy | P1 | EMU enterprises prevent managed users from interacting outside the enterprise boundary. Managed users cannot collaborate on public repos, create public repos, or be invited to non-enterprise organizations. Outside collaborators can be restricted at the enterprise level. | EMU boundary restrictions + Enterprise policy: Restrict outside collaborators | [EMU Restrictions](https://docs.github.com/en/enterprise-cloud@latest/admin/identity-and-access-management/understanding-iam-for-enterprises/abilities-and-restrictions-of-managed-user-accounts) |
-| R04 | Configure auditing to stream to Azure Monitor / Sentinel | P1 | GitHub Enterprise Cloud supports audit log streaming to Azure Event Hubs, Amazon S3, Google Cloud Storage, Splunk, and Datadog. Azure Event Hubs can feed into Azure Monitor and Microsoft Sentinel. The audit log captures 30+ event categories. | Audit log streaming to Azure Event Hubs → Azure Monitor / Sentinel | [Audit Log Streaming](https://docs.github.com/en/enterprise-cloud@latest/admin/monitoring-activity-in-your-enterprise/reviewing-audit-logs-for-your-enterprise/streaming-the-audit-log-for-your-enterprise) |
+| R04 | Configure auditing to stream to Azure Monitor / Sentinel | P1 | GitHub Enterprise Cloud supports audit log streaming to Azure Blob Storage, Azure Event Hubs, Amazon S3, Google Cloud Storage, Splunk, and Datadog. Azure Event Hubs can feed into Azure Monitor and Microsoft Sentinel. The audit log captures 30+ event categories. | Audit log streaming to Azure Event Hubs → Azure Monitor / Sentinel | [Audit Log Streaming](https://docs.github.com/en/enterprise-cloud@latest/admin/monitoring-activity-in-your-enterprise/reviewing-audit-logs-for-your-enterprise/streaming-the-audit-log-for-your-enterprise) |
 | R05 | Avoid direct member assignment; use groups | P1 | With EMU, IdP groups from Entra ID are synchronized to GitHub Teams via SCIM. Permissions are assigned to Teams, not individual users. Team membership is managed entirely from Entra ID. | EMU + SCIM Team sync from Entra ID groups | [Team Sync with IdP](https://docs.github.com/en/enterprise-cloud@latest/admin/identity-and-access-management/provisioning-user-accounts-for-enterprise-managed-users/managing-team-memberships-with-identity-provider-groups) |
 | R06 | Require JIT access for admin groups using Entra PIM | P1 | GitHub EMU with OIDC supports Entra ID Conditional Access Policies (CAP). Combined with Entra PIM, admin group membership can be JIT-activated by the admin, and CAP enforces the same conditions on GitHub access. Enterprise owner role can be scoped to IdP-synced teams. | EMU OIDC + Entra Conditional Access + Entra PIM | [EMU with OIDC CAP](https://docs.github.com/en/enterprise-cloud@latest/admin/identity-and-access-management/configuring-authentication-for-enterprise-managed-users/about-support-for-your-idps-conditional-access-policy) |
 | R07 | Review custom group permissions for least privilege | P1 | GitHub provides predefined repository roles (Read, Triage, Write, Maintain, Admin) and supports **custom repository roles** at the organization level. Enterprise owners can also create custom roles with fine-grained permissions. | Custom repository roles at org level | [Custom Repository Roles](https://docs.github.com/en/enterprise-cloud@latest/organizations/managing-user-access-to-your-organizations-repositories/managing-repository-roles/managing-custom-repository-roles) |
@@ -109,7 +114,7 @@ The following tables map each of the 71 recommendations from the ADO DevSecOps A
 | R36 | Convert to workload identity federation for service connections | P1 | GitHub Actions natively supports **OIDC (OpenID Connect)** for secretless authentication to Azure, AWS, and GCP. Short-lived tokens are issued per workflow run — no secrets stored. Federated credentials are scoped to specific repos, branches, or environments. | OIDC Workload Identity Federation via `azure/login@v2` | [OIDC for Actions](https://docs.github.com/en/actions/security-for-github-actions/security-hardening-your-deployments/about-security-hardening-with-openid-connect) |
 | R37 | No shared service connections across projects | P1 | In GitHub, OIDC federated credentials in Entra ID app registrations are scoped per repository (via the `subject` claim filter). Environment-level secrets further restrict access. There is no concept of a "shared service connection" that can leak across repos. | OIDC subject claim scoping per repo + Environment secrets | [Configuring OIDC in Azure](https://docs.github.com/en/actions/security-for-github-actions/security-hardening-your-deployments/configuring-openid-connect-in-azure) |
 | R38 | Enforce approvals for production service connections | P1 | Environment protection rules require designated reviewers to approve before a workflow job targeting that environment can proceed. This gates access to environment-scoped secrets (including OIDC configuration). | Environment required reviewers | [Required Reviewers](https://docs.github.com/en/actions/managing-workflow-runs-and-deployments/managing-deployments/managing-environments-for-deployment#required-reviewers) |
-| R39 | Enable pipeline permissions; restrict to allowed YAML pipelines | P1 | In GitHub, workflows are defined only in `.github/workflows/` YAML files. **Required workflows** at the org level force specific workflows to run on selected repositories. Repository rulesets can require status checks from specific workflows before merge. | Required workflows + Rulesets with required status checks | [Required Workflows](https://docs.github.com/en/enterprise-cloud@latest/organizations/managing-organization-settings/configuring-required-workflows-for-your-organization) |
+| R39 | Enable pipeline permissions; restrict to allowed YAML pipelines | P1 | In GitHub, workflows are defined only in `.github/workflows/` YAML files. Repository rulesets can require designated workflow checks to pass before merge, enforcing approved CI/CD paths on selected repositories. | Require workflows to pass before merging (ruleset rule) + required status checks | [Available Ruleset Rules](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/available-rules-for-rulesets) |
 | R40 | Review repo settings — case enforcement, commit author validation | P1 | Repository rulesets can enforce: commit message patterns, commit author email patterns (e.g., must match `@company.com`), branch naming conventions, and tag protections. EMU restricts commit authorship to the IdP identity. | Rulesets: commit metadata rules (email pattern, message pattern) | [Ruleset Rules](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/available-rules-for-rulesets) |
 | R41 | Branch policies on all repos (build validation required) | P1 | **Repository rulesets** at org or enterprise level enforce branch protection across all repos matching a pattern. Rules include: require status checks to pass, require PR before merge, require signed commits, block force pushes, block deletions. | Org-level rulesets targeting all repos and branches | [Rulesets](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/about-rulesets) |
 | R42 | Review repo security permissions for least privilege | P1 | GitHub's role model (Read, Triage, Write, Maintain, Admin) plus custom repository roles enables granular least privilege. Base permissions can be set at the org level (e.g., "Read" for all members). CODEOWNERS enforces review requirements. | Org base permissions + Custom roles + CODEOWNERS | [Repository Roles](https://docs.github.com/en/organizations/managing-user-access-to-your-organizations-repositories/managing-repository-roles/repository-roles-for-an-organization) |
@@ -128,19 +133,19 @@ The following tables map each of the 71 recommendations from the ADO DevSecOps A
 | # | ADO Recommendation | Priority | GitHub Equivalent | GitHub Feature / Mechanism | Reference |
 |---|---|---|---|---|---|
 | R50 | Define naming conventions | P1 | GitHub supports naming conventions via: org-level rulesets (repository naming patterns via regex), branch naming rules, and tag naming rules. Custom properties on repos enable categorization and filtering. | Rulesets: naming pattern enforcement + Custom repository properties | [Custom Properties](https://docs.github.com/en/enterprise-cloud@latest/organizations/managing-organization-settings/managing-custom-properties-for-repositories-in-your-organization) |
-| R51 | Implement CI/CD strategy | P1 | GitHub Actions is the native CI/CD platform. Starter workflows provide language/framework-specific templates. Reusable workflows and composite actions enable standardization. Org-level required workflows enforce compliance. | GitHub Actions + Starter workflows + Reusable workflows | [Starter Workflows](https://docs.github.com/en/actions/writing-workflows/using-starter-workflows) |
+| R51 | Implement CI/CD strategy | P1 | GitHub Actions is the native CI/CD platform. Starter workflows provide language/framework-specific templates. Reusable workflows and composite actions enable standardization. Repository rulesets can require designated workflow checks to pass before merging for compliance. | GitHub Actions + Starter workflows + Reusable workflows + rulesets requiring workflows to pass | [Starter Workflows](https://docs.github.com/en/actions/writing-workflows/using-starter-workflows) |
 | R52 | At least 2 pipelines (Non-Prod, Prod) with shared templates | P1 | GitHub Actions Environments (e.g., `staging`, `production`) with **reusable workflows** achieve the same pattern. A single workflow file can deploy to multiple environments sequentially, each with its own protection rules. Reusable workflows serve as shared templates. | Environments + Reusable workflows as shared templates | [Reusable Workflows](https://docs.github.com/en/actions/sharing-automations/reusing-workflows) |
 | R53 | Protect production pipelines | P1 | Production environment with protection rules: required reviewers (1–6 approvals), wait timer, deployment branch restrictions (only `main` can deploy to prod), and custom deployment protection rules via API. | Environment protection rules for production | [Deployment Protection](https://docs.github.com/en/actions/managing-workflow-runs-and-deployments/managing-deployments/managing-environments-for-deployment) |
 | R54 | Protect pipeline resources with approvals/checks | P1 | Environment protection rules require approval before runner jobs proceed. OIDC credentials are scoped to environments. Rulesets require status checks before merge. Custom deployment protection rules enable external system approval (ServiceNow, JIRA, etc.). | Environment approvals + Custom deployment protection rules | [Custom Deployment Protection](https://docs.github.com/en/actions/managing-workflow-runs-and-deployments/managing-deployments/creating-custom-deployment-protection-rules) |
 | R55 | Branch policies + service connection checks for main branch | P1 | Rulesets on `main` enforce PR reviews, status checks, and signed commits. Environment secrets for production are only accessible from workflows triggered on `main` (via deployment branch policy). | Rulesets on main + Environment deployment branch policies | [Deployment Branches](https://docs.github.com/en/actions/managing-workflow-runs-and-deployments/managing-deployments/managing-environments-for-deployment#deployment-branches-and-tags) |
-| R56 | Required templates for service connection access | P1 | **Required workflows** at the org level force specific workflow YAML to run on designated repositories. Callers must use specific reusable workflows to access environment secrets. | Required workflows + Reusable workflow call enforcement | [Required Workflows](https://docs.github.com/en/enterprise-cloud@latest/organizations/managing-organization-settings/configuring-required-workflows-for-your-organization) |
+| R56 | Required templates for service connection access | P1 | Repository rulesets can require workflows to pass before merging, and callers can be limited to approved reusable workflows to access environment secrets. | Require workflows to pass before merging (ruleset rule) + reusable workflow call enforcement | [Available Ruleset Rules](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/available-rules-for-rulesets) |
 | R57 | Restrict pipelines for service connections + approval | P1 | OIDC federated credentials filter by subject claims (repo, branch, environment). Only workflows matching the filter can obtain tokens. Environment approvals add a human gate. | OIDC subject claims + Environment required reviewers | [OIDC Subject Claims](https://docs.github.com/en/actions/security-for-github-actions/security-hardening-your-deployments/about-security-hardening-with-openid-connect#customizing-the-subject-claims) |
 | R58 | Use workload identity federation; restrict SC to resource group | P1 | OIDC with Azure federated credentials. The Azure service principal can be scoped to specific resource groups via Azure RBAC. No secrets stored in GitHub. Short-lived tokens only. | OIDC + Azure RBAC scoping on service principal | [OIDC in Azure](https://docs.github.com/en/actions/security-for-github-actions/security-hardening-your-deployments/configuring-openid-connect-in-azure) |
 | R59 | Don't over-share service connections | P1 | OIDC credentials are naturally scoped per repo/environment. Organization-level secrets can be restricted to selected repositories only. Environment secrets are scoped to the environment. | Org secret access policies + Environment-scoped secrets | [Org Secrets Access](https://docs.github.com/en/actions/security-for-github-actions/security-guides/using-secrets-in-github-actions#creating-secrets-for-an-organization) |
 | R60 | Scope service connections to resource groups only | P1 | The Azure service principal used with OIDC is scoped via Azure RBAC assignments. Best practice: assign Contributor or specific roles at the resource group level, not subscription level. | Azure RBAC on the federated service principal | [Azure RBAC Best Practice](https://learn.microsoft.com/en-us/azure/role-based-access-control/best-practices) |
 | R61 | Naming convention for service connections | P2 | GitHub uses environment names, secret names, and OIDC audience identifiers. Naming conventions for environments (e.g., `production-eastus`, `staging-centralus`) and secrets provide the same organizational benefit. | Environment and secret naming conventions | [Environments](https://docs.github.com/en/actions/managing-workflow-runs-and-deployments/managing-deployments/managing-environments-for-deployment) |
 | R62 | Link secrets from Azure Key Vault; use variable groups | P1 | GitHub Actions can retrieve secrets from Azure Key Vault at runtime using the `azure/get-keyvault-secrets` action with OIDC authentication. This avoids storing secrets in GitHub. Organization-level secrets serve as the equivalent of variable groups. | `azure/get-keyvault-secrets` action + OIDC + Org secrets | [Key Vault Secrets Action](https://github.com/Azure/get-keyvault-secrets) |
-| R63 | Reusable CI/CD YAML templates library | P1 | **Reusable workflows** stored in a central repository can be called by any workflow across the org. **Composite actions** encapsulate multi-step processes. **Required workflows** force usage of approved templates. A dedicated `.github` repo provides org-wide defaults. | Reusable workflows + Composite actions + Required workflows + `.github` org repo | [Reusable Workflows](https://docs.github.com/en/actions/sharing-automations/reusing-workflows) |
+| R63 | Reusable CI/CD YAML templates library | P1 | **Reusable workflows** stored in a central repository can be called by any workflow across the org. **Composite actions** encapsulate multi-step processes. Rulesets requiring workflows to pass before merging can enforce approved template-backed checks. A dedicated `.github` repo provides org-wide defaults. | Reusable workflows + Composite actions + rulesets requiring workflows to pass + `.github` org repo | [Reusable Workflows](https://docs.github.com/en/actions/sharing-automations/reusing-workflows) |
 
 ---
 
@@ -149,12 +154,12 @@ The following tables map each of the 71 recommendations from the ADO DevSecOps A
 | # | ADO Recommendation | Priority | GitHub Equivalent | GitHub Feature / Mechanism | Reference |
 |---|---|---|---|---|---|
 | R64 | Dedicated DevSecOps team | P1 | GitHub supports security teams via: **Security managers** role at the org level (access to all security alerts without code access), **CODEOWNERS** for security-sensitive files, and **Security overview** dashboard for enterprise-wide visibility. | Security manager role + CODEOWNERS + Security overview | [Security Manager Role](https://docs.github.com/en/organizations/managing-peoples-access-to-your-organization-with-roles/managing-security-managers-in-your-organization) |
-| R65 | Define DevSecOps strategy across all projects | P1 | GitHub **Security configurations** at enterprise/org level push security settings (GHAS features) to all repos. Code scanning default setup auto-enables CodeQL. Secret scanning and push protection can be enabled org-wide. | Security configurations (enterprise/org level) | [Security Configurations](https://docs.github.com/en/enterprise-cloud@latest/code-security/securing-your-organization/introduction-to-securing-your-organization-at-scale/about-security-configurations) |
+| R65 | Define DevSecOps strategy across all projects | P1 | GitHub **Security configurations** at enterprise/org level can push GitHub Secret Protection and GitHub Code Security settings to all repos. Code scanning default setup auto-enables CodeQL. Secret scanning and push protection can be enabled org-wide. Both products are available on GitHub Team and Enterprise Cloud. | Security configurations (enterprise/org level) | [Security Configurations](https://docs.github.com/en/enterprise-cloud@latest/code-security/securing-your-organization/introduction-to-securing-your-organization-at-scale/about-security-configurations) |
 | R66 | Automated DevSecOps pipelines | P1 | **Code scanning default setup** automatically configures CodeQL analysis on every push and PR without any workflow configuration. Dependabot runs automatically. Secret scanning runs on every push. All findings appear directly in PRs. | Code scanning default setup + Dependabot + Secret scanning (all automatic) | [Code Scanning Default Setup](https://docs.github.com/en/code-security/code-scanning/enabling-code-scanning/configuring-default-setup-for-code-scanning) |
 | R67 | Enforce DevSecOps controls; fail builds on critical issues | P1 | Code scanning can be configured to **block PR merges** when security alerts of specified severity are found. Rulesets can require code scanning results and block merges on critical/high findings. Dependabot security updates auto-create PRs for vulnerable dependencies. | Rulesets: require code scanning results + Severity-based merge blocking | [Code Scanning Merge Protection](https://docs.github.com/en/code-security/code-scanning/managing-your-code-scanning-configuration/set-code-scanning-merge-protection) |
-| R68 | Secret Scanning, SCA, SAST, DAST tools | P1 | **GHAS** provides all of these natively: (1) **Secret scanning** with 200+ patterns + AI-powered generic detection + push protection, (2) **Dependabot** for SCA (software composition analysis), (3) **CodeQL** for SAST (static application security testing), (4) DAST can be integrated via Actions marketplace (OWASP ZAP, etc.). Additionally, **Copilot Autofix** generates AI-powered fixes for code scanning alerts. | Secret scanning + Dependabot (SCA) + CodeQL (SAST) + DAST via Actions + Copilot Autofix | [GHAS Overview](https://docs.github.com/en/get-started/learning-about-github/about-github-advanced-security) |
+| R68 | Secret Scanning, SCA, SAST, DAST tools | P1 | GitHub Secret Protection provides **secret scanning** with 200+ patterns, custom patterns, AI-powered generic detection, push protection, delegated bypass, and Copilot secret scanning. Dependabot **alerts, security updates, and version updates are free on all GitHub plans**. GitHub Code Security adds dependency review and custom auto-triage rules on top of free Dependabot capabilities; CodeQL and Copilot Autofix are also part of GitHub Code Security. DAST can be integrated via the Actions marketplace (OWASP ZAP, etc.). | GitHub Secret Protection + free Dependabot + GitHub Code Security + DAST via Actions | [Legacy GHAS overview](https://docs.github.com/en/get-started/learning-about-github/about-github-advanced-security) |
 | R69 | Security culture across organization | P1 | GitHub fosters security culture via: **Security campaigns** (coordinate org-wide remediation), **Security overview** dashboards (trends, metrics), **Dependabot alerts** visible to all developers, **Copilot Autofix** (one-click security fixes), and **security advisories** for responsible disclosure. | Security campaigns + Security overview + Copilot Autofix + Security advisories | [Security Campaigns](https://docs.github.com/en/enterprise-cloud@latest/code-security/securing-your-organization/fixing-security-alerts-at-scale/about-security-campaigns) |
-| R70 | Configure GitHub Advanced Security for ADO (GHAzDO) | P1 | **Migrate to GHAS (GitHub Advanced Security) on GitHub directly.** GHAS on GitHub is significantly more comprehensive than GHAzDO: it includes Copilot Autofix, AI-powered secret detection, security campaigns, Dependabot (full SCA), push protection with delegated bypass, Security overview, and artifact attestations — **none of which are available in GHAzDO.** | GHAS on GitHub (superset of GHAzDO) | [GHAS vs GHAzDO comparison below](#42-devsecops-ghas-vs-ghazdo-and-third-party-tools) |
+| R70 | Configure GitHub Advanced Security for ADO (GHAzDO) | P1 | **Migrate to GitHub Secret Protection and GitHub Code Security on GitHub directly.** The legacy bundled GHAS name still appears in older materials, but the current model splits secret protection from code security, and both products are available on GitHub Team and Enterprise Cloud. Together they are significantly more comprehensive than GHAzDO: Copilot Autofix, AI-powered secret detection, security campaigns, free Dependabot capabilities plus premium dependency review, push protection with delegated bypass, Security overview, and artifact attestations are **not available in GHAzDO.** | GitHub Secret Protection + GitHub Code Security (superset of GHAzDO) | [GitHub product split vs GHAzDO comparison below](#42-devsecops-github-secret-protection--github-code-security-vs-ghazdo-and-third-party-tools) |
 | R71 | Microsoft Defender for Cloud for DevOps environments | P1 | Microsoft Defender for DevOps supports **GitHub natively** (alongside ADO). Connect GitHub organizations to Defender for Cloud for centralized security posture management, DevOps security findings, and compliance reporting. GitHub is a first-class citizen in Defender for DevOps. | Microsoft Defender for DevOps — GitHub connector | [Defender for DevOps + GitHub](https://learn.microsoft.com/en-us/azure/defender-for-cloud/quickstart-onboard-github) |
 
 ---
@@ -172,22 +177,22 @@ The following tables map each of the 71 recommendations from the ADO DevSecOps A
 | **Code Review** | Manual review + optional policies | Manual review + **Copilot AI review** + CODEOWNERS | **GitHub** — AI-powered code review is exclusive to GitHub. |
 | **Merge Queue** | Not available | Native Merge Queue | **GitHub** — Unique capability preventing broken main branches in high-throughput repos. |
 | **Identity Management** | Entra ID (AAD) backing + group sync | EMU with SCIM + SAML/OIDC + Entra Conditional Access | **GitHub** — Full lifecycle management (SCIM). Conditional Access via OIDC. JIT admin via Entra PIM integration. |
-| **Audit Logging** | Organization-level audit | Enterprise-level audit log + streaming (Event Hubs, Splunk, S3, etc.) | **GitHub** — Enterprise-wide audit with streaming to SIEM. More granular event categories. |
+| **Audit Logging** | Organization-level audit | Enterprise-level audit log + streaming (Azure Blob Storage, Azure Event Hubs, Amazon S3, Google Cloud Storage, Splunk, and Datadog) | **GitHub** — Enterprise-wide audit with streaming to SIEM. More granular event categories. |
 | **Secret Management (CI/CD)** | Service connections (secret/certificate-based) | OIDC Workload Identity Federation (secretless) | **GitHub** — Secretless authentication eliminates rotation burden and secret exposure risk. |
-| **SAST** | GHAzDO Code Scanning (CodeQL, limited) | GHAS Code Scanning (CodeQL, full + Copilot Autofix) | **GitHub** — Same CodeQL engine but with Copilot Autofix, security campaigns, default setup, and deeper integration. |
-| **Secret Scanning** | GHAzDO Secret Scanning (basic) | GHAS Secret Scanning (200+ patterns + AI generic detection + push protection + delegated bypass) | **GitHub** — Significantly more comprehensive. AI-powered detection and push protection are exclusive. |
-| **SCA (Dependency Scanning)** | GHAzDO Dependency Scanning (basic alerts only) | Dependabot (alerts + auto security updates + version updates + dependency review + SBOM) | **GitHub** — Full lifecycle dependency management. GHAzDO has alerts only; no auto-remediation PRs. |
-| **Push Protection** | GHAzDO Push Protection (basic) | GHAS Push Protection with delegated bypass and audit trail | **GitHub** — Delegated bypass workflow and richer audit capabilities. |
-| **Security Dashboard** | GHAzDO security hub (project-scoped) | Security Overview (enterprise/org-wide, trends, insights) | **GitHub** — Enterprise-wide visibility with trend analysis. ADO is project-scoped only. |
+| **SAST** | GHAzDO Code Scanning (CodeQL, limited) | GitHub Code Security code scanning (CodeQL, full + Copilot Autofix) | **GitHub** — Same CodeQL engine but with Copilot Autofix, security campaigns, default setup, and deeper integration. |
+| **Secret Scanning** | GHAzDO Secret Scanning (basic) | GitHub Secret Protection secret scanning (200+ patterns + AI generic detection + push protection + delegated bypass) | **GitHub** — Significantly more comprehensive. AI-powered detection and push protection are exclusive. |
+| **SCA (Dependency Scanning)** | GHAzDO Dependency Scanning (basic alerts only) | Free Dependabot alerts/security updates/version updates + GitHub Code Security dependency review, custom auto-triage, and SBOM | **GitHub** — Full lifecycle dependency management. GHAzDO has alerts only; no auto-remediation PRs. |
+| **Push Protection** | GHAzDO Push Protection (basic) | GitHub Secret Protection push protection with delegated bypass and audit trail | **GitHub** — Delegated bypass workflow and richer audit capabilities. |
+| **Security Dashboard** | GHAzDO security hub (project-scoped) | GitHub Code Security Security Overview (enterprise/org-wide, trends, insights) | **GitHub** — Enterprise-wide visibility with trend analysis. ADO is project-scoped only. |
 | **AI Code Completion** | None | GitHub Copilot (IDE-integrated) | **GitHub exclusive** |
-| **AI Coding Agent** | None | Copilot coding agent, Claude, Codex (assign issues to AI) | **GitHub exclusive** |
+| **AI Coding Agent** | None | Copilot cloud agent, Claude, Codex (assign issues to AI) | **GitHub exclusive** |
 | **AI Code Review** | None | Copilot code review in PRs | **GitHub exclusive** |
 | **AI Security Fix** | None | Copilot Autofix for code scanning alerts | **GitHub exclusive** |
 | **AI in CLI** | None | Copilot CLI (`gh copilot`) | **GitHub exclusive** |
 | **Cloud Dev Environments** | None | GitHub Codespaces (full IDE in browser) | **GitHub exclusive** |
 | **Mobile App** | Azure DevOps Mobile (limited, no longer updated) | GitHub Mobile (iOS/Android, full feature PR review, deploy approval) | **GitHub** — Actively maintained and feature-rich. |
 | **Project Management** | Azure Boards (Work Items, Sprints, Backlogs) | GitHub Projects + GitHub Issues (or JIRA integration) | **ADO** — Azure Boards is more mature for complex project management. However, the org uses JIRA, making this irrelevant. |
-| **Artifact Management** | Azure Artifacts (NuGet, npm, Maven, Python, Universal) | GitHub Packages (npm, Maven, NuGet, Docker, RubyGems) | **Parity** — Both offer package hosting. The org does not use ADO Artifacts. |
+| **Artifact Management** | Azure Artifacts (NuGet, npm, Maven, Python, Universal) | GitHub Packages (npm, Maven/Gradle, NuGet, Container registry [Docker/OCI], RubyGems; **no Python/PyPI support**) | **Parity** — Both offer package hosting. The org does not use ADO Artifacts. |
 | **Wiki/Documentation** | Azure Wiki | GitHub Wiki + GitHub Pages + Markdown everywhere | **GitHub** — Pages provides free static hosting. Richer Markdown (Mermaid, math, footnotes). |
 | **Community & Ecosystem** | Smaller community | 150M+ developers, 420M+ repos, largest OSS community | **GitHub** — Overwhelmingly larger community, ecosystem, and talent pool. |
 | **API** | REST API | REST API + GraphQL API + GitHub CLI | **GitHub** — GraphQL for efficient queries. GitHub CLI for scriptable operations. |
@@ -202,11 +207,11 @@ The following features exist **only on GitHub** and have **no Azure DevOps equiv
 | Feature | Description | Impact |
 |---|---|---|
 | **Copilot Code Completion** | AI-powered code suggestions in IDE across all major editors | Productivity: 55%+ faster task completion (GitHub research) |
-| **Copilot Coding Agent** | Autonomous AI agent assigned to GitHub Issues — writes code, creates PRs, responds to reviews | Multiply team capacity — AI handles routine tasks |
+| **Copilot Cloud Agent** | Autonomous AI agent assigned to GitHub Issues — writes code, creates PRs, responds to reviews | Multiply team capacity — AI handles routine tasks |
 | **Copilot Code Review** | AI-powered PR review identifying bugs, security issues, style violations | Faster, more consistent code review |
 | **Copilot Autofix** | AI-generated fixes for code scanning security alerts — one-click apply | Drastically reduce MTTR for security vulnerabilities |
 | **Copilot CLI** | Natural language shell commands via `gh copilot` | Developer experience improvement |
-| **Copilot Spaces** | Shared team knowledge bases for consistent AI context (preview) | Organizational knowledge capture |
+| **Copilot Spaces** | Shared team knowledge bases for consistent AI context (formerly Copilot Knowledge Bases) | Organizational knowledge capture |
 | **Copilot Extensions / MCP** | Connect Copilot to organizational tools via Model Context Protocol | Custom AI-powered workflows |
 | **Third-Party Coding Agents** | Claude (Anthropic), Codex (OpenAI) assignable directly from Issues | Multi-model AI development |
 | **Merge Queue** | Automated merge sequencing ensuring main branch is never broken | CI reliability at scale |
@@ -230,16 +235,16 @@ The following features exist **only on GitHub** and have **no Azure DevOps equiv
 | Signal | Azure DevOps | GitHub |
 |---|---|---|
 | **Feature release cadence** | Three-week sprint releases; feature scope narrower than GitHub | Weekly releases via GitHub Changelog; accelerating innovation |
-| **AI investment** | Limited AI integration: MCP Server for Azure DevOps (2025 Q4), GitHub Coding Agent for Azure Boards (2025 Q4). No Copilot platform integration for Repos or Pipelines. | Copilot is Microsoft's flagship AI product — billions invested; expanding monthly |
+| **AI investment** | Limited AI integration: MCP Server for Azure DevOps (2025 Q4), Copilot cloud agent for Azure Boards (2025 Q4). No Copilot platform integration for Repos or Pipelines. | Copilot is Microsoft's flagship AI product — billions invested; expanding monthly |
 | **Public roadmap** | [Features Timeline](https://learn.microsoft.com/en-us/azure/devops/release-notes/features-timeline) — public roadmap with quarterly feature planning | [github.com/github/roadmap](https://github.com/github/roadmap) — public roadmap, community-engaged |
 | **Microsoft internal usage** | Significant Microsoft teams continue to use ADO (e.g., Windows, Azure DevOps itself) | GitHub used internally by a large portion of Microsoft engineering |
-| **Security innovation** | GHAzDO receives delayed, subset features from GHAS | GHAS receives all innovations first; GHAzDO is always behind |
+| **Security innovation** | GHAzDO receives delayed, subset features from GitHub Secret Protection and GitHub Code Security | GitHub Secret Protection and GitHub Code Security receive innovations first; GHAzDO is always behind |
 | **Marketplace growth** | Smaller extension marketplace with slower growth | 20,000+ Actions, growing weekly, supported by community + vendors |
 | **Executive messaging** | Microsoft leadership refers customers to GitHub for new investments | GitHub positioned as "the world's developer platform" |
 | **Conference investment** | No dedicated ADO conference | GitHub Universe (annual), GitHub Galaxy (regional) — significant marketing/product investment |
 | **ADO's stated direction** | "Make it easier for customers to move their repositories to GitHub **while continuing to use Azure Boards, Pipelines, and Test Plans**" ([ADO roadmap](https://learn.microsoft.com/en-us/azure/devops/release-notes/features-timeline)) — focused on hybrid coexistence | GitHub positioned as the destination for full-platform consolidation |
 | **Copilot integration** | Not planned | Deeply integrated and expanding (code completion, review, agents, CLI, security) |
-| **GHAS innovations** | GHAzDO is actively expanding: CodeQL default setup (2026 Q2), Dependabot security updates (Future), status check policies (2026 Q1). Still a subset of GHAS, features arrive later. | All security innovations ship to GHAS first; GHAzDO receives a delayed subset |
+| **GitHub security innovations** | GHAzDO is actively expanding: CodeQL default setup (2026 Q2), Dependabot security updates (Future), status check policies (2026 Q1). It remains a subset of GitHub Secret Protection and GitHub Code Security, so features arrive later. | Security innovations ship to GitHub Secret Protection and GitHub Code Security first; GHAzDO receives a delayed subset |
 
 > **ADO roadmap context:** The ADO team's publicly stated direction includes *"make it easier for customers to move their repositories to GitHub while continuing to use Azure Boards, Pipelines, and Test Plans."* ([Source](https://learn.microsoft.com/en-us/azure/devops/release-notes/features-timeline)) This indicates Microsoft's strategy supports a hybrid model (GitHub Repos + ADO Boards/Pipelines) as well as full GitHub consolidation. The investment emphasis, however, favors GitHub for new platform-level capabilities (AI, security, developer experience).
 
@@ -251,9 +256,9 @@ The following features exist **only on GitHub** and have **no Azure DevOps equiv
 
 | Risk Category | Description | Severity |
 |---|---|---|
-| **Platform stagnation** | ADO receives incremental updates on a three-week sprint cadence, but the scope is narrower than GitHub. ADO has introduced some AI features (MCP Server, Coding Agent for Boards) and GHAzDO is expanding — however, the pace and breadth of new capabilities (Copilot integration, security innovations, developer experience) remain significantly behind GitHub. | **High** |
-| **Missing AI productivity** | No Copilot code review, Autofix, or coding agent integration at the ADO platform level. ADO has MCP Server and Coding Agent for Boards, but these do not address core development AI. Teams miss 55%+ productivity gains documented by GitHub research. | **High** |
-| **Weaker security posture** | GHAzDO is a subset of GHAS. Missing: Copilot Autofix, security campaigns, AI secret detection, Dependabot auto-fix PRs, SBOM, artifact attestations, push protection delegated bypass. | **High** |
+| **Platform stagnation** | ADO receives incremental updates on a three-week sprint cadence, but the scope is narrower than GitHub. ADO has introduced some AI features (MCP Server, Copilot cloud agent for Boards) and GHAzDO is expanding — however, the pace and breadth of new capabilities (Copilot integration, security innovations, developer experience) remain significantly behind GitHub. | **High** |
+| **Missing AI productivity** | No Copilot code review, Autofix, or cloud agent integration at the ADO platform level. ADO has MCP Server and Copilot cloud agent for Boards, but these do not address core development AI. Teams miss 55%+ productivity gains documented by GitHub research. | **High** |
+| **Weaker security posture** | GHAzDO is a subset of GitHub Secret Protection and GitHub Code Security. Missing: Copilot Autofix, security campaigns, AI secret detection, premium Dependabot features, SBOM, artifact attestations, and delegated-bypass push protection. | **High** |
 | **Talent challenges** | Developers prefer GitHub (150M+ users). ADO skills are niche. Recruiting and retention are harder with a less desirable toolchain. | **Medium** |
 | **JIRA integration gap** | JIRA + ADO integration is less comprehensive than JIRA + GitHub. The "GitHub for Atlassian" app (364K installs) provides deeper features, AI integration (Rovo Dev), and more active development. | **Medium** |
 | **Ecosystem limitations** | ADO marketplace is smaller with many unmaintained extensions. GitHub has 20,000+ Actions and first-party vendor support. | **Medium** |
@@ -280,7 +285,7 @@ Since the organization uses **only Repos and Pipelines** (no Boards, no Artifact
 #### Migration Tools Available
 
 - **[GitHub Enterprise Importer (GEI)](https://docs.github.com/en/migrations/using-github-enterprise-importer):** Migrates source code, commit history, PRs, and metadata in bulk from ADO. Supports bulk migration of entire ADO organizations with migration logs and mannequin reclamation (mapping ADO users to GitHub accounts).
-  - **Limitations:** Does not migrate ADO Boards, work items, or Artifacts. Does not migrate pipelines (use Actions Importer). Repositories with Git LFS objects need separate handling.
+  - **Limitations:** Does not migrate ADO Boards, work items, or Artifacts. Does not migrate pipelines. GEI *does* migrate work item links on pull requests (preserving PR-to-work-item traceability). The 40 GiB repository size limit (currently in public preview) applies; repos above this limit require `git-sizer` assessment and remediation before migration.
 - **[GitHub Actions Importer](https://docs.github.com/en/actions/tutorials/migrate-to-github-actions/automated-migrations/use-github-actions-importer):** Converts ADO YAML and Classic pipelines to GitHub Actions YAML. Achieves ~80% automated conversion. Key commands:
   - `audit` — Analyze your current ADO CI/CD footprint to plan migration timelines.
   - `forecast` — Forecast GitHub Actions usage from historical ADO pipeline utilization.
@@ -313,13 +318,13 @@ Since the organization uses **only Repos and Pipelines** (no Boards, no Artifact
 | Phase | Duration | Activities |
 |---|---|---|
 | **Phase 1: Pilot** | 4–6 weeks | Migrate 2–3 teams (repos + pipelines), validate JIRA integration, establish rulesets, train champions |
-| **Phase 2: Broad Migration** | 6–10 weeks | Migrate remaining repos/pipelines in waves, enable GHAS org-wide, roll out Copilot |
+| **Phase 2: Broad Migration** | 6–10 weeks | Migrate remaining repos/pipelines in waves, enable GitHub Secret Protection and GitHub Code Security org-wide, roll out Copilot |
 | **Phase 3: Optimization** | Ongoing | Tune rulesets, enable advanced features (merge queue, Codespaces, security campaigns), deprecate ADO |
 
 #### ROI Drivers Post-Migration
 
 - **Copilot productivity gains** — 55%+ faster task completion (GitHub research, 2022), reduced context switching. In a Grupo Boticário internal survey, **94% of developers reported feeling more productive** with Copilot ([customer story](https://github.com/customer-stories/grupoboticario)).
-- **Reduced security tool cost** — GHAS replaces third-party SAST/SCA tools
+- **Reduced security tool cost** — GitHub Secret Protection and GitHub Code Security reduce or replace third-party SAST/SCA/secrets tooling
 - **Eliminated secret rotation** — OIDC removes service connection secret management
 - **Faster vulnerability remediation** — Copilot Autofix and Dependabot auto-fix PRs
 - **Reduced onboarding time** — Codespaces provides productive environments in minutes
@@ -333,7 +338,7 @@ Since the organization uses **only Repos and Pipelines** (no Boards, no Artifact
 | **PR workflow** | Low | GitHub PRs are similar but have enhanced features (draft PRs, merge queue, Copilot review). |
 | **Branch policies → Rulesets** | Low-Medium | Concepts map well; GitHub Rulesets offer more flexibility. |
 | **Pipeline syntax** | Medium | Main learning curve. ADO YAML → GitHub Actions YAML requires syntax education, but the ~80% auto-conversion by Actions Importer reduces effort. |
-| **Security tools** | Low | GHAS features are self-service and mostly auto-enabled. |
+| **Security tools** | Low | GitHub Secret Protection and GitHub Code Security features are self-service and mostly auto-enabled. |
 | **Admin / governance** | Medium | New concepts: Enterprise Managed Users, Rulesets, organization settings. |
 | **JIRA integration** | Low | Plugin install + smart commit convention adoption. |
 
@@ -356,8 +361,8 @@ Since the organization uses **only Repos and Pipelines** (no Boards, no Artifact
 
 **Long-term (3+ months):**
 
-- Access to all GitHub AI tools (Copilot, coding agents, Autofix).
-- Comprehensive security posture via GHAS.
+- Access to all GitHub AI tools (Copilot, Copilot cloud agent, third-party coding agents, Autofix).
+- Comprehensive security posture via GitHub Secret Protection and GitHub Code Security.
 - Faster CI/CD with GitHub Actions marketplace ecosystem.
 - Improved developer satisfaction and productivity.
 - Better talent attraction and retention.
@@ -420,46 +425,46 @@ Branches with JIRA issue keys (e.g., `feature/PROJ-123-login-fix`) automatically
 |---|---|---|---|
 | **Code Completion** | Copilot: Multi-line suggestions, context-aware, supports 30+ languages, works in VS Code, Visual Studio, JetBrains, Xcode, Neovim, Eclipse, Zed | Not available | GitHub exclusive |
 | **AI Chat (IDE)** | Copilot Chat: Explain code, generate tests, debug, refactor — in IDE and on github.com | Not available (Copilot works in IDE but not integrated with ADO) | GitHub exclusive (platform integration) |
-| **AI Coding Agent** | Copilot coding agent: Assign issues to Copilot — autonomous code writing, PR creation, review response. Runs in cloud VM. | Not available | GitHub exclusive |
+| **Copilot Cloud Agent** | Copilot cloud agent: Assign issues to Copilot — autonomous code writing, PR creation, review response. Runs in cloud VM. | Not available | GitHub exclusive |
 | **Third-Party AI Agents** | Claude (Anthropic), Codex (OpenAI): Assign issues to third-party AI agents directly from GitHub | Not available | GitHub exclusive |
 | **AI Code Review** | Copilot code review: AI reviews PRs, identifies bugs, security issues, suggests improvements | Not available | GitHub exclusive |
 | **AI Security Fix** | Copilot Autofix: AI-generated fixes for CodeQL code scanning alerts — one-click apply | Not available (GHAzDO has no Autofix) | GitHub exclusive |
 | **AI Secret Understanding** | Copilot for secret scanning: AI explains leaked secrets and remediation | Not available | GitHub exclusive |
 | **AI PR Summaries** | Copilot generates PR descriptions and summaries | Not available | GitHub exclusive |
 | **Natural Language CLI** | `gh copilot suggest` / `gh copilot explain` — natural language to shell commands | Not available | GitHub exclusive |
-| **AI Workspace Knowledge** | Copilot Spaces: Team knowledge bases for consistent AI context (preview) | Not available | GitHub exclusive |
+| **AI Workspace Knowledge** | Copilot Spaces: Team knowledge bases for consistent AI context (formerly Copilot Knowledge Bases) | Not available | GitHub exclusive |
 | **Multi-Model Support** | Choose from GPT-4o, Claude Sonnet, Claude Haiku, Gemini — optimized for different tasks | N/A | GitHub exclusive |
 | **MCP (Model Context Protocol)** | Connect Copilot to organizational tools (databases, APIs, internal systems) | N/A | GitHub exclusive |
 | **Copilot Extensions** | Third-party tools extend Copilot capabilities (Docker, Azure, Sentry, LaunchDarkly, etc.) | N/A | GitHub exclusive |
 
-> **Summary:** Azure DevOps has very limited AI capabilities at the platform level. ADO has introduced MCP Server for ADO (Done Q4 2025) and GitHub Coding Agent for Azure Boards (Done Q4 2025), but these are narrowly scoped. The vast majority of AI-powered development features — coding agent, code review, Autofix, AI secret detection, multi-model support — are GitHub-exclusive. While Copilot works in IDEs regardless of where code is hosted, the platform-level integrations require GitHub.
+> **Summary:** Azure DevOps has very limited AI capabilities at the platform level. ADO has introduced MCP Server for ADO (Done Q4 2025) and Copilot cloud agent for Azure Boards (Done Q4 2025), but these are narrowly scoped. The vast majority of AI-powered development features — cloud agent, code review, Autofix, AI secret detection, multi-model support — are GitHub-exclusive. While Copilot works in IDEs regardless of where code is hosted, the platform-level integrations require GitHub.
 
-### 4.2 DevSecOps: GHAS vs GHAzDO and Third-Party Tools
+### 4.2 GitHub Secret Protection + GitHub Code Security vs GHAzDO and Third-Party Tools
 
-GitHub Advanced Security (GHAS) on GitHub is the full product. GHAzDO (GitHub Advanced Security for Azure DevOps) is a **limited subset** ported to ADO. The following table shows the gap:
+GitHub's current code-security model is split between **GitHub Secret Protection** and **GitHub Code Security**. The legacy bundled **GHAS** name still appears in older materials, but the primary model is the two-product split, and both products are available on **GitHub Team** as well as **Enterprise Cloud**. GHAzDO (GitHub Advanced Security for Azure DevOps) remains a **limited subset** ported to ADO. The following table shows the gap:
 
-| DevSecOps Feature | GHAS (on GitHub) | GHAzDO (on ADO) | Third-Party Alternative (for ADO) |
+| DevSecOps Feature | GitHub products on GitHub | GHAzDO (on ADO) | Third-Party Alternative (for ADO) |
 |---|---|---|---|
-| **Code Scanning (SAST)** | CodeQL — default setup (zero-config), advanced setup, 10+ languages, custom queries, autofix suggestions | CodeQL — basic scanning, no default setup, no autofix | SonarQube, Checkmarx, Fortify |
-| **Copilot Autofix** | AI-generated fixes for code scanning alerts — one-click apply in PR | **Not available** | None equivalent |
-| **Secret Scanning** | 200+ partner patterns + custom patterns + AI-powered generic detection | Basic partner pattern matching; no AI detection; no custom patterns | GitLeaks, TruffleHog |
-| **Push Protection** | Blocks pushes with secrets before they reach repo + delegated bypass with audit trail | Basic push protection; no delegated bypass | Pre-commit hooks (GitLeaks) |
-| **Dependabot Alerts** | Vulnerability alerts for all ecosystems, auto-triage rules, exploitability info | Basic dependency alerts (limited ecosystems) | Snyk, Mend (WhiteSource) |
-| **Dependabot Security Updates** | Auto-generates PRs to fix vulnerable dependencies — merge and done | **Not available** | Snyk, Renovate |
-| **Dependabot Version Updates** | Auto-generates PRs to keep dependencies current | **Not available** | Renovate |
-| **Dependency Review** | PR diff shows exact security impact of dependency changes | **Not available** | None natively |
-| **SBOM Generation** | SPDX-compatible Software Bill of Materials per repo | **Not available** | Third-party SBOM tools |
-| **Artifact Attestations** | Cryptographic build provenance (SLSA Level 2+) | **Not available** | Sigstore, in-toto |
-| **Security Overview** | Enterprise/org-wide dashboard with trends, risk scores, coverage metrics | Project-scoped only; less comprehensive | Azure Dashboards (custom) |
-| **Security Campaigns** | Coordinate remediation of specific alert types across 100s of repos at scale | **Not available** | Manual coordination |
-| **Custom Auto-Triage Rules** | Automatically dismiss/snooze alerts based on rules (dev dependencies, test code, etc.) | **Not available** | Manual triage |
-| **Security Advisories** | Create, publish, request CVEs for responsible vulnerability disclosure | **Not available** | Manual process |
-| **GitHub Advisory Database** | Curated, community-contributed vulnerability database | Uses same data (transitive) | NVD, OSV |
+| **Code Scanning (SAST)** | GitHub Code Security — CodeQL default setup (zero-config), advanced setup, **12 languages including GitHub Actions workflows** (security scanning of `.github/workflows/*.yml` and `**/action.yml`), custom queries, autofix suggestions | CodeQL — basic scanning, no default setup, no autofix | SonarQube, Checkmarx, Fortify |
+| **Copilot Autofix** | GitHub Code Security — AI-generated fixes for code scanning alerts, one-click apply in PR | **Not available** | None equivalent |
+| **Secret Scanning** | GitHub Secret Protection — 200+ partner patterns, custom patterns, AI-powered generic detection, Copilot secret scanning | Basic partner pattern matching; no AI detection; no custom patterns | GitLeaks, TruffleHog |
+| **Push Protection** | GitHub Secret Protection — blocks pushes with secrets before they reach the repo + delegated bypass with audit trail | Basic push protection; no delegated bypass | Pre-commit hooks (GitLeaks) |
+| **Dependabot Alerts** | Free (all plans) vulnerability alerts for supported ecosystems; GitHub Code Security adds custom auto-triage rules | Basic dependency alerts (limited ecosystems) | Snyk, Mend (WhiteSource) |
+| **Dependabot Security Updates** | Free (all plans) auto-generated PRs to fix vulnerable dependencies | **Not available** | Snyk, Renovate |
+| **Dependabot Version Updates** | Free (all plans) auto-generated PRs to keep dependencies current | **Not available** | Renovate |
+| **Dependency Review** | GitHub Code Security — PR diff shows exact security impact of dependency changes | **Not available** | None natively |
+| **SBOM Generation** | GitHub Code Security — SPDX-compatible Software Bill of Materials per repo | **Not available** | Third-party SBOM tools |
+| **Artifact Attestations** | GitHub Code Security — cryptographic build provenance (SLSA Level 2+) | **Not available** | Sigstore, in-toto |
+| **Security Overview** | GitHub Code Security — enterprise/org-wide dashboard with trends, risk scores, coverage metrics | Project-scoped only; less comprehensive | Azure Dashboards (custom) |
+| **Security Campaigns** | GitHub Code Security — coordinate remediation of specific alert types across 100s of repos at scale | **Not available** | Manual coordination |
+| **Custom Auto-Triage Rules** | GitHub Code Security — automatically dismiss/snooze alerts based on rules (dev dependencies, test code, etc.) | **Not available** | Manual triage |
+| **Security Advisories** | GitHub — create, publish, request CVEs for responsible vulnerability disclosure | **Not available** | Manual process |
+| **GitHub Advisory Database** | GitHub — curated, community-contributed vulnerability database | Uses same data (transitive) | NVD, OSV |
 | **Defender for DevOps** | First-class GitHub connector in Microsoft Defender for Cloud | First-class ADO connector in Microsoft Defender for Cloud | Parity |
 | **Third-Party SAST/DAST Integration** | Upload SARIF results from any tool to code scanning | Upload SARIF results (similar capability) | Parity (SARIF upload) |
 | **Branch Protection for Security** | Rulesets block merge when security alerts exist above threshold | Branch policies + build validation | Similar (manual config) |
 
-> **Key finding:** GHAS on GitHub has **16+** features not available in GHAzDO. Organizations using GHAzDO on ADO get a fraction of the security value compared to GHAS on GitHub. Migrating to GitHub unlocks the full security platform.
+> **Key finding:** GitHub Secret Protection and GitHub Code Security on GitHub expose **16+** capabilities beyond GHAzDO. Organizations using GHAzDO on ADO get a fraction of the security value compared to the full GitHub product set, much of which is available on GitHub Team as well as Enterprise Cloud.
 
 ---
 
@@ -467,22 +472,22 @@ GitHub Advanced Security (GHAS) on GitHub is the full product. GHAzDO (GitHub Ad
 
 ### 5.1 AI-Native Platform
 
-- **Copilot everywhere:** Code completion, chat, coding agent, code review, CLI, spaces, extensions, autofix, PR summaries
+- **Copilot everywhere:** Code completion, chat, cloud agent, code review, CLI, spaces, extensions, autofix, PR summaries
 - **Multi-model choice:** GPT-4o, Claude, Gemini — choose the best model per task
 - **Third-party agents:** Claude (Anthropic), Codex (OpenAI) assignable directly from Issues
 - **MCP protocol:** Connect AI to organizational tools and data sources
-- **Minimal AI capabilities on ADO** — ADO has MCP Server and Coding Agent for Boards, but lacks Copilot code review, Autofix, coding agent, CLI, multi-model support, and extensions. This remains the single largest strategic gap.
+- **Minimal AI capabilities on ADO** — ADO has MCP Server and Copilot cloud agent for Boards, but lacks Copilot code review, Autofix, cloud agent, CLI, multi-model support, and extensions. This remains the single largest strategic gap.
 
-### 5.2 Comprehensive Native Security (GHAS)
+### 5.2 Comprehensive Native Security (GitHub Secret Protection + GitHub Code Security)
 
-- **Code scanning (CodeQL):** SAST with default setup (zero-config), Copilot Autofix, 10+ languages
-- **Secret scanning:** 200+ patterns, AI generic detection, push protection, delegated bypass
-- **Dependabot:** SCA alerts + auto security updates + version updates + dependency review
-- **SBOM generation** for regulatory compliance (SPDX)
-- **Artifact attestations** for supply chain integrity (SLSA)
-- **Security campaigns** for org-wide remediation at scale
-- **Security overview** dashboard with enterprise-wide visibility and trends
-- **Replaces multiple third-party tools** (SonarQube, Snyk, GitLeaks, etc.)
+- **Code scanning (CodeQL):** GitHub Code Security provides SAST with default setup (zero-config), Copilot Autofix, and **12 languages including GitHub Actions workflows**
+- **Secret scanning + push protection:** GitHub Secret Protection provides 200+ patterns, AI generic detection, custom patterns, delegated bypass, and Copilot secret scanning
+- **Dependabot:** Alerts, security updates, and version updates are free on all plans; GitHub Code Security adds dependency review and custom auto-triage
+- **SBOM generation:** GitHub Code Security supports SPDX output for regulatory compliance
+- **Artifact attestations:** GitHub Code Security supports supply-chain provenance (SLSA)
+- **Security campaigns:** GitHub Code Security enables org-wide remediation at scale
+- **Security overview:** GitHub Code Security provides enterprise-wide visibility and trends
+- **Replaces multiple third-party tools** (SonarQube, Snyk, GitLeaks, etc.) when combined with free Dependabot capabilities
 
 ### 5.3 Largest Developer Ecosystem
 
@@ -502,7 +507,7 @@ GitHub Advanced Security (GHAS) on GitHub is the full product. GHAzDO (GitHub Ad
 
 - **Enterprise Managed Users (EMU):** Full lifecycle management via SCIM from Entra ID
 - **Repository Rulesets:** Hierarchical enforcement at enterprise → org → repo level
-- **Audit log streaming:** Azure Event Hubs → Monitor / Sentinel
+- **Audit log streaming:** Azure Blob Storage, Azure Event Hubs, Amazon S3, Google Cloud Storage, Splunk, and Datadog
 - **Conditional Access:** Entra ID CAP support via OIDC
 - **JIT administration:** Entra PIM integration for admin roles
 - **Custom repository roles:** Fine-grained least-privilege permissions
@@ -541,7 +546,7 @@ GitHub Advanced Security (GHAS) on GitHub is the full product. GHAzDO (GitHub Ad
 
 ### 5.10 Reduced Total Cost of Ownership
 
-- **Eliminate third-party security tools:** GHAS replaces SonarQube, Snyk, GitLeaks, etc.
+- **Eliminate third-party security tools:** GitHub Secret Protection and GitHub Code Security replace or reduce SonarQube, Snyk, GitLeaks, and similar tools.
 - **Eliminate secret rotation burden:** OIDC removes service connection secret management
 - **Faster onboarding:** Codespaces provides productive environments in minutes vs. hours/days
 - **Copilot productivity gains:** 55%+ faster task completion documented by GitHub research
@@ -552,8 +557,8 @@ GitHub Advanced Security (GHAS) on GitHub is the full product. GHAzDO (GitHub Ad
 
 - **Microsoft's primary developer platform:** Strategic investment in AI and developer experience flows primarily to GitHub
 - **ADO's own roadmap** focuses on hybrid coexistence — improving GitHub Repos + ADO Boards/Pipelines integration ([Features Timeline](https://learn.microsoft.com/en-us/azure/devops/release-notes/features-timeline))
-- **AI features will continue to be GitHub-first** — Copilot is Microsoft's core AI product (ADO receives limited AI integrations like MCP Server and Coding Agent for Boards)
-- **Security innovations ship to GHAS first,** with GHAzDO receiving delayed subsets (CodeQL default setup expected 2026 Q2, Dependabot security updates marked "Future")
+- **AI features will continue to be GitHub-first** — Copilot is Microsoft's core AI product (ADO receives limited AI integrations like MCP Server and Copilot cloud agent for Boards)
+- **Security innovations ship to GitHub Secret Protection and GitHub Code Security first,** with GHAzDO receiving delayed subsets (CodeQL default setup expected 2026 Q2, Dependabot security updates marked "Future")
 - **Migrating now** avoids accumulating technical debt and higher future migration costs
 
 ### 5.12 Minimal Migration Risk (for This Organization)
@@ -586,12 +591,12 @@ GitHub Advanced Security (GHAS) on GitHub is the full product. GHAzDO (GitHub Ad
 | Environments & Deployment Protection | <https://docs.github.com/en/actions/managing-workflow-runs-and-deployments/managing-deployments/managing-environments-for-deployment> |
 | Custom Deployment Protection Rules | <https://docs.github.com/en/actions/managing-workflow-runs-and-deployments/managing-deployments/creating-custom-deployment-protection-rules> |
 | Reusable Workflows | <https://docs.github.com/en/actions/sharing-automations/reusing-workflows> |
-| Required Workflows | <https://docs.github.com/en/enterprise-cloud@latest/organizations/managing-organization-settings/configuring-required-workflows-for-your-organization> |
+| Require workflows to pass before merging (ruleset rule) | <https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/available-rules-for-rulesets> |
 | Runner Groups | <https://docs.github.com/en/enterprise-cloud@latest/actions/hosting-your-own-runners/managing-self-hosted-runners/managing-access-to-self-hosted-runners-using-groups> |
 | Actions Policies (Enterprise) | <https://docs.github.com/en/enterprise-cloud@latest/admin/enforcing-policies/enforcing-policies-for-your-enterprise/enforcing-policies-for-github-actions-in-your-enterprise> |
 | PAT Policies (Enterprise) | <https://docs.github.com/en/enterprise-cloud@latest/admin/enforcing-policies/enforcing-policies-for-your-enterprise/enforcing-policies-for-personal-access-tokens-in-your-enterprise> |
 | Encrypted Secrets | <https://docs.github.com/en/actions/security-for-github-actions/security-guides/using-secrets-in-github-actions> |
-| GitHub Advanced Security | <https://docs.github.com/en/get-started/learning-about-github/about-github-advanced-security> |
+| GitHub Secret Protection / GitHub Code Security (legacy GHAS overview) | <https://docs.github.com/en/get-started/learning-about-github/about-github-advanced-security> |
 | Code Scanning Default Setup | <https://docs.github.com/en/code-security/code-scanning/enabling-code-scanning/configuring-default-setup-for-code-scanning> |
 | Code Scanning Merge Protection | <https://docs.github.com/en/code-security/code-scanning/managing-your-code-scanning-configuration/set-code-scanning-merge-protection> |
 | Secret Scanning | <https://docs.github.com/en/code-security/secret-scanning/introduction/about-secret-scanning> |

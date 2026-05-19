@@ -2,6 +2,13 @@
 
 > **Consolidated architecture diagrams, reference patterns, and quick reference guides for GitHub Enterprise Cloud administration and governance.**
 
+> **Document status**
+>
+> - **Last reviewed:** 2026-05-19
+> - **Authorship:** Drafted with AI assistance (GitHub Copilot, multi-model review) and reviewed by a human maintainer before publication.
+> - **Sources:** Based on public documentation — primarily [docs.github.com](https://docs.github.com), [learn.microsoft.com](https://learn.microsoft.com), and official vendor blogs cited inline.
+> - **Verify before acting:** GitHub and Microsoft update product documentation continuously. Re-confirm against the live source pages before relying on this content for production decisions.
+
 ---
 
 ## Table of Contents
@@ -176,7 +183,7 @@ graph TB
     Enterprise --> Sandbox
     Enterprise --> Archive
     
-    Red -.->|Blue-Green Deploy| Green
+    Red -.->|Access differentiation| Green
     Dev -->|Promote| Red
     Sandbox -.->|Experiment| Dev
     Red -.->|Retire| Archive
@@ -191,8 +198,8 @@ graph TB
 
 **Best For:**
 - Large enterprises (500+ developers)
-- Blue-green deployment patterns
-- Multiple environments with strict separation
+- Access differentiation between open collaboration (Green) and restricted/need-to-know (Red) repositories
+- Enterprises promoting innersource while protecting confidential or regulated code
 - Complex compliance requirements
 - Innovation and experimentation needs
 
@@ -695,6 +702,9 @@ gantt
 | **Enterprise Owner** | • Full enterprise control<br>• Manage organizations<br>• Configure policies<br>• Access audit logs<br>• Manage billing |
 | **Billing Manager** | • View/update billing<br>• View usage reports<br>• No organization access |
 | **Member** | • Access via organization<br>• No enterprise settings |
+| **App Manager** | • Enterprise-scoped role<br>• Manage GitHub App registrations owned by the enterprise<br>• Cannot install/uninstall Apps |
+| **Security Manager (public preview)** | • Enterprise-scoped role<br>• View and manage security configurations, alerts, and dashboards across the enterprise |
+| **Guest Collaborator (EMU only)** | • Enterprise-scoped access model for vendors/contractors<br>• Limited access by design<br>• Cannot access internal repos by default |
 
 ### Policy Inheritance Matrix
 
@@ -726,17 +736,21 @@ graph TD
 
 ### Security Features Matrix
 
-| Feature | Free | Team | Enterprise with GHAS |
-|---------|------|------|----------------------|
+| Feature | Free | Team | With GitHub Secret Protection / Code Security (Team or Enterprise add-on) |
+|---------|------|------|-------------------------------------------------------------------------|
 | **Dependabot Alerts** | Public repos | All repos | All repos |
 | **Dependabot Security Updates** | Public repos | All repos | All repos |
 | **Dependabot Version Updates** | ✅ | ✅ | ✅ |
-| **Dependency Review** | Public repos | ❌ | ✅ |
-| **Code Scanning (CodeQL)** | Public repos | ❌ | ✅ |
-| **Secret Scanning** | Public repos | ❌ | ✅ |
-| **Secret Push Protection** | Public repos | ❌ | ✅ |
+| **Dependency Review** | Public repos | Public repos | ✅ |
+| **Code Scanning (CodeQL)** | Public repos | Public repos | ✅ |
+| **Secret Scanning** | Public repos | Public repos | ✅ |
+| **Secret Push Protection** | Public repos | Public repos | ✅ |
 | **Custom Secret Patterns** | ❌ | ❌ | ✅ |
-| **Security Overview** | ❌ | ❌ | ✅ |
+| **Security Overview** | ❌ | ✅ | ✅ |
+
+Note: GitHub Advanced Security has been disaggregated into purchasable products (GitHub Secret Protection and GitHub Code Security). The bundled GHAS license remains available.
+
+Note: Private/internal repos require purchasing GitHub Code Security or GitHub Secret Protection.
 
 ### Rulesets vs Branch Protection
 

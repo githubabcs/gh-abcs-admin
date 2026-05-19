@@ -1,8 +1,13 @@
 # Azure DevOps to GitHub Migration — Detailed Q&A Guide
 
-> **Context:** This document answers common customer questions about migrating repositories from Azure DevOps (ADO) Cloud to GitHub Enterprise Cloud using the **GitHub Enterprise Importer (GEI)**. The migration follows a phased approach, starting with a subset of repositories and expanding in subsequent waves.
+> **Document status**
 >
-> **Disclaimer:** This guide summarizes official GitHub documentation and best practices. Always refer to the [official GitHub migration documentation](https://docs.github.com/en/migrations/using-github-enterprise-importer) for the most current information.
+> - **Last reviewed:** 2026-05-19
+> - **Authorship:** Drafted with AI assistance (GitHub Copilot, multi-model review) and reviewed by a human maintainer before publication.
+> - **Sources:** Based on public documentation — primarily [docs.github.com](https://docs.github.com), [learn.microsoft.com](https://learn.microsoft.com), and official vendor blogs cited inline.
+> - **Verify before acting:** GitHub and Microsoft update product documentation continuously. Re-confirm against the live source pages before relying on this content for production decisions.
+
+> **Context:** This document answers common customer questions about migrating repositories from Azure DevOps (ADO) Cloud to GitHub Enterprise Cloud using the **GitHub Enterprise Importer (GEI)**. The migration follows a phased approach, starting with a subset of repositories and expanding in subsequent waves.
 
 ---
 
@@ -330,7 +335,7 @@ GET https://dev.azure.com/{org}/{project}/_apis/git/repositories/{repoId}/pushes
 6. Proceed to production migration when satisfied
 ```
 
-> 📖 **Reference:** [Overview of a migration from Azure DevOps](https://docs.github.com/en/migrations/using-github-enterprise-importer/migrating-from-azure-devops-to-github-enterprise-cloud/overview-of-a-migration-from-azure-devops-to-github-enterprise-cloud)
+> 📖 **Reference:** [Overview of a migration from Azure DevOps](https://docs.github.com/en/migrations/ado/)
 
 ---
 
@@ -373,7 +378,7 @@ GET https://dev.azure.com/{org}/{project}/_apis/git/repositories/{repoId}/pushes
 
 > ⚠️ **A code freeze is recommended** during production migration to prevent data loss. Any commits pushed to ADO after migration starts will not be included in the migrated repository.
 >
-> ⚠️ **Organization rulesets on GitHub can block migrations.** For example, if a ruleset requires commit author emails to match a specific domain and the migrated repo contains non-compliant commits, the migration will fail. Temporarily relax or disable such rulesets before running migrations.
+> ⚠️ **Organization or enterprise rulesets can block migrations. Preferred approach:** add **'Repository migrations'** to the bypass list for each applicable ruleset before running the migration. The bypass applies only during the migration; rulesets re-enforce on all new contributions afterward. Avoid disabling rulesets enterprise-wide except as a last resort.
 >
 > 💡 **Developer action after migration:** Each developer must update their local Git remote URL:
 > ```bash
@@ -872,12 +877,12 @@ gh ado2gh wait-for-migration --migration-id MIGRATION_ID
 
 | Topic | URL |
 |-------|-----|
-| About migrations from Azure DevOps | [docs.github.com/en/migrations/.../about-migrations-from-azure-devops](https://docs.github.com/en/migrations/using-github-enterprise-importer/migrating-from-azure-devops-to-github-enterprise-cloud/about-migrations-from-azure-devops-to-github-enterprise-cloud) |
-| Migration overview | [docs.github.com/en/migrations/.../overview-of-a-migration](https://docs.github.com/en/migrations/using-github-enterprise-importer/migrating-from-azure-devops-to-github-enterprise-cloud/overview-of-a-migration-from-azure-devops-to-github-enterprise-cloud) |
-| Managing access for migration | [docs.github.com/en/migrations/.../managing-access](https://docs.github.com/en/migrations/using-github-enterprise-importer/migrating-from-azure-devops-to-github-enterprise-cloud/managing-access-for-a-migration-from-azure-devops) |
-| Migrating repositories | [docs.github.com/en/migrations/.../migrating-repositories](https://docs.github.com/en/migrations/using-github-enterprise-importer/migrating-from-azure-devops-to-github-enterprise-cloud/migrating-repositories-from-azure-devops-to-github-enterprise-cloud) |
+| About migrations from Azure DevOps | [docs.github.com/en/migrations/ado/understand-migrations-from-azure-devops-to-github](https://docs.github.com/en/migrations/ado/understand-migrations-from-azure-devops-to-github) |
+| Migration overview | [docs.github.com/en/migrations/ado/](https://docs.github.com/en/migrations/ado/) |
+| Managing access for migration | [docs.github.com/en/migrations/ado/manage-access](https://docs.github.com/en/migrations/ado/manage-access) |
+| Migrating repositories | [docs.github.com/en/migrations/ado/migrate-repositories-from-azure-devops-to-github-enterprise-cloud](https://docs.github.com/en/migrations/ado/migrate-repositories-from-azure-devops-to-github-enterprise-cloud) |
 | Reclaiming mannequins | [docs.github.com/en/migrations/.../reclaiming-mannequins](https://docs.github.com/en/migrations/using-github-enterprise-importer/completing-your-migration-with-github-enterprise-importer/reclaiming-mannequins-for-github-enterprise-importer) |
-| Troubleshooting | [docs.github.com/en/migrations/.../troubleshooting](https://docs.github.com/en/migrations/using-github-enterprise-importer/completing-your-migration-with-github-enterprise-importer/troubleshooting-your-migration-with-github-enterprise-importer) |
+| Troubleshooting | [docs.github.com/en/migrations/ado/troubleshoot-migrations-from-azure-devops-to-github-enterprise-cloud](https://docs.github.com/en/migrations/ado/troubleshoot-migrations-from-azure-devops-to-github-enterprise-cloud) |
 | ADO2GH CLI Extension | [github.com/github/gh-ado2gh](https://github.com/github/gh-ado2gh) — install via `gh extension install github/gh-ado2gh` |
 
 ---
