@@ -2148,6 +2148,7 @@ Enterprise
 
 **Regional Deployment Workflow:**
 
+{% raw %}
 ```yaml
 # infrastructure/workflows/multi-region-deploy.yml
 name: Multi-Region Deployment
@@ -2193,6 +2194,7 @@ jobs:
           # Gradually shift traffic to new deployment (canary)
           ./scripts/canary-deploy.sh ${{ matrix.region }} 5 10 20 50 100
 ```
+{% endraw %}
 
 **Cross-reference:** See [Organization Strategies](02-organization-strategies.md) for multi-organization patterns.
 
@@ -3483,4 +3485,3 @@ jobs:
 This comprehensive GitHub Well-Architected Framework document provides enterprise-grade guidance for implementing GitHub at scale. Organizations should use this as a reference for designing, implementing, and optimizing their GitHub infrastructure.
 
 For questions or updates, refer to the related documentation series or contact your GitHub Enterprise Account Team.
-
