@@ -30,6 +30,8 @@ keywords:
 
 > **Scope assumption — EMU.** This workshop assumes your enterprise is an **Enterprise Managed Users (EMU)** enterprise with SSO and SCIM already established (or being established now). EMU-specific rules, limits, and pitfalls are called out inline in every module.
 
+> 🖥️ **Prefer slides for the live session?** A single-file [HTML slide deck](./00-mastering-github-administration-workshop.html) of this content is available next to this document — open in any modern browser, press <kbd>F</kbd> for fullscreen, arrow keys to navigate, <kbd>Esc</kbd> for an overview of all slides, <kbd>Ctrl/⌘+P</kbd> to print as a handout.
+
 ---
 
 ## 1. Workshop Overview

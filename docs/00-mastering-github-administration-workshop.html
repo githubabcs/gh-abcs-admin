@@ -1,0 +1,1164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Mastering GitHub Administration on EMU — Workshop</title>
+<meta name="description" content="3-hour intermediate/advanced workshop on GitHub Enterprise Cloud administration for Enterprise Managed Users (EMU) enterprises." />
+<style>
+:root {
+  --bg: #0d1117; --bg-elev: #161b22; --bg-elev-2: #21262d;
+  --border: #30363d; --border-muted: #21262d;
+  --text: #c9d1d9; --text-muted: #a8b1bb; --text-bright: #f0f6fc;
+  --accent: #58a6ff; --accent-dim: #1f6feb;
+  --success: #3fb950; --warning: #f78166; --danger: #f85149; --purple: #bc8cff;
+  --code-bg: #1f2428;
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; font-family: var(--font-sans); background: var(--bg); color: var(--text); overflow: hidden; font-size: 16px; line-height: 1.5; }
+
+.deck { position: fixed; inset: 0; display: flex; flex-direction: column; }
+.deck-header { height: 44px; flex-shrink: 0; background: var(--bg-elev); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 1.25rem; font-size: 13px; color: var(--text-muted); z-index: 50; }
+.deck-header .brand { display: flex; align-items: center; gap: 0.6rem; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 45%; }
+.deck-header .brand .logo { width: 20px; height: 20px; display: inline-block; flex-shrink: 0; }
+.deck-header .module-label { flex: 1; text-align: center; font-weight: 500; color: var(--text); }
+.deck-header .controls { display: flex; align-items: center; gap: 0.5rem; }
+.deck-header button { background: transparent; border: 1px solid var(--border); color: var(--text-muted); border-radius: 5px; padding: 4px 10px; font-size: 12px; font-family: inherit; cursor: pointer; transition: all 0.15s; }
+.deck-header button:hover { background: var(--bg-elev-2); color: var(--text); border-color: var(--accent); }
+.deck-header button:focus-visible, .deck-footer .nav button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.deck-stage { flex: 1; position: relative; overflow: hidden; background: var(--bg); }
+.deck-footer { height: 32px; flex-shrink: 0; background: var(--bg-elev); border-top: 1px solid var(--border); display: flex; align-items: center; position: relative; z-index: 50; }
+.deck-footer .nav { display: flex; align-items: center; gap: 0.5rem; padding: 0 1.25rem; }
+.deck-footer .nav button { background: transparent; border: 1px solid var(--border); color: var(--text-muted); border-radius: 5px; width: 26px; height: 22px; font-size: 12px; cursor: pointer; font-family: inherit; display: inline-flex; align-items: center; justify-content: center; }
+.deck-footer .nav button:hover { background: var(--bg-elev-2); color: var(--text); border-color: var(--accent); }
+.deck-footer .counter { font-size: 12px; color: var(--text-muted); font-variant-numeric: tabular-nums; margin-left: auto; padding-right: 1.25rem; }
+.deck-footer .progress { position: absolute; bottom: 0; left: 0; height: 2px; background: var(--accent); transition: width 0.25s ease-out; }
+
+.slide { position: absolute; inset: 0; display: none; padding: 2vh 3.5vw; overflow-y: auto; animation: fade-in 0.25s ease-out; }
+.slide.active { display: flex; flex-direction: column; }
+.slide::-webkit-scrollbar { width: 8px; }
+.slide::-webkit-scrollbar-track { background: transparent; }
+.slide::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+.slide::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+@keyframes fade-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+.slide h1 { font-size: clamp(32px, 3.4vw, 52px); font-weight: 700; color: var(--text-bright); letter-spacing: -0.02em; margin-bottom: 0.3em; line-height: 1.15; }
+.slide h2 { font-size: clamp(24px, 2.4vw, 34px); font-weight: 600; color: var(--text-bright); margin-bottom: 0.6em; letter-spacing: -0.01em; }
+.slide h3 { font-size: clamp(18px, 1.7vw, 24px); font-weight: 600; color: var(--accent); margin: 0.8em 0 0.4em; letter-spacing: -0.005em; }
+.slide p { font-size: clamp(17px, 1.4vw, 22px); line-height: 1.5; margin-bottom: 0.6em; max-width: 70ch; }
+.slide ul, .slide ol { list-style-position: outside; padding-left: 1.4em; margin-bottom: 0.7em; }
+.slide li { font-size: clamp(16px, 1.3vw, 20px); line-height: 1.5; margin-bottom: 0.45em; max-width: 80ch; }
+.slide li::marker { color: var(--accent); }
+.slide strong { color: var(--text-bright); font-weight: 600; }
+.slide em { color: var(--text-muted); font-style: italic; }
+.slide code { font-family: var(--font-mono); background: var(--code-bg); border: 1px solid var(--border-muted); border-radius: 4px; padding: 1px 6px; font-size: 0.9em; color: var(--purple); }
+.slide pre { background: var(--code-bg); border: 1px solid var(--border); border-radius: 6px; padding: 12px 16px; font-family: var(--font-mono); font-size: clamp(14px, 1.1vw, 18px); line-height: 1.5; overflow: auto; max-height: 60vh; }
+.slide pre code { background: transparent; border: 0; padding: 0; color: var(--text); font-size: inherit; }
+
+.slide.cover { justify-content: center; align-items: center; text-align: center; background: radial-gradient(circle at 30% 20%, rgba(88,166,255,0.10), transparent 50%), radial-gradient(circle at 80% 80%, rgba(63,185,80,0.08), transparent 50%), var(--bg); }
+.slide.cover .eyebrow { font-size: clamp(15px, 1.2vw, 18px); color: var(--accent); letter-spacing: 0.12em; text-transform: uppercase; font-weight: 600; margin-bottom: 1.5em; }
+.slide.cover h1 { font-size: clamp(44px, 5.5vw, 72px); max-width: 18ch; margin: 0 auto 0.4em; }
+.slide.cover .subtitle { font-size: clamp(18px, 1.7vw, 24px); color: var(--text-muted); max-width: 50ch; margin: 0 auto 2em; }
+.slide.cover .meta { display: flex; gap: 2.5rem; margin-top: 1em; flex-wrap: wrap; justify-content: center; }
+.slide.cover .meta div { display: flex; flex-direction: column; align-items: center; }
+.slide.cover .meta strong { font-size: clamp(17px, 1.5vw, 20px); color: var(--text-bright); }
+.slide.cover .meta span { font-size: 13px; color: var(--text-muted); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 0.3em; }
+.slide.cover .footnote { position: absolute; bottom: 2.5vh; left: 0; right: 0; text-align: center; font-size: 14px; color: var(--text-muted); }
+
+.slide.section-divider { justify-content: center; align-items: flex-start; background: linear-gradient(135deg, rgba(31,111,235,0.12), transparent 60%), var(--bg); }
+.slide.section-divider .module-num { font-size: clamp(80px, 12vw, 160px); font-weight: 700; line-height: 1; color: var(--accent); opacity: 0.25; letter-spacing: -0.05em; }
+.slide.section-divider .module-num-label { font-size: clamp(15px, 1.3vw, 18px); color: var(--text-muted); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 0.5em; }
+.slide.section-divider h1 { font-size: clamp(36px, 4.4vw, 58px); max-width: 20ch; margin-bottom: 1em; }
+.slide.section-divider .meta-row { display: flex; gap: 2rem; margin-top: 0.5em; flex-wrap: wrap; }
+.slide.section-divider .meta-row span { font-size: 15px; color: var(--text-muted); border-left: 2px solid var(--accent); padding-left: 0.8em; }
+
+.slide.break { justify-content: center; align-items: center; text-align: center; }
+.slide.break .break-icon { font-size: clamp(80px, 12vw, 160px); margin-bottom: 0.3em; }
+.slide.break h1 { font-size: clamp(36px, 4.4vw, 60px); }
+.slide.break .duration { font-size: clamp(18px, 1.7vw, 24px); color: var(--text-muted); margin-top: 0.5em; }
+
+.slide.closing { justify-content: center; align-items: center; text-align: center; }
+.slide.closing h1 { font-size: clamp(44px, 5.5vw, 72px); margin-bottom: 0.4em; }
+.slide.closing .subtitle { font-size: clamp(18px, 1.7vw, 24px); color: var(--text-muted); max-width: 50ch; margin-bottom: 2em; }
+
+.callout { background: var(--bg-elev); border-left: 3px solid var(--accent); border-radius: 5px; padding: 0.9em 1.2em; margin: 0.7em 0; font-size: clamp(16px, 1.3vw, 20px); line-height: 1.5; }
+.callout.warn { border-left-color: var(--warning); }
+.callout.danger { border-left-color: var(--danger); }
+.callout.success { border-left-color: var(--success); }
+.callout.purple { border-left-color: var(--purple); }
+.callout .label { display: inline-block; font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); margin-right: 0.6em; }
+.callout.warn .label { color: var(--warning); }
+.callout.danger .label { color: var(--danger); }
+.callout.success .label { color: var(--success); }
+.callout.purple .label { color: var(--purple); }
+
+.decision-moment { background: linear-gradient(135deg, rgba(63,185,80,0.08), rgba(88,166,255,0.05)); border: 1px solid var(--success); border-radius: 8px; padding: 1.1em 1.5em; margin-top: auto; font-size: clamp(16px, 1.35vw, 20px); line-height: 1.5; }
+.decision-moment .label { display: inline-block; font-size: 12px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--success); margin-bottom: 0.5em; }
+.decision-moment .prompt { font-size: clamp(20px, 1.8vw, 26px); color: var(--text-bright); font-weight: 600; margin-bottom: 0.4em; }
+
+.cols-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5em; }
+.cols-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.2em; }
+.tile { background: var(--bg-elev); border: 1px solid var(--border); border-radius: 6px; padding: 1em 1.2em; }
+.tile h4 { font-size: clamp(16px, 1.3vw, 20px); color: var(--accent); margin-bottom: 0.4em; font-weight: 600; }
+.tile p, .tile li { font-size: clamp(14px, 1.15vw, 18px); line-height: 1.5; }
+
+.reality-cards { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.2em; margin-top: 0.8em; }
+.reality-card { background: var(--bg-elev); border: 1px solid var(--border); border-top: 3px solid var(--accent); border-radius: 6px; padding: 1.1em 1.2em; }
+.reality-card:nth-child(1) { border-top-color: var(--accent); }
+.reality-card:nth-child(2) { border-top-color: var(--warning); }
+.reality-card:nth-child(3) { border-top-color: var(--danger); }
+.reality-card .num { font-size: 12px; font-weight: 700; letter-spacing: 0.12em; color: var(--text-muted); margin-bottom: 0.3em; }
+.reality-card h4 { font-size: clamp(17px, 1.4vw, 22px); color: var(--text-bright); margin-bottom: 0.5em; font-weight: 600; line-height: 1.3; }
+.reality-card p { font-size: clamp(14px, 1.15vw, 18px); color: var(--text); line-height: 1.5; }
+
+.slide table { width: 100%; border-collapse: collapse; font-size: clamp(14px, 1.15vw, 18px); margin: 0.5em 0; }
+.slide thead { background: var(--bg-elev-2); }
+.slide th { text-align: left; font-weight: 600; color: var(--text-bright); padding: 9px 13px; border-bottom: 2px solid var(--border); font-size: 0.95em; }
+.slide td { padding: 8px 13px; border-bottom: 1px solid var(--border-muted); vertical-align: top; line-height: 1.4; }
+.slide tbody tr:hover { background: var(--bg-elev); }
+.slide table.compact th, .slide table.compact td { padding: 6px 11px; font-size: 0.96em; }
+.center { text-align: center; }
+.right { text-align: right; }
+
+.kbd { display: inline-block; font-family: var(--font-mono); font-size: 0.85em; background: var(--bg-elev-2); border: 1px solid var(--border); border-bottom-width: 2px; border-radius: 4px; padding: 1px 6px; color: var(--text-bright); margin: 0 2px; }
+
+.tag { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: 0.05em; padding: 2px 8px; border-radius: 999px; background: rgba(88,166,255,0.12); color: var(--accent); border: 1px solid rgba(88,166,255,0.3); margin-right: 0.5em; }
+.tag.warn { background: rgba(247,129,102,0.12); color: var(--warning); border-color: rgba(247,129,102,0.3); }
+.tag.success { background: rgba(63,185,80,0.12); color: var(--success); border-color: rgba(63,185,80,0.3); }
+.tag.muted { background: var(--bg-elev-2); color: var(--text-muted); border-color: var(--border); }
+
+.overview { position: fixed; inset: 0; background: rgba(13,17,23,0.97); z-index: 100; display: none; overflow-y: auto; padding: 2rem; }
+.overview.active { display: block; }
+.overview h2 { color: var(--text-bright); margin-bottom: 1rem; font-size: 18px; }
+.overview-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1rem; }
+.thumb { background: var(--bg-elev); border: 1px solid var(--border); border-radius: 6px; padding: 0.9rem 1rem; cursor: pointer; transition: all 0.15s; min-height: 90px; display: flex; flex-direction: column; justify-content: space-between; }
+.thumb:hover { border-color: var(--accent); transform: translateY(-2px); }
+.thumb.current { border-color: var(--accent); background: var(--bg-elev-2); }
+.thumb .thumb-num { font-size: 10px; font-weight: 700; color: var(--text-muted); letter-spacing: 0.1em; margin-bottom: 0.4em; }
+.thumb .thumb-title { font-size: 14px; color: var(--text-bright); font-weight: 500; line-height: 1.35; }
+.thumb .thumb-module { font-size: 10px; color: var(--accent); margin-top: 0.4em; font-weight: 600; letter-spacing: 0.05em; }
+
+.help { position: fixed; inset: 0; background: rgba(13,17,23,0.94); z-index: 200; display: none; align-items: center; justify-content: center; }
+.help.active { display: flex; }
+.help-card { background: var(--bg-elev); border: 1px solid var(--border); border-radius: 8px; padding: 2em 2.5em; max-width: 480px; }
+.help-card h3 { font-size: 18px; color: var(--text-bright); margin-bottom: 1em; }
+.help-card table { width: 100%; }
+.help-card td { padding: 6px 0; font-size: 14px; }
+.help-card td:first-child { width: 40%; }
+
+@media print {
+  @page { size: 16in 9in; margin: 0; }
+  html, body { overflow: visible; height: auto; background: #fff; color: #000; }
+  .deck-header, .deck-footer, .overview, .help { display: none !important; }
+  .deck-stage { overflow: visible; position: static; }
+  .slide { display: flex !important; position: relative; inset: auto; page-break-after: always; width: 16in; height: 9in; background: #fff !important; color: #000 !important; animation: none; }
+  .slide h1, .slide h2, .slide h3 { color: #000 !important; }
+  .slide.cover, .slide.section-divider, .slide.break, .slide.closing { background: #fff !important; }
+  .callout, .tile, .reality-card { background: #f6f8fa; border-color: #d0d7de; }
+  .decision-moment { background: #f6f8fa; border-color: #1a7f37; }
+  .slide thead { background: #f6f8fa; }
+  .slide th { color: #000; }
+}
+
+@media (max-width: 720px) {
+  .cols-2, .cols-3, .reality-cards { grid-template-columns: 1fr; }
+  .slide { padding: 2vh 5vw; }
+  .deck-header .module-label { display: none; }
+}
+
+/* Fullscreen: hide chrome for immersive presentation */
+.deck.is-fullscreen .deck-header,
+.deck.is-fullscreen .deck-footer .nav,
+.deck.is-fullscreen .deck-footer .counter { display: none; }
+.deck.is-fullscreen .deck-footer { height: 4px; background: transparent; border-top: 0; }
+.deck.is-fullscreen .deck-footer .progress { height: 4px; }
+</style>
+</head>
+<body>
+
+<div class="deck" id="deck">
+  <header class="deck-header">
+    <div class="brand">
+      <svg class="logo" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+        <path d="M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z"/>
+      </svg>
+      <span>Mastering GitHub Administration on EMU</span>
+    </div>
+    <div class="module-label" id="moduleLabel"></div>
+    <div class="controls">
+      <button id="btnOverview" title="Overview (Esc)">⊞ Overview</button>
+      <button id="btnFullscreen" title="Toggle fullscreen (F)">⛶ Full</button>
+      <button id="btnHelp" title="Help (?)">?</button>
+    </div>
+  </header>
+
+  <main class="deck-stage" id="stage"></main>
+
+  <footer class="deck-footer">
+    <div class="nav">
+      <button id="btnPrev" title="Previous (← / Page Up)">‹</button>
+      <button id="btnNext" title="Next (→ / Space / Page Down)">›</button>
+    </div>
+    <div class="counter"><span id="curNum">1</span> / <span id="totNum">1</span></div>
+    <div class="progress" id="progress"></div>
+  </footer>
+</div>
+
+<div class="overview" id="overview">
+  <h2>All slides — click to jump</h2>
+  <div class="overview-grid" id="overviewGrid"></div>
+</div>
+
+<div class="help" id="help">
+  <div class="help-card">
+    <h3>Keyboard shortcuts</h3>
+    <table>
+      <tr><td><span class="kbd">→</span> <span class="kbd">Space</span> <span class="kbd">PgDn</span></td><td>Next slide</td></tr>
+      <tr><td><span class="kbd">←</span> <span class="kbd">PgUp</span></td><td>Previous slide</td></tr>
+      <tr><td><span class="kbd">Home</span> / <span class="kbd">End</span></td><td>First / last slide</td></tr>
+      <tr><td><span class="kbd">Esc</span></td><td>Overview / close overlay</td></tr>
+      <tr><td><span class="kbd">F</span></td><td>Toggle fullscreen</td></tr>
+      <tr><td><span class="kbd">?</span></td><td>Show this help</td></tr>
+      <tr><td><span class="kbd">Ctrl/⌘ + P</span></td><td>Print as handout</td></tr>
+    </table>
+  </div>
+</div>
+
+<template id="slides-source">
+
+<section class="slide cover" data-module="intro" data-title="Cover">
+  <div class="eyebrow">Workshop · Intermediate / Advanced · 3 hours</div>
+  <h1>Mastering GitHub Administration on EMU</h1>
+  <p class="subtitle">A comprehensive guide for platform engineers, security SMEs, repository admins, and enterprise owners running GitHub Enterprise Cloud with Enterprise Managed Users.</p>
+  <div class="meta">
+    <div><span>Audience</span><strong>Intermediate / Advanced</strong></div>
+    <div><span>Duration</span><strong>3 hours</strong></div>
+    <div><span>Anchored to</span><strong>Enterprise Adoption Plan</strong></div>
+    <div><span>Scope</span><strong>EMU enterprise</strong></div>
+  </div>
+  <div class="footnote">Use <span class="kbd">→</span> or <span class="kbd">Space</span> to advance · <span class="kbd">F</span> for fullscreen · <span class="kbd">Esc</span> for overview · <span class="kbd">?</span> for help</div>
+</section>
+
+<section class="slide" data-module="intro" data-title="Agenda">
+  <h1>Agenda</h1>
+  <p>Three hours, eight modules, two breaks. Each module ends with a <strong>decision moment</strong> your team can act on.</p>
+  <table class="compact">
+    <thead><tr><th style="width:5%">#</th><th>Block</th><th style="width:12%" class="right">Duration</th><th style="width:25%">Adoption-plan phases</th></tr></thead>
+    <tbody>
+      <tr><td>0</td><td>Welcome, goals, EMU framing</td><td class="right">10 min</td><td>—</td></tr>
+      <tr><td>1</td><td>Enterprise hierarchy, organization design &amp; EMU</td><td class="right">20 min</td><td>Phase 0, Phase 2</td></tr>
+      <tr><td>2</td><td>EMU identity, access &amp; teams</td><td class="right">25 min</td><td>Phase 1, Phase 3</td></tr>
+      <tr><td>—</td><td>☕ Break</td><td class="right">10 min</td><td>—</td></tr>
+      <tr><td>3</td><td>Policies, inheritance &amp; repository governance</td><td class="right">25 min</td><td>Phase 2, Phase 5</td></tr>
+      <tr><td>4</td><td>Security-by-default &amp; GitHub Advanced Security</td><td class="right">30 min</td><td>Phase 4, Phase 7</td></tr>
+      <tr><td>—</td><td>☕ Break</td><td class="right">10 min</td><td>—</td></tr>
+      <tr><td>5</td><td>GitHub Actions &amp; Copilot governance on EMU</td><td class="right">25 min</td><td>Phase 6</td></tr>
+      <tr><td>6</td><td>Migration readiness, cutover &amp; pilot decisioning</td><td class="right">20 min</td><td>Phase 8, 9, 10</td></tr>
+      <tr><td>7</td><td>Wrap-up, pitfalls &amp; next steps</td><td class="right">5 min</td><td>—</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section class="slide" data-module="intro" data-title="Learning outcomes">
+  <h1>Learning outcomes</h1>
+  <p>By the end of this workshop, you will be able to:</p>
+  <ol style="column-count:2; column-gap:2.5rem;">
+    <li><strong>Map</strong> the GHEC hierarchy (Enterprise → Organization → Repository → Team) to the governance levers at each level — and what EMU adds or removes.</li>
+    <li><strong>Select and justify</strong> an organization model (e.g., Green / Red / Sandbox / Archive) against EMU constraints.</li>
+    <li><strong>Validate</strong> EMU identity and access — SSO, SCIM, IdP group sync, IP allow lists, break-glass via the setup user.</li>
+    <li><strong>Design</strong> a teams + CODEOWNERS model that maps cleanly from Azure DevOps security groups.</li>
+    <li><strong>Apply</strong> security-by-default: enterprise policies, security configurations, rulesets, Secret Protection, Code Security.</li>
+    <li><strong>Govern</strong> GitHub Actions and GitHub Copilot at scale, respecting EMU runner and licensing rules.</li>
+    <li><strong>Sequence</strong> an ADO → GitHub migration: inventory, mannequins, LFS, Azure Pipelines hybrid, Go/No-Go, cutover, rollback.</li>
+    <li><strong>Identify</strong> day-2 workstreams — audit log streaming, cost allocation, governed AI in the SDLC, exception handling.</li>
+  </ol>
+</section>
+
+<section class="slide" data-module="intro" data-title="Glossary">
+  <h1>Glossary</h1>
+  <p>Common terms referenced by acronym after first use.</p>
+  <div class="cols-2">
+    <table class="compact">
+      <thead><tr><th>Acronym</th><th>Full term</th></tr></thead>
+      <tbody>
+        <tr><td><code>ADO</code></td><td>Azure DevOps</td></tr>
+        <tr><td><code>CODEOWNERS</code></td><td>GitHub file defining reviewers per path</td></tr>
+        <tr><td><code>EMU</code></td><td>Enterprise Managed Users</td></tr>
+        <tr><td><code>GEI</code></td><td>GitHub Enterprise Importer</td></tr>
+        <tr><td><code>GHAS</code></td><td>GitHub Advanced Security (2 SKUs: Secret Protection + Code Security)</td></tr>
+        <tr><td><code>GHEC</code></td><td>GitHub Enterprise Cloud</td></tr>
+        <tr><td><code>IdP</code></td><td>Identity provider (Entra ID, Okta, PingFederate)</td></tr>
+        <tr><td><code>LFS</code></td><td>Git Large File Storage</td></tr>
+        <tr><td><code>MCP</code></td><td>Model Context Protocol</td></tr>
+      </tbody>
+    </table>
+    <table class="compact">
+      <thead><tr><th>Acronym</th><th>Full term</th></tr></thead>
+      <tbody>
+        <tr><td><code>OIDC</code></td><td>OpenID Connect</td></tr>
+        <tr><td><code>PAT</code></td><td>Personal access token</td></tr>
+        <tr><td><code>SAML</code></td><td>Security Assertion Markup Language</td></tr>
+        <tr><td><code>SCIM</code></td><td>System for Cross-domain Identity Management</td></tr>
+        <tr><td><code>SDLC</code></td><td>Software Development Lifecycle</td></tr>
+        <tr><td><code>SIEM</code></td><td>Security information and event management</td></tr>
+        <tr><td><code>SLA</code></td><td>Service Level Agreement</td></tr>
+        <tr><td><code>SSL</code></td><td>Secure Sockets Layer (used informally for TLS)</td></tr>
+        <tr><td><code>SSO</code></td><td>Single Sign-On (umbrella term)</td></tr>
+        <tr><td><code>TFVC</code></td><td>Team Foundation Version Control (legacy ADO)</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="slide section-divider" data-module="0" data-title="Module 0">
+  <div class="module-num-label">Module 0 · 10 min</div>
+  <div class="module-num">00</div>
+  <h1>Welcome &amp; EMU framing</h1>
+  <div class="meta-row"><span>Goal: align on scope and the EMU reality before we go deep</span></div>
+</section>
+
+<section class="slide" data-module="0" data-title="Three EMU realities">
+  <h2><span class="tag">Module 0</span> The three EMU realities to set the tone</h2>
+  <p>EMU is non-negotiable here. Every later decision in this workshop pivots on these three facts.</p>
+  <div class="reality-cards">
+    <div class="reality-card">
+      <div class="num">REALITY 1</div>
+      <h4>The identity provider is the front door</h4>
+      <p>Every user is provisioned by SCIM. Usernames are <code>{idp_username}_{enterprise_shortcode}</code>. An IdP outage blocks all GitHub access.</p>
+    </div>
+    <div class="reality-card">
+      <div class="num">REALITY 2</div>
+      <h4>Public &amp; user-namespace repos are off-limits</h4>
+      <p>No public repos, no forking into user namespaces, no Sponsors, no Copilot Pro/Free, no GitHub-hosted runners for user-namespace repos. PATs only if explicitly allowed.</p>
+    </div>
+    <div class="reality-card">
+      <div class="num">REALITY 3</div>
+      <h4>Mannequin reclamation is one-way &amp; SCIM-only</h4>
+      <p>Any ADO committer not SCIM-provisioned at migration time becomes a mannequin whose contribution history cannot be reattributed afterwards.</p>
+    </div>
+  </div>
+  <div class="callout purple">
+    <span class="label">Principle</span>
+    <strong>Governance before migration.</strong> Identity → policy → security → automation → migration. The order matters.
+  </div>
+</section>
+
+<section class="slide section-divider" data-module="1" data-title="Module 1">
+  <div class="module-num-label">Module 1 · 20 min · Maps to Phases 0 &amp; 2</div>
+  <div class="module-num">01</div>
+  <h1>Enterprise hierarchy, organization design &amp; EMU</h1>
+  <div class="meta-row"><span>Outcome: select an organization model and justify it against EMU constraints</span></div>
+</section>
+
+<section class="slide" data-module="1" data-title="Hierarchy &amp; governance levers">
+  <h2><span class="tag">Module 1</span> Hierarchy &amp; what each level controls</h2>
+  <table>
+    <thead><tr><th style="width:14%">Level</th><th style="width:24%">Scope</th><th>Typical controls</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Enterprise</strong></td><td>All organizations under the account</td><td>SSO, SCIM, IP allow list, audit log streaming, base permission, repo-creation policy, public-repo block, PAT policies, GHAS availability, Copilot availability, Actions allow-list</td></tr>
+      <tr><td><strong>Organization</strong></td><td>All repos in one org</td><td>Default repo visibility, team creation, security configurations, organization rulesets, runner groups, Copilot exclusions</td></tr>
+      <tr><td><strong>Repository</strong></td><td>One repo</td><td>Rulesets (when allowed), CODEOWNERS, environments, secrets, repo-specific Copilot exclusions</td></tr>
+    </tbody>
+  </table>
+  <div class="callout">
+    <span class="label">Rule</span>
+    Enterprise policies cascade down. An <strong>enforced</strong> enterprise policy cannot be relaxed at the organization or repository level.
+  </div>
+</section>
+
+<section class="slide" data-module="1" data-title="EMU at a glance">
+  <h2><span class="tag">Module 1</span> EMU vs. a standard enterprise — what changes</h2>
+  <table class="compact">
+    <thead><tr><th style="width:22%">Topic</th><th>EMU behavior</th></tr></thead>
+    <tbody>
+      <tr><td>Username</td><td>Always <code>{idp_username}_{enterprise_shortcode}</code> (e.g., <code>octocat_acme</code>)</td></tr>
+      <tr><td>Authentication</td><td>SSO required for every action; OIDC <strong>only with Microsoft Entra ID</strong>; Okta &amp; PingFederate use <strong>SAML 2.0 only</strong></td></tr>
+      <tr><td>Provisioning</td><td>SCIM mandatory; users and IdP groups flow from the IdP; no manual invites</td></tr>
+      <tr><td>Public repositories</td><td>Cannot be created from EMU accounts</td></tr>
+      <tr><td>User-namespace repos</td><td>Disabled by default; if enabled, <strong>private only</strong>, collaboration restricted to enterprise</td></tr>
+      <tr><td>Outside collaborators</td><td>Blocked by default (controlled by enterprise policy)</td></tr>
+      <tr><td>PATs</td><td>Classic PATs governed by policy; fine-grained PATs can require approval</td></tr>
+      <tr><td>2FA</td><td>Inherited from the IdP — the "Require 2FA" enterprise policy does <strong>not</strong> apply on EMU</td></tr>
+      <tr><td>GitHub-hosted runners</td><td><strong>Not available</strong> for user-namespace repositories</td></tr>
+      <tr><td>Copilot</td><td>No Copilot Pro/Free; only <strong>Business or Enterprise</strong> seats assigned by the enterprise</td></tr>
+      <tr><td>Codespaces</td><td>Organization repositories only</td></tr>
+      <tr><td>Gists, Sponsors, Certifications</td><td>Not available to EMU accounts</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section class="slide" data-module="1" data-title="Recommended organization shape">
+  <h2><span class="tag">Module 1</span> Recommended starting organization shape</h2>
+  <table>
+    <thead><tr><th>Organization</th><th>Purpose</th><th>Base permission</th><th>Default visibility</th></tr></thead>
+    <tbody>
+      <tr><td><code>company-green</code> <em>(~90% of repos)</em></td><td>Standard development, innersource</td><td>None</td><td>Internal (or Private)</td></tr>
+      <tr><td><code>company-red</code></td><td>Confidential / regulated code</td><td>None</td><td>Private</td></tr>
+      <tr><td><code>company-sandbox</code></td><td>Proofs of concept, experiments</td><td>None</td><td>Internal (or Private)</td></tr>
+      <tr><td><code>company-archive</code></td><td>Retired or historical repos</td><td>None</td><td>Internal (or Private)</td></tr>
+    </tbody>
+  </table>
+  <div class="callout warn">
+    <span class="label">One-way door</span>
+    Organization naming cascades to Copilot, SSO endpoints, automation, and every internal/external link. <strong>Choose names you can live with for years.</strong>
+  </div>
+  <div class="decision-moment">
+    <div class="label">Decision moment · 8 min</div>
+    <div class="prompt">How many organizations will you run, and what is each one for?</div>
+    More orgs improve blast-radius control and policy scoping; they also add overhead. Red / Green / Sandbox / Archive is a defensible default — deviate only with a clear reason.
+  </div>
+</section>
+
+<section class="slide section-divider" data-module="2" data-title="Module 2">
+  <div class="module-num-label">Module 2 · 25 min · Maps to Phases 1 &amp; 3</div>
+  <div class="module-num">02</div>
+  <h1>EMU identity, access &amp; teams</h1>
+  <div class="meta-row"><span>Outcome: design a team hierarchy synced from IdP groups with break-glass coverage</span></div>
+</section>
+
+<section class="slide" data-module="2" data-title="IdP protocol matrix">
+  <h2><span class="tag">Module 2</span> IdP protocol support for EMU</h2>
+  <table>
+    <thead><tr><th>Identity provider</th><th class="center">SAML 2.0</th><th class="center">OIDC</th><th class="center">SCIM 2.0</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Microsoft Entra ID</strong> (Azure AD)</td><td class="center">✅</td><td class="center">✅</td><td class="center">✅</td><td>Recommended; only IdP that supports OIDC for EMU</td></tr>
+      <tr><td><strong>Okta</strong></td><td class="center">✅</td><td class="center">❌</td><td class="center">✅</td><td>SAML-only for EMU</td></tr>
+      <tr><td><strong>PingFederate</strong></td><td class="center">✅</td><td class="center">❌</td><td class="center">✅</td><td>SAML-only for EMU</td></tr>
+      <tr><td>Other IdPs</td><td class="center">✅</td><td class="center">❌</td><td class="center">✅ <em>(via REST)</em></td><td>SAML 2.0 required</td></tr>
+    </tbody>
+  </table>
+  <div class="callout warn">
+    <span class="label">No mixing</span>
+    Choose one protocol and standardize. Switching later means re-provisioning every user.
+  </div>
+  <div class="cols-2">
+    <div class="tile">
+      <h4>Break-glass: the setup user</h4>
+      <p><code>{shortcode}_admin</code> is your only path back in if the IdP fails. Store credentials in a secure vault, expose to ≥2 named owners, test quarterly.</p>
+    </div>
+    <div class="tile">
+      <h4>SCIM is the migration gate</h4>
+      <p>Any ADO committer not in SCIM at cutover becomes a mannequin with no path to historical attribution. Validate coverage before Phase 8.</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-module="2" data-title="Teams &amp; permission levels">
+  <h2><span class="tag">Module 2</span> Teams as the unit of access &amp; permission cheat sheet</h2>
+  <div class="cols-2">
+    <div>
+      <h3 style="margin-top:0">Team rules</h3>
+      <ul>
+        <li><strong>Maximum 3–4 levels</strong> of nested teams. Child teams inherit parent membership &amp; permissions.</li>
+        <li>Sync each team to an IdP group; <strong>synced teams cannot be managed manually</strong> in GitHub.</li>
+        <li>Assign <strong>≥ 3 maintainers per team</strong> for continuity.</li>
+        <li>Default to <strong>Visible</strong> team type; use <strong>Secret</strong> only for incident-response (secret children cannot live under visible parents).</li>
+        <li>Never grant repo permissions to individual users.</li>
+      </ul>
+    </div>
+    <div>
+      <h3 style="margin-top:0">Repository permission levels (least → most)</h3>
+      <table class="compact">
+        <thead><tr><th>Level</th><th>Can do</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Read</strong></td><td>Clone, view, comment, open issues</td></tr>
+          <tr><td><strong>Triage</strong></td><td>+ Manage issues &amp; PRs, apply labels</td></tr>
+          <tr><td><strong>Write</strong></td><td>+ Push, merge PRs, manage releases, run workflows</td></tr>
+          <tr><td><strong>Maintain</strong></td><td>+ Repo settings (no danger zone), webhooks, deploy keys, branch protection, Pages, Actions secrets &amp; variables</td></tr>
+          <tr><td><strong>Admin</strong></td><td>+ Delete repo, change visibility, transfer, security &amp; analysis settings</td></tr>
+        </tbody>
+      </table>
+      <p style="margin-top:0.5em"><em>For narrower scopes, create custom repository roles (Release Engineer, Security Reviewer) rather than handing out Admin.</em></p>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-module="2" data-title="ADO → GitHub mapping &amp; CODEOWNERS">
+  <h2><span class="tag">Module 2</span> ADO → GitHub mapping &amp; CODEOWNERS</h2>
+  <div class="cols-2">
+    <div>
+      <h3 style="margin-top:0">ADO → GitHub cheat sheet</h3>
+      <table class="compact">
+        <thead><tr><th>ADO concept</th><th>GitHub equivalent</th></tr></thead>
+        <tbody>
+          <tr><td>ADO Organization</td><td>GitHub Organization</td></tr>
+          <tr><td>ADO Team Project</td><td><strong>Team</strong> (not a separate org)</td></tr>
+          <tr><td>ADO Security Group</td><td>GitHub Team (synced from IdP)</td></tr>
+          <tr><td>Area Path</td><td>Parent Team</td></tr>
+          <tr><td>Feature Squad</td><td>Child Team</td></tr>
+          <tr><td>ADO Branch Policy</td><td>Org or repo ruleset</td></tr>
+          <tr><td>ADO Code Owners</td><td><code>CODEOWNERS</code> + required-review rule</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div>
+      <h3 style="margin-top:0">CODEOWNERS essentials</h3>
+      <ul>
+        <li>Lives at <code>/CODEOWNERS</code>, <code>/.github/CODEOWNERS</code>, or <code>/docs/CODEOWNERS</code></li>
+        <li>More specific patterns override less specific ones; the <strong>last</strong> matching pattern wins for a given file</li>
+        <li>Pair with <strong>"Require review from Code Owners"</strong> rule on the default branch for automatic enforcement</li>
+        <li>Use <strong>child teams</strong> in CODEOWNERS for precise scopes — avoid making the whole engineering org responsible for everything</li>
+      </ul>
+    </div>
+  </div>
+  <div class="decision-moment">
+    <div class="label">Decision moment · 8 min</div>
+    <div class="prompt">What is your team hierarchy, and which IdP groups feed it?</div>
+    Sketch the parent/child tree using one real example from your organization. Validate that every leaf team has ≥ 3 maintainers, a matching IdP group, and ≤ 4 levels of nesting.
+  </div>
+</section>
+
+<section class="slide break" data-module="break" data-title="Break">
+  <div class="break-icon">☕</div>
+  <h1>Break</h1>
+  <div class="duration">10 minutes</div>
+</section>
+
+<section class="slide section-divider" data-module="3" data-title="Module 3">
+  <div class="module-num-label">Module 3 · 25 min · Maps to Phases 2 &amp; 5</div>
+  <div class="module-num">03</div>
+  <h1>Policies, inheritance &amp; repository governance</h1>
+  <div class="meta-row"><span>Outcome: a day-1 policy baseline + org-level rulesets ready to apply</span></div>
+</section>
+
+<section class="slide" data-module="3" data-title="Day-1 enterprise policies (part 1)">
+  <h2><span class="tag">Module 3</span> Day-1 enterprise policies (EMU baseline) — 1 of 2</h2>
+  <p>If a setting is <strong>enforced</strong> at the enterprise level, lower levels cannot relax it.</p>
+  <table class="compact">
+    <thead><tr><th style="width:38%">Policy</th><th>Recommended setting</th></tr></thead>
+    <tbody>
+      <tr><td>Base repository permissions</td><td><strong>No permission</strong> — least privilege; teams grant explicit access</td></tr>
+      <tr><td>Repository creation</td><td><strong>Organization Owners only</strong> (or via an automated request workflow)</td></tr>
+      <tr><td>Public repository creation</td><td><strong>Disabled</strong> (EMU blocks anyway; explicit policy is documentation)</td></tr>
+      <tr><td>Repository visibility changes</td><td>Restrict to Organization Owners</td></tr>
+      <tr><td>Repository deletion / transfer</td><td>Restrict to Organization Owners</td></tr>
+      <tr><td>Forking private/internal repos</td><td>Restrict to same organization</td></tr>
+      <tr><td>Default branch name</td><td>Enforce <code>main</code></td></tr>
+      <tr><td>Outside collaborators</td><td>Restrict to Organization Owners (or disable)</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section class="slide" data-module="3" data-title="Day-1 enterprise policies (part 2)">
+  <h2><span class="tag">Module 3</span> Day-1 enterprise policies — 2 of 2</h2>
+  <table class="compact">
+    <thead><tr><th style="width:38%">Policy</th><th>Recommended setting</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Block user-namespace repos (EMU)</strong></td><td><strong>Enable</strong></td></tr>
+      <tr><td>Deploy keys</td><td>Restrict — prefer GitHub Apps</td></tr>
+      <tr><td>Issue deletion</td><td>Restrict to Organization Owners — preserves history</td></tr>
+      <tr><td>IP allow list</td><td>Enable; include corporate VPN + runner ranges</td></tr>
+      <tr><td>Audit log streaming</td><td><strong>Enable from day 1</strong> — retention is ~180 d for events, ~7 d for Git events</td></tr>
+      <tr><td>2FA enforcement</td><td><strong>N/A on EMU</strong> — handled by the IdP upstream</td></tr>
+      <tr><td>Verified domains</td><td>Configure — restrict notification domains</td></tr>
+    </tbody>
+  </table>
+  <h3>PAT policy (EMU)</h3>
+  <table class="compact">
+    <thead><tr><th>Policy</th><th>Recommended setting</th></tr></thead>
+    <tbody>
+      <tr><td>Fine-grained PAT access</td><td>Allow with approval</td></tr>
+      <tr><td>Classic PAT access</td><td>Restrict or block — but <strong>GEI still requires a classic PAT</strong></td></tr>
+      <tr><td>Fine-grained PAT approval</td><td>Require Organization Owner approval</td></tr>
+      <tr><td>Maximum lifetime</td><td>90–365 days</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section class="slide" data-module="3" data-title="Rulesets &amp; default branch protection">
+  <h2><span class="tag">Module 3</span> Rulesets supersede legacy branch protection</h2>
+  <p>Rulesets stack across layers, target by repository property, and have explicit bypass actors with full audit trail.</p>
+  <div class="cols-2">
+    <div>
+      <h3 style="margin-top:0">Default-branch ruleset starter</h3>
+      <table class="compact">
+        <thead><tr><th>Rule</th><th>Setting</th></tr></thead>
+        <tbody>
+          <tr><td>Require pull request</td><td>Enabled</td></tr>
+          <tr><td>Required approvals</td><td>≥ 1 (≥ 2 for production)</td></tr>
+          <tr><td>Dismiss stale reviews</td><td>Enabled</td></tr>
+          <tr><td>Require review from CODEOWNERS</td><td>Enabled</td></tr>
+          <tr><td>Require conversation resolution</td><td>Enabled</td></tr>
+          <tr><td>Block force pushes</td><td>Enabled</td></tr>
+          <tr><td>Block branch deletion</td><td>Enabled</td></tr>
+          <tr><td>Require up-to-date branches</td><td>Enabled</td></tr>
+          <tr><td>Required status checks</td><td>CI + security scans</td></tr>
+          <tr><td>Bypass actors</td><td>Release automation + named break-glass admins only</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div>
+      <h3 style="margin-top:0">Push &amp; tag rulesets to consider</h3>
+      <ul>
+        <li>Restrict file paths — protect <code>/.github/</code>, <code>CODEOWNERS</code>, security configs</li>
+        <li>Restrict file extensions — block <code>.exe</code>, <code>.dll</code>, binaries</li>
+        <li>Cap file size — 50 MiB limit</li>
+        <li>Protect release tags — <code>v*</code>, <code>release-*</code> restricted to the release group</li>
+      </ul>
+      <div class="callout">
+        <span class="label">Code scanning gate</span>
+        Add a ruleset that <strong>blocks merge on Critical / High</strong> code-scanning findings.
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-module="3" data-title="Templates &amp; custom properties">
+  <h2><span class="tag">Module 3</span> Templates carry policy by example</h2>
+  <div class="cols-2">
+    <div>
+      <h3 style="margin-top:0">Every new repo starts from a template</h3>
+      <ul>
+        <li><code>README</code>, <code>LICENSE</code>, <code>.gitignore</code></li>
+        <li><code>CODEOWNERS</code>, <code>SECURITY.md</code>, <code>CONTRIBUTING.md</code></li>
+        <li>PR &amp; issue templates</li>
+        <li>Dependabot config</li>
+        <li>Reusable CI workflow reference</li>
+      </ul>
+    </div>
+    <div>
+      <h3 style="margin-top:0">Custom properties drive targeted rulesets</h3>
+      <table class="compact">
+        <thead><tr><th>Property</th><th>Values</th></tr></thead>
+        <tbody>
+          <tr><td><code>security-tier</code></td><td><code>tier-1-critical</code> · <code>tier-2-important</code> · <code>tier-3-standard</code></td></tr>
+          <tr><td><code>compliance</code></td><td><code>pci</code> · <code>hipaa</code> · <code>sox</code> · <code>gdpr</code> · <code>none</code></td></tr>
+          <tr><td><code>production-status</code></td><td><code>production</code> · <code>staging</code> · <code>development</code> · <code>archive</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="decision-moment">
+    <div class="label">Decision moment · 5 min</div>
+    <div class="prompt">Which two organization-level rulesets are non-negotiable for your environment, and who is the single break-glass bypass group?</div>
+    Keep bypass actors minimal — release automation and one named admin group. Every bypass is auditable, which preserves accountability.
+  </div>
+</section>
+
+<section class="slide section-divider" data-module="4" data-title="Module 4">
+  <div class="module-num-label">Module 4 · 30 min · Maps to Phases 4 &amp; 7</div>
+  <div class="module-num">04</div>
+  <h1>Security-by-default &amp; GitHub Advanced Security</h1>
+  <div class="meta-row"><span>Outcome: a default security configuration + a staged GHAS rollout plan</span></div>
+</section>
+
+<section class="slide" data-module="4" data-title="GHAS SKU split">
+  <h2><span class="tag">Module 4</span> GHAS is now two separately licensed SKUs</h2>
+  <table>
+    <thead><tr><th style="width:24%">SKU</th><th>What's included</th><th style="width:24%">Billing unit</th></tr></thead>
+    <tbody>
+      <tr><td><strong>GitHub Secret Protection</strong></td><td>Secret scanning, push protection, AI detection for secrets, non-provider patterns, custom patterns</td><td>Per active committer / month</td></tr>
+      <tr><td><strong>GitHub Code Security</strong></td><td>CodeQL code scanning, dependency review, premium Dependabot features (custom auto-triage), Copilot Autofix for security, security overview enhancements</td><td>Per active committer / month</td></tr>
+    </tbody>
+  </table>
+  <div class="callout success">
+    <span class="label">Free for all repos</span>
+    Dependency graph, <strong>Dependabot alerts</strong>, and <strong>Dependabot security updates</strong> are free regardless of GHAS — not part of the paid Code Security SKU.
+  </div>
+  <h3>Security configurations are the unit of scale</h3>
+  <p>Build a default org security configuration (dependency graph + Dependabot + secret scanning + push protection + CodeQL default + non-provider patterns), apply org-wide, then build a stricter configuration for <code>security-tier=tier-1-critical</code> repos.</p>
+</section>
+
+<section class="slide" data-module="4" data-title="Staged GHAS rollout">
+  <h2><span class="tag">Module 4</span> Recommended staged rollout</h2>
+  <ol>
+    <li>Enable <strong>dependency graph + Dependabot alerts</strong> — low risk, high value.</li>
+    <li>Pilot <strong>secret scanning + push protection</strong> on 2–3 sandbox repos. Expect a <strong>historical alert flood</strong> on first enable — estimate triage volume before going wide.</li>
+    <li>Enable <strong>CodeQL default setup</strong> on pilot repos. Shadow-run alongside ADO Advanced Security for ~2 weeks to validate parity.</li>
+    <li>Expand organization-wide. Switch to CodeQL <strong>advanced setup</strong> only for repos with custom builds.</li>
+    <li>Add rulesets that <strong>require security checks</strong> to pass before merge (block on Critical / High).</li>
+    <li>Retire ADO Advanced Security per repository / wave after parity sign-off.</li>
+  </ol>
+  <div class="callout warn">
+    <span class="label">Migration note</span>
+    <strong>ADO Advanced Security alert state does NOT migrate.</strong> Export the open / dismissed / fixed baseline (with rationale) before migration. After the first GHAS scan, reconcile manually and carry forward known-false-positive dismissals.
+  </div>
+</section>
+
+<section class="slide" data-module="4" data-title="Audit log &amp; alerting">
+  <h2><span class="tag">Module 4</span> Audit log retention is finite</h2>
+  <table>
+    <thead><tr><th>Event type</th><th>Default retention in GitHub</th><th>Mitigation</th></tr></thead>
+    <tbody>
+      <tr><td>Most enterprise audit events</td><td>~180 days</td><td>Stream to SIEM from day 1</td></tr>
+      <tr><td>Git events (push, clone)</td><td>~7 days</td><td>Stream to SIEM from day 1</td></tr>
+    </tbody>
+  </table>
+  <div class="cols-2">
+    <div class="tile">
+      <h4>Alert on</h4>
+      <ul>
+        <li>Privilege changes (Enterprise Owner / Organization Owner)</li>
+        <li>Policy changes (ruleset bypass, GHAS toggles)</li>
+        <li>Suspicious activity (PAT creation, SSO disable)</li>
+      </ul>
+    </div>
+    <div class="tile">
+      <h4>Optional but recommended</h4>
+      <p><strong>SSH Certificate Authority.</strong> Issue short-lived SSH certificates from an enterprise CA — replaces user-managed SSH keys for repository access.</p>
+    </div>
+  </div>
+  <div class="decision-moment">
+    <div class="label">Decision moment · 5 min</div>
+    <div class="prompt">Who owns triage for the secret-scanning backfill, and where do alerts go?</div>
+    Route to a dedicated channel (not individual email). Agree an SLA per severity. Pre-declare which alert classes may be auto-closed (e.g., documented mock secrets in test fixtures).
+  </div>
+</section>
+
+<section class="slide break" data-module="break" data-title="Break">
+  <div class="break-icon">☕</div>
+  <h1>Break</h1>
+  <div class="duration">10 minutes</div>
+</section>
+
+<section class="slide section-divider" data-module="5" data-title="Module 5">
+  <div class="module-num-label">Module 5 · 25 min · Maps to Phase 6</div>
+  <div class="module-num">05</div>
+  <h1>GitHub Actions &amp; Copilot governance on EMU</h1>
+  <div class="meta-row"><span>Outcome: an Actions policy baseline + runner &amp; Copilot strategy that respects EMU limits</span></div>
+</section>
+
+<section class="slide" data-module="5" data-title="EMU impact on Actions &amp; Copilot">
+  <h2><span class="tag">Module 5</span> What EMU changes here</h2>
+  <div class="reality-cards">
+    <div class="reality-card">
+      <div class="num">RUNNERS</div>
+      <h4>No GitHub-hosted runners on user-namespace repos</h4>
+      <p>Only organization-owned repositories can use GitHub-hosted runners. Design Actions around org-owned repos from the start.</p>
+    </div>
+    <div class="reality-card">
+      <div class="num">COPILOT LICENSING</div>
+      <h4>No Pro or Free on EMU</h4>
+      <p>EMU users must be assigned a <strong>Copilot Business</strong> or <strong>Copilot Enterprise</strong> seat by the enterprise — there is no self-serve path.</p>
+    </div>
+    <div class="reality-card">
+      <div class="num">CLOUD AGENT</div>
+      <h4>Copilot cloud agent inherits the runner limit</h4>
+      <p>The cloud agent depends on GitHub-hosted runners, so it cannot run from user-namespace repositories. Evaluate carefully before enabling enterprise-wide.</p>
+    </div>
+  </div>
+  <h3>Day-1 Actions policies</h3>
+  <table class="compact">
+    <thead><tr><th style="width:34%">Policy</th><th>Recommended setting</th></tr></thead>
+    <tbody>
+      <tr><td>Actions availability</td><td>Enable for all orgs</td></tr>
+      <tr><td>Allowed actions</td><td>Restrict to Enterprise + GitHub-authored + explicit allow-list (do <strong>not</strong> rely on "verified creators" alone)</td></tr>
+      <tr><td>Require Actions SHA pinning</td><td><strong>Enforce</strong> (native enterprise policy); optionally augment with a CI lint such as <code>zizmor</code> or StepSecurity Harden-Runner</td></tr>
+      <tr><td>Default workflow permissions</td><td><strong>Read-only</strong> (enterprises ≥ 2 Feb 2023 default to read-only)</td></tr>
+      <tr><td>Allow Actions to create / approve PRs</td><td>Disable (unless you have a controlled bot identity)</td></tr>
+      <tr><td>Fork PR workflows</td><td>Require approval for <strong>all outside collaborators</strong> (<code>pull_request_target</code> always runs regardless)</td></tr>
+      <tr><td>Repository-level self-hosted runners</td><td>Disable — force runners to org or enterprise level</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section class="slide" data-module="5" data-title="Runner strategy">
+  <h2><span class="tag">Module 5</span> Runner strategy &amp; reusable workflows</h2>
+  <h3>Runners on EMU</h3>
+  <table>
+    <thead><tr><th>Option</th><th>When to use</th><th>EMU note</th></tr></thead>
+    <tbody>
+      <tr><td>GitHub-hosted</td><td>Standard CI workloads</td><td><strong>Not available on user-namespace repositories</strong></td></tr>
+      <tr><td>Larger GitHub-hosted</td><td>CPU / RAM-heavy builds</td><td>Same restriction</td></tr>
+      <tr><td>Self-hosted (ephemeral)</td><td>Network access, legacy tools, compliance</td><td>Manage at org or enterprise level; never repo-scoped where avoidable</td></tr>
+    </tbody>
+  </table>
+  <p>Estimate monthly minutes with <code>gh actions-importer forecast</code> before configuring spending limits.</p>
+  <h3>Reusable workflows &amp; environments</h3>
+  <ul>
+    <li>Publish a <strong>reusable CI workflow</strong> (build + test) and a <strong>reusable security-scan workflow</strong> (CodeQL + dependency review) from a central repo</li>
+    <li>Create environments <code>development</code>, <code>staging</code>, <code>production</code> with required reviewers and deployment-branch policies on <code>production</code></li>
+    <li>For cloud deployments, prefer <strong>OIDC workload-identity federation</strong> over long-lived cloud secrets</li>
+  </ul>
+</section>
+
+<section class="slide" data-module="5" data-title="Copilot governance">
+  <h2><span class="tag">Module 5</span> Security-by-default Copilot policy set</h2>
+  <div class="cols-2">
+    <div>
+      <table class="compact">
+        <thead><tr><th>Policy</th><th>Setting</th></tr></thead>
+        <tbody>
+          <tr><td>Copilot in IDE</td><td>Enabled</td></tr>
+          <tr><td>Copilot Chat (IDE + GitHub.com)</td><td>Enabled</td></tr>
+          <tr><td>Copilot CLI</td><td>Enabled</td></tr>
+          <tr><td>Copilot code review <em>(evaluate)</em></td><td>Optional</td></tr>
+          <tr><td>Suggestions matching public code</td><td><strong>Blocked</strong></td></tr>
+          <tr><td>Prompt &amp; suggestion collection</td><td><strong>Blocked</strong></td></tr>
+          <tr><td>Preview features</td><td>Disabled</td></tr>
+          <tr><td>MCP servers <em>(external integrations)</em></td><td>Disabled</td></tr>
+          <tr><td>Copilot cloud agent</td><td>Disabled / No Policy</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div>
+      <h3 style="margin-top:0">Recommended content exclusion patterns</h3>
+      <table class="compact">
+        <thead><tr><th>Pattern</th><th>Protects</th></tr></thead>
+        <tbody>
+          <tr><td><code>**/secrets/**</code></td><td>Credentials</td></tr>
+          <tr><td><code>**/.env*</code></td><td>Env files</td></tr>
+          <tr><td><code>**/credentials/**</code></td><td>Cred stores</td></tr>
+          <tr><td><code>**/*.pem</code> <code>**/*.key</code></td><td>Private keys</td></tr>
+          <tr><td><code>**/*.pfx</code> <code>**/*.p12</code></td><td>Certificates</td></tr>
+          <tr><td><code>**/config/production*</code></td><td>Prod config</td></tr>
+          <tr><td><code>**/database/migrations/sensitive/**</code></td><td>Sensitive schema or seed data</td></tr>
+        </tbody>
+      </table>
+      <div class="callout">
+        <span class="label">Network</span>
+        Allow-list Copilot endpoints in your firewall and proxy; configure SSL-inspection exceptions if you use TLS interception.
+      </div>
+    </div>
+  </div>
+  <div class="decision-moment">
+    <div class="label">Decision moment · 5 min</div>
+    <div class="prompt">What is your runner strategy, and what is your cost model?</div>
+    Decide GitHub-hosted vs. self-hosted per workload class (remember the EMU limit on user-namespace repos), estimate minutes, assign a budget owner, configure spending limits.
+  </div>
+</section>
+
+<section class="slide section-divider" data-module="6" data-title="Module 6">
+  <div class="module-num-label">Module 6 · 20 min · Maps to Phases 8, 9 &amp; 10</div>
+  <div class="module-num">06</div>
+  <h1>Migration readiness, cutover &amp; pilot decisioning</h1>
+  <div class="meta-row"><span>Outcome: a pilot plan you can defend, with rollback criteria pre-agreed</span></div>
+</section>
+
+<section class="slide" data-module="6" data-title="EMU impact on migration &amp; GEI scope">
+  <h2><span class="tag">Module 6</span> What EMU changes here</h2>
+  <div class="reality-cards">
+    <div class="reality-card">
+      <div class="num">MANNEQUINS</div>
+      <h4>SCIM-provisioned users only</h4>
+      <p>Mannequins can be reclaimed only by SCIM-provisioned EMU users. No second chances after migration.</p>
+    </div>
+    <div class="reality-card">
+      <div class="num">SERVICE CONNECTIONS</div>
+      <h4>GitHub App, installed by an Enterprise Owner</h4>
+      <p>PAT-based Azure Pipelines service connections do not work on EMU. One App service connection per ADO organization.</p>
+    </div>
+    <div class="reality-card">
+      <div class="num">PAT FOR GEI</div>
+      <h4>Classic PAT only</h4>
+      <p>Fine-grained PATs are not supported by GEI. Plan a scoped, short-lived classic PAT (<code>repo</code>, <code>admin:org</code>, <code>workflow</code>).</p>
+    </div>
+  </div>
+  <h3>GEI scope at a glance</h3>
+  <div class="cols-2">
+    <div>
+      <h4 style="color:var(--success);font-size:clamp(16px,1.3vw,20px);margin-bottom:0.4em">✅ Migrated by GEI</h4>
+      <ul>
+        <li>Git source code &amp; full commit history</li>
+        <li>Pull requests with user history, attachments, work-item links</li>
+        <li>Some branch policies</li>
+      </ul>
+    </div>
+    <div>
+      <h4 style="color:var(--danger);font-size:clamp(16px,1.3vw,20px);margin-bottom:0.4em">❌ NOT migrated</h4>
+      <ul>
+        <li>Azure Pipelines (Phase 2 — use <code>gh actions-importer</code>)</li>
+        <li>Work items (Boards), Artifacts, Test Plans, Releases, Dashboards</li>
+        <li>Repository permissions, service hooks</li>
+        <li><strong>Git LFS objects</strong> &amp; ADO Advanced Security alert state</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-module="6" data-title="Mannequins &amp; LFS">
+  <h2><span class="tag">Module 6</span> Mannequins on EMU + Git LFS recipe</h2>
+  <div class="cols-2">
+    <div>
+      <h3 style="margin-top:0">Mannequin hard rule</h3>
+      <ul>
+        <li>Build the <strong>ADO user → GitHub EMU user</strong> mapping before migration</li>
+        <li>Verify every pilot-repo committer is in SCIM before cutover</li>
+        <li>Reclamation is a slow manual CSV workflow at scale — budget time</li>
+        <li>Unmapped users leave history linked to a mannequin that cannot be reattributed afterwards</li>
+      </ul>
+      <h3>Platform &amp; GEI limits</h3>
+      <table class="compact">
+        <thead><tr><th>Limit</th><th>Value</th></tr></thead>
+        <tbody>
+          <tr><td>Max single Git commit size</td><td>2 GiB</td></tr>
+          <tr><td>Max file size post-migration</td><td>100 MiB</td></tr>
+          <tr><td>Max Git repo size (GEI)</td><td>40 GiB <em>(public preview)</em></td></tr>
+          <tr><td>Max file size during migration</td><td>400 MiB</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div>
+      <h3 style="margin-top:0">Git LFS migration recipe</h3>
+      <p style="font-size:clamp(15px,1.2vw,18px);margin-bottom:0.4em">Do it manually, <strong>immediately after GEI, before developer unfreeze</strong>:</p>
+<pre><code>git clone --mirror \
+  https://dev.azure.com/ORG/PROJECT/_git/REPO
+cd REPO.git
+git lfs fetch --all
+
+git remote set-url origin \
+  https://github.com/ORG/REPO.git
+git push --mirror
+git lfs push --all origin</code></pre>
+      <div class="callout danger">
+        <span class="label">Critical</span>
+        Broken LFS = broken builds. Validate <code>git lfs pull</code> from GitHub before unfreezing.
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-module="6" data-title="Azure Pipelines hybrid">
+  <h2><span class="tag">Module 6</span> Azure Pipelines hybrid is the highest-risk surface</h2>
+  <table class="compact">
+    <thead><tr><th style="width:30%">Impact area</th><th>What changes</th><th style="width:10%" class="center">Severity</th></tr></thead>
+    <tbody>
+      <tr><td>Pipeline templates (<code>extends</code>, <code>template</code>)</td><td>Update <code>type: git</code> → <code>type: github</code>, add <code>endpoint</code></td><td class="center">🔴 High</td></tr>
+      <tr><td>Repository resources</td><td><code>name</code> format <code>Project/Repo</code> → <code>Org/Repo</code>; service connection required</td><td class="center">🔴 High</td></tr>
+      <tr><td>Service connections</td><td>Must use <strong>GitHub App</strong> connection installed by Enterprise Owner; one per ADO org</td><td class="center">🔴 High</td></tr>
+      <tr><td><code>resources.repositories</code> triggers</td><td><strong>Do not work for GitHub repos</strong> — use webhooks or Actions triggers</td><td class="center">🔴 High</td></tr>
+      <tr><td>CI / PR triggers</td><td>Generally work; validate names, branch &amp; path filters per repo</td><td class="center">🟡 Med</td></tr>
+      <tr><td>Status-check names</td><td>May change when source changes; re-bind PR gates</td><td class="center">🟡 Med</td></tr>
+      <tr><td>Variable groups, secrets, artifact publishing</td><td>No change</td><td class="center">🟢 Low</td></tr>
+    </tbody>
+  </table>
+  <div class="callout warn">
+    <span class="label">Atomic</span>
+    Central template repositories must be updated <strong>atomically</strong> with every pipeline that references them — incremental migration is not possible for these.
+  </div>
+</section>
+
+<section class="slide" data-module="6" data-title="Cutover &amp; rollback">
+  <h2><span class="tag">Module 6</span> Cutover discipline &amp; rollback strategy</h2>
+  <div class="cols-2">
+    <div>
+      <h3 style="margin-top:0">Cutover (per batch)</h3>
+      <ol style="font-size:clamp(15px,1.2vw,18px);line-height:1.5">
+        <li>Freeze source repos in ADO</li>
+        <li>Temporarily bypass org rulesets</li>
+        <li><code>gh ado2gh migrate-repo</code> + <code>wait-for-migration</code></li>
+        <li>Reclaim mannequins</li>
+        <li><strong>Migrate Git LFS objects</strong></li>
+        <li>Apply template settings (CODEOWNERS, Dependabot, workflows)</li>
+        <li>Verify GHAS activates on migrated repos</li>
+        <li>Deploy prepared Azure Pipeline YAML updates</li>
+        <li>Rotate credentials; revoke migration PATs</li>
+        <li>Remove temporary bypasses</li>
+        <li>Notify developers with new URLs</li>
+      </ol>
+    </div>
+    <div>
+      <h3 style="margin-top:0">Rollback</h3>
+      <p>GEI does not provide an undo step. Mitigate with:</p>
+      <ul>
+        <li><strong>Frozen source</strong> during cutover window</li>
+        <li><strong>24–48 h commit grace window</strong> on the GitHub side</li>
+        <li>Documented <strong>reverse <code>git push</code></strong> procedure during the grace window</li>
+        <li><strong>ADO retention policy</strong> — keep read-only for 30 days after validation before deleting</li>
+      </ul>
+      <div class="decision-moment" style="margin-top:1em">
+        <div class="label">Decision moment · 3 min</div>
+        <div class="prompt">What are your pilot-selection criteria?</div>
+        Agree the criteria (low PR velocity, no LFS, no central-template deps). Actual repo picks &amp; rollback triggers are a follow-up task after the session.
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="slide section-divider" data-module="7" data-title="Module 7">
+  <div class="module-num-label">Module 7 · 5 min</div>
+  <div class="module-num">07</div>
+  <h1>Wrap-up</h1>
+  <div class="meta-row"><span>Top pitfalls + recommended next steps</span></div>
+</section>
+
+<section class="slide" data-module="7" data-title="Top pitfalls">
+  <h2><span class="tag">Module 7</span> Top pitfalls to keep in mind</h2>
+  <div class="cols-2">
+    <div>
+      <ol>
+        <li><strong>Starting migration before governance is approved.</strong> Phase 7 sign-off is a prerequisite — it also includes documentation (§7.2) and training (§7.3) deliverables. Schedule those <em>before</em> the pilot.</li>
+        <li><strong>Incomplete SCIM coverage.</strong> A single unprovisioned committer leaves history linked to a mannequin that cannot be reattributed.</li>
+        <li><strong>Forgetting LFS &amp; Azure Pipelines templates</strong> until cutover day.</li>
+        <li><strong>Bypass actor sprawl.</strong> Every bypass is a control gap; review on a fixed cadence.</li>
+        <li><strong>Not streaming audit logs from day 1.</strong> Historical events cannot be back-filled once aged out.</li>
+      </ol>
+    </div>
+    <div>
+      <ol start="6">
+        <li><strong>Renaming an organization later.</strong> Cascading impact on Copilot, SSO, automation, links — treat the name as effectively immutable.</li>
+        <li><strong>Assuming GitHub-hosted runners are available everywhere on EMU.</strong> They are not for user-namespace repos — design Actions around organization-owned repos.</li>
+        <li><strong>Trying to use fine-grained PATs for GEI.</strong> GEI requires a classic PAT — plan explicitly.</li>
+        <li><strong>Skipping the pilot.</strong> 3–5 real repositories teach more than 10 weeks of planning.</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-module="7" data-title="Recommended next steps">
+  <h2><span class="tag">Module 7</span> Recommended next steps</h2>
+  <table class="compact">
+    <thead><tr><th style="width:14%">When</th><th>Action</th><th style="width:30%">Suggested output</th></tr></thead>
+    <tbody>
+      <tr><td>Same day</td><td>Bookmark the adoption plan &amp; reference architecture</td><td>Shared reading list</td></tr>
+      <tr><td>Week 1</td><td>Complete Phase 0 discovery (ADO inventory, org-structure decision, EMU acknowledgments)</td><td>Discovery output document</td></tr>
+      <tr><td>Week 2</td><td>Validate identity (SSO, SCIM, break-glass); stream audit logs to a SIEM</td><td>Identity validation sign-off</td></tr>
+      <tr><td>Weeks 3–6</td><td>Roll out enterprise &amp; org policies, teams, security configuration, rulesets, templates</td><td>Governance baseline live</td></tr>
+      <tr><td>Weeks 7–10</td><td>Configure Actions &amp; Copilot governance; complete the global security review</td><td>Phase 7 sign-off</td></tr>
+      <tr><td>Weeks 11–14</td><td>Run migration readiness, Go/No-Go, and pilot migration</td><td>Pilot report &amp; lessons learned</td></tr>
+      <tr><td>Day 2</td><td>Stand up cost allocation (chargeback) and an exception-request process</td><td>Chargeback model &amp; exception workflow</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section class="slide closing" data-module="closing" data-title="Thank you">
+  <h1>Thank you</h1>
+  <p class="subtitle">Questions, discussion, and decision-moment capture.</p>
+  <div class="callout success" style="max-width:600px;text-align:left">
+    <span class="label">Leave with two artifacts</span>
+    <strong>1.</strong> An updated copy of the <em>Go/No-Go checklist</em> marked with your current state.<br>
+    <strong>2.</strong> A named owner for each open item.
+  </div>
+  <p style="margin-top:2em;font-size:16px;color:var(--text-muted)">
+    Full markdown reference, labs, and all 21 supporting documents are in this repository.
+  </p>
+</section>
+
+</template>
+
+<script>
+(function() {
+  const stage = document.getElementById('stage');
+  const source = document.getElementById('slides-source');
+  const overview = document.getElementById('overview');
+  const overviewGrid = document.getElementById('overviewGrid');
+  const help = document.getElementById('help');
+  const moduleLabel = document.getElementById('moduleLabel');
+  const curNum = document.getElementById('curNum');
+  const totNum = document.getElementById('totNum');
+  const progress = document.getElementById('progress');
+
+  const fragments = source.content.querySelectorAll('section.slide');
+  const slides = [];
+  fragments.forEach((s, i) => {
+    const clone = s.cloneNode(true);
+    clone.dataset.index = i;
+    stage.appendChild(clone);
+    slides.push(clone);
+  });
+
+  totNum.textContent = slides.length;
+
+  slides.forEach((s, i) => {
+    const t = document.createElement('div');
+    t.className = 'thumb';
+    t.dataset.index = i;
+    const moduleId = s.dataset.module || '';
+    const moduleTag = moduleId === 'intro' ? 'INTRO'
+      : moduleId === 'break' ? 'BREAK'
+      : moduleId === 'closing' ? 'CLOSING'
+      : 'MODULE ' + moduleId;
+    t.innerHTML = `
+      <div>
+        <div class="thumb-num">SLIDE ${String(i+1).padStart(2,'0')}</div>
+        <div class="thumb-title">${s.dataset.title || 'Untitled'}</div>
+      </div>
+      <div class="thumb-module">${moduleTag}</div>`;
+    t.addEventListener('click', () => { goTo(i); closeOverview(); });
+    overviewGrid.appendChild(t);
+  });
+
+  let current = 0;
+
+  function moduleLabelFor(s) {
+    const m = s.dataset.module;
+    if (!m || m === 'intro') return 'Introduction';
+    if (m === 'break') return 'Break';
+    if (m === 'closing') return 'Closing';
+    return 'Module ' + m;
+  }
+
+  function render() {
+    slides.forEach((s, i) => s.classList.toggle('active', i === current));
+    curNum.textContent = current + 1;
+    progress.style.width = ((current+1) / slides.length * 100) + '%';
+    moduleLabel.textContent = moduleLabelFor(slides[current]);
+    overviewGrid.querySelectorAll('.thumb').forEach((t, i) => {
+      t.classList.toggle('current', i === current);
+    });
+    history.replaceState(null, '', '#' + (current + 1));
+  }
+
+  function goTo(n) { current = Math.max(0, Math.min(slides.length - 1, n)); render(); }
+  function next() { if (current < slides.length - 1) goTo(current + 1); }
+  function prev() { if (current > 0) goTo(current - 1); }
+  function openOverview() { overview.classList.add('active'); }
+  function closeOverview() { overview.classList.remove('active'); }
+  function toggleOverview() { overview.classList.toggle('active'); }
+  function openHelp() { help.classList.add('active'); }
+  function closeHelp() { help.classList.remove('active'); }
+  function toggleFullscreen() {
+    if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+    else document.exitFullscreen();
+  }
+  document.addEventListener('fullscreenchange', () => {
+    document.getElementById('deck').classList.toggle('is-fullscreen', !!document.fullscreenElement);
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+    switch (e.key) {
+      case 'ArrowRight':
+      case 'PageDown':
+      case ' ':
+        e.preventDefault(); next(); break;
+      case 'ArrowLeft':
+      case 'PageUp':
+        e.preventDefault(); prev(); break;
+      case 'Home':
+        e.preventDefault(); goTo(0); break;
+      case 'End':
+        e.preventDefault(); goTo(slides.length - 1); break;
+      case 'Escape':
+        if (help.classList.contains('active')) closeHelp();
+        else toggleOverview();
+        break;
+      case 'f':
+      case 'F':
+        e.preventDefault(); toggleFullscreen(); break;
+      case '?':
+        e.preventDefault(); openHelp(); break;
+    }
+  });
+
+  document.getElementById('btnPrev').addEventListener('click', prev);
+  document.getElementById('btnNext').addEventListener('click', next);
+  document.getElementById('btnOverview').addEventListener('click', toggleOverview);
+  document.getElementById('btnFullscreen').addEventListener('click', toggleFullscreen);
+  document.getElementById('btnHelp').addEventListener('click', openHelp);
+  overview.addEventListener('click', (e) => { if (e.target === overview) closeOverview(); });
+  help.addEventListener('click', (e) => { if (e.target === help) closeHelp(); });
+
+  let touchStartX = null;
+  stage.addEventListener('touchstart', (e) => { touchStartX = e.touches[0].clientX; }, {passive: true});
+  stage.addEventListener('touchend', (e) => {
+    if (touchStartX === null) return;
+    const dx = e.changedTouches[0].clientX - touchStartX;
+    if (Math.abs(dx) > 60) (dx < 0 ? next : prev)();
+    touchStartX = null;
+  });
+
+  // Click-to-advance is intentionally NOT bound to <main>. Body clicks during
+  // a live presentation (on headings, paragraphs, tables) would misfire and
+  // skip slides. Use keyboard, footer buttons, or touch swipe instead.
+
+  const hash = parseInt(location.hash.replace('#',''), 10);
+  if (!isNaN(hash) && hash >= 1 && hash <= slides.length) current = hash - 1;
+
+  render();
+})();
+</script>
+</body>
+</html>

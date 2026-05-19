@@ -7,7 +7,8 @@
 Comprehensive L400-level technical documentation for GitHub Enterprise Cloud administration and governance.
 
 ### Workshop Guide
-- [🎓 Mastering GitHub Administration on EMU — 3-Hour Workshop](docs/00-mastering-github-administration-workshop.md) - Instructor-led workshop for Enterprise Managed Users enterprises, anchored to the Enterprise Adoption Plan; clear learning objectives, decision moments, EMU-specific limits and pitfalls, and embedded reference tables so participants don't need to flip away from the deck
+- [🎓 Mastering GitHub Administration on EMU — 3-Hour Workshop (Markdown)](docs/00-mastering-github-administration-workshop.md) - Instructor-led workshop for Enterprise Managed Users enterprises, anchored to the Enterprise Adoption Plan; clear learning objectives, decision moments, EMU-specific limits and pitfalls, and embedded reference tables so participants don't need to flip away from the deck
+- [🖥️ Mastering GitHub Administration on EMU — HTML Slide Deck](docs/00-mastering-github-administration-workshop.html) - Customer-facing slide-by-slide presentation of the same content (37 slides, GitHub-themed dark UI, keyboard nav, overview mode, fullscreen, print-as-handout). Open in any modern browser — single self-contained file, no dependencies
 
 ### Enterprise Administration
 - [📘 Enterprise Hierarchy](docs/01-enterprise-hierarchy.md) - GHEC structure, roles, and multi-org management
