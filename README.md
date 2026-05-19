@@ -6,6 +6,9 @@
 
 Comprehensive L400-level technical documentation for GitHub Enterprise Cloud administration and governance.
 
+### Workshop Guide
+- [🎓 Mastering GitHub Administration on EMU — 3-Hour Workshop](docs/00-mastering-github-administration-workshop.md) - Instructor-led workshop for Enterprise Managed Users enterprises, anchored to the Enterprise Adoption Plan; clear learning objectives, decision moments, EMU-specific limits and pitfalls, and embedded reference tables so participants don't need to flip away from the deck
+
 ### Enterprise Administration
 - [📘 Enterprise Hierarchy](docs/01-enterprise-hierarchy.md) - GHEC structure, roles, and multi-org management
 - [🏢 Organization Strategies](docs/02-organization-strategies.md) - Single/multi-org patterns, red-green-sandbox-archive
@@ -58,24 +61,24 @@ Comprehensive L400-level technical documentation for GitHub Enterprise Cloud adm
 
 ## Hands-on Labs
 
-Practical exercises to reinforce GitHub administration concepts.
+Short guided exercises covering **foundational GitHub mechanics** (webhooks, Actions settings, branch protection, repository templates, REST and GraphQL APIs). These predate the EMU workshop refocus and are useful as standalone skill-builders rather than direct reinforcement of the EMU governance modules — see the workshop's [§9 lab map](docs/00-mastering-github-administration-workshop.md#hands-on-labs-optional-after-the-workshop) for closest touchpoints and an EMU caveat on `setup.md`.
 
 ### Hands-on Labs Setup
 - [ ]  [Lab Setup](/labs/setup.md)
 
-### Module 1: Introduction to Repository Webhooks and Events
+### Lab 01: Introduction to Repository Webhooks and Events
 - [ ]  _Hands-on Lab:_ > [Activity 1](/labs/lab01.md)
 
-### Module 2: Managing GitHub Actions settings for a repository
+### Lab 02: Managing GitHub Actions settings for a repository
 - [ ]  _Hands-on Lab:_ > [Activity 2](/labs/lab02.md)
 
-### Module 3: Managing a branch protection rule
+### Lab 03: Managing a branch protection rule
 - [ ]  _Hands-on Lab:_ > [Activity 3](/labs/lab03.md)
 
-### Module 4: GitHub Templates
+### Lab 04: GitHub Templates
 - [ ]  _Hands-on Lab:_ > [Activity 4](/labs/lab04.md)
 
-### Module 5: GitHub API
+### Lab 05: GitHub API
 - [ ]  _Hands-on Lab:_ > [Activity 5](/labs/lab05.md)
 
 ---
