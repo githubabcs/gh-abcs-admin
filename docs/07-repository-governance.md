@@ -23,6 +23,7 @@ render_with_liquid: false
 - [Repository Ruleset Deep Dive](#repository-ruleset-deep-dive)
 - [Tag Protection Rules](#tag-protection-rules)
 - [Push Rulesets and File Path Restrictions](#push-rulesets-and-file-path-restrictions)
+- [Code Owners and Path-Based Review](#code-owners-and-path-based-review)
 - [Merge Strategies and Settings](#merge-strategies-and-settings)
 - [Repository Lifecycle Management](#repository-lifecycle-management)
 - [Innersource Patterns with Internal Repositories](#innersource-patterns-with-internal-repositories)
@@ -772,6 +773,82 @@ Push rulesets extend governance to file-level granularity, enabling controls bas
    - Pre-commit hooks for local validation
    - CI checks that duplicate restrictions
    - Helpful error messages with solutions
+
+## Code Owners and Path-Based Review
+
+A `CODEOWNERS` file automatically requests review from designated owners whenever a pull request changes files matching a path pattern. It is GitHub's equivalent of Azure DevOps' "automatically include code reviewers" branch policy, scoped per directory or file type. On its own the file only *suggests* reviewers; combine it with a ruleset or branch protection rule to *require* their approval before merge.
+
+### File Location and Lookup Order
+
+Name the file `CODEOWNERS` (no extension) and place it in one of three locations. GitHub searches in this order and uses the **first** file it finds, ignoring the others:
+
+| Order | Location              | Notes                                  |
+|-------|-----------------------|----------------------------------------|
+| 1     | `.github/CODEOWNERS`  | Most common; keeps governance metadata together |
+| 2     | `/CODEOWNERS`         | Repository root                        |
+| 3     | `docs/CODEOWNERS`     | Useful for documentation-centric repos |
+
+The file is evaluated per branch: the version on a branch governs pull requests that target that branch. Maintain it on the default branch and let rulesets enforce it across protected branches.
+
+### Syntax and Pattern Precedence
+
+Patterns use gitignore-style matching mapped to one or more owners (individual users, `@org/team` teams, or email addresses). **Within the file, the last matching pattern wins** — the opposite of first-match — so order rules from general to specific.
+
+```text
+# Default owners for everything in the repo (fallback)
+*                       @githubabcs/platform-admins
+
+# Per-folder owners
+/docs/                  @githubabcs/tech-writers
+/src/api/               @alice @githubabcs/api-team
+/infra/                 @githubabcs/devops
+
+# Per file-type owners
+*.tf                    @githubabcs/devops
+*.md                    @githubabcs/tech-writers
+
+# Make CODEOWNERS own itself so only admins can change ownership (list last)
+/.github/CODEOWNERS     @githubabcs/platform-admins
+/CODEOWNERS             @githubabcs/platform-admins
+```
+
+Prefer `@org/team` references over individuals so reviewer changes happen through team membership rather than file edits. Every listed owner must have at least write access to the repository, or the entry is ignored.
+
+### Enforcing Code Owner Review
+
+The file becomes a gate only when a protection rule requires it:
+
+- **Repository ruleset (recommended):** Settings → Rules → Rulesets → branch ruleset → enable **Require a pull request before merging**, then check **Require review from Code Owners**.
+- **Classic branch protection:** Settings → Branches → protect the branch → check **Require review from Code Owners**.
+
+Once enabled, any pull request touching an owned path needs approval from a matching owner before it can merge. Required Code Owner review needs a plan that supports protected branches (private repositories require GitHub Team or Enterprise; public repositories include it).
+
+### Preventing Contributors from Changing Ownership
+
+To stop other repository contributors from quietly editing ownership, layer these controls:
+
+1. **Make CODEOWNERS own itself** — add the `/.github/CODEOWNERS` and `/CODEOWNERS` entries shown above so changes to the file require admin approval.
+2. **Require Code Owner review** so even a pull request editing CODEOWNERS is gated by the current owners.
+3. **Restrict bypass** — keep the ruleset bypass list limited to a small admin team; a broad bypass list defeats the gate.
+4. **Block force pushes and deletions** on the protected branch to prevent history rewrites that sidestep review.
+
+Contributors can still propose ownership changes through a pull request, but they cannot self-approve or merge them.
+
+### Organization-Level Considerations
+
+GitHub does not provide a single organization-wide `CODEOWNERS` file:
+
+- The organization `.github` **default repository** supplies default community health files (for example `CODE_OF_CONDUCT.md`), but **CODEOWNERS is not inherited** from it — each repository needs its own file.
+- You can centralize **enforcement** with **organization (or enterprise) rulesets**: target many repositories with name patterns and require Code Owner review everywhere at once. The per-repository `CODEOWNERS` file still defines *who owns what*.
+- To scale ownership consistently, seed a baseline `.github/CODEOWNERS` through a template repository or repository-bootstrap workflow, and reference teams rather than individuals.
+
+| Goal                                | Mechanism                                                        |
+|-------------------------------------|-----------------------------------------------------------------|
+| Auto-request reviewers per folder   | `CODEOWNERS` path patterns                                      |
+| Require their approval              | Ruleset or branch protection → Require review from Code Owners  |
+| Protect CODEOWNERS itself           | CODEOWNERS owns itself plus a restricted bypass list            |
+| Apply enforcement across many repos | Organization or enterprise rulesets (file remains per-repo)     |
+| Single org-wide CODEOWNERS file     | Not supported — use template repos or automation                |
 
 ## Merge Strategies and Settings
 
