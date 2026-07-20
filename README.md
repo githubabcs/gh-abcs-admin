@@ -24,6 +24,7 @@ Comprehensive L400-level technical documentation for GitHub Enterprise Cloud adm
 
 ### Repository Governance
 - [📦 Repository Governance](docs/07-repository-governance.md) - Rulesets, branch protection, templates
+- [🏷️ Custom Properties for Governance & Compliance](docs/23-github-custom-properties.md) - Repository metadata schema design, governance taxonomy, ruleset targeting by property, REST API/Terraform automation, and compliance framework mapping
 - [🔒 Security & Compliance](docs/08-security-compliance.md) - GHAS split SKUs (Secret Protection + Code Security), code scanning, secret scanning, dependency review, audit logs
 
 ### Best Practices & Architecture
