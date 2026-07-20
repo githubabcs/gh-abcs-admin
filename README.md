@@ -37,6 +37,7 @@ Comprehensive L400-level technical documentation for GitHub Enterprise Cloud adm
 
 ### AI & Copilot Governance
 - [🤖 GitHub Copilot Governance](docs/12-github-copilot-governance.md) - Enterprise Copilot policies, settings, content exclusions, license management, and best practices, including Copilot cloud agent governance and Copilot Spaces (formerly Knowledge Bases)
+- [🖥️ GitHub Copilot App — Agent-Native Desktop Development](docs/24-github-copilot-app.md) - The agent-native desktop app: parallel agent sessions and worktrees, session modes, canvases, automations, Agent Merge, sandboxes, extensibility (MCP/skills/SDK), demo-ready examples, and training resources
 - [💳 GitHub Copilot Usage-Based Billing Research](docs/GitHub-Copilot-Usage-Based-Billing-Research.md) - Premium requests, AI credits, cost-center allocation, and budget controls for Copilot consumption
 - [📊 GitHub Chargeback System Design](docs/22-github-chargeback-system-design.md) - Internal cost allocation framework for GitHub Enterprise spend (seats, Actions minutes, Copilot premium requests, GHAS committers)
 - [🔄 GitHub Organization Rename Impact](docs/18-github-rename-org-impact.md) - Impact analysis of renaming a GitHub organization on Copilot, EMU authentication, and post-rename actions
