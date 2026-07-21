@@ -97,90 +97,41 @@ graph TD
 
 ## 3. The Hero View — Where Each Component Lands
 
-This is the central visual. Each **ADO concept on the left maps by a direct arrow to one of three GitHub tiers on the right**: **Enterprise**, **Organization**, or **Repository**. It makes the "governance is authored up, workloads run at repos" shift explicit — and shows the concepts that **split across tiers** (access, branch policies, and pipelines) and the one that **has no container equivalent** (the Project).
+This is the central visual — a clean **left-to-right mapping**. Each **ADO concept (left)** maps straight across to **where it lands in GitHub (right)**, colored by tier: 🟪 **Enterprise**, 🟦 **Organization**, 🟩 **Repository**. Rows are aligned so you can trace each mapping horizontally. **Governance and access** concepts that ADO manages per-Project but GitHub authors centrally are marked **▲ UP**; concepts that **split across tiers** list every landing place inside the node (each prefixed with its tier emoji; the node's fill shows its **primary** tier); the **Project** has **no container equivalent**.
 
 ```mermaid
 flowchart LR
-    subgraph ADOSIDE["🔷 Azure DevOps"]
-        direction TB
-        A1[ADO Organization]
-        A2[ADO Project<br/>container]
-        A3[Repositories]
-        A4[Project Teams]
-        A5[Security / Access<br/>who can do what]
-        A8[Branch Policies<br/>code governance]
-        A6[Pipelines]
-        A7[Boards / Artifacts]
-    end
+    A1["🔷 ADO Organization"] ==> B1["🟪 GitHub ENTERPRISE<br/>identity · billing · cross-org policy<br/>holds Red / Green / Sandbox orgs"]
+    A2["🔷 ADO Project<br/>(the container)"] -. no 1:1 .-> B2["🟧 NO container equivalent<br/>repos sorted into Red / Green / Sandbox orgs §3.1<br/>grouping returns via teams"]
+    A3["🔷 Repositories"] ==>|1 : 1| B3["🟩 REPOSITORY<br/>source code / branches"]
+    A4["🔷 Project Teams"] ==>|defined ▲ UP| B4["🟦 ORGANIZATION<br/>Teams and membership"]
+    A5["🔷 Security / Access"] ==>|splits| B5["🟦 ORG: base permissions and roles — who ▲ UP<br/>🟩 REPO: team/user role grant = access · CODEOWNERS = review ownership"]
+    A6["🔷 Branch Policies"] ==>|authored ▲ UP| B6["🟦 ORG / 🟪 ENT: rulesets — author once, target many<br/>🟩 REPO: repo rules layer"]
+    A7["🔷 Pipelines"] ==>|splits| B7["🟩 REPO: Actions workflows + Environments<br/>🟦 ORG: shared secrets · runner groups · policy"]
+    A8["🔷 Boards / Artifacts"] ==> B8["🟦 ORGANIZATION<br/>GitHub Projects · Packages"]
 
-    NOBOX{{"⚠️ No native GitHub<br/>container between<br/>Org and Repo"}}
-
-    subgraph ENT["🟪 GitHub Enterprise"]
-        direction TB
-        G_E1[Cross-org policy]
-        G_E2[Identity · SSO · SCIM]
-        G_E3[Enterprise rulesets]
-        G_E4[Audit log streaming]
-    end
-
-    subgraph ORG["🟦 GitHub Organization"]
-        direction TB
-        G_O1[Teams &amp; membership]
-        G_O2[Base permissions &amp; roles]
-        G_O3[Org rulesets]
-        G_O4[GitHub Projects / Packages]
-    end
-
-    subgraph REPO["🟩 GitHub Repository"]
-        direction TB
-        G_R1[Source code / branches]
-        G_R2[GitHub Actions + Environments]
-        G_R3[Repository Rules]
-        G_R4[Team/user role grants<br/>CODEOWNERS &amp; PR reviews]
-    end
-
-    A1 -->|maps to Enterprise<br/>identity · billing · policy| ENT
-    ENT -.holds Red/Green/Sandbox orgs.-> ORG
-    A2 -.no 1:1 — decomposes.-> NOBOX
-    NOBOX -.governance.-> ORG
-    NOBOX -.repos.-> REPO
-    A3 -->|maps to| G_R1
-    A4 -->|team definitions UP| G_O1
-    A5 -->|membership & base access UP| G_O2
-    A5 -->|role grants per repo| G_R4
-    A8 -->|authored UP as rulesets| G_O3
-    A8 -.enterprise scope.-> G_E3
-    A8 -->|+ repo rules layer| G_R3
-    A6 -->|CI/CD workflows| G_R2
-    A6 -.shared secrets · runner groups · Actions policy.-> ORG
-    A7 -->|planning/packages| ORG
-
-    style A2 fill:#f0883e,color:#000
     style A1 fill:#0969da,color:#fff
+    style A2 fill:#f0883e,color:#000
     style A4 fill:#f0883e,color:#000
     style A5 fill:#f0883e,color:#000
-    style A8 fill:#f0883e,color:#000
-    style NOBOX fill:#f0883e,color:#000
-    style G_E1 fill:#6e40c9,color:#fff
-    style G_E2 fill:#6e40c9,color:#fff
-    style G_E3 fill:#6e40c9,color:#fff
-    style G_E4 fill:#6e40c9,color:#fff
-    style G_O1 fill:#0969da,color:#fff
-    style G_O2 fill:#0969da,color:#fff
-    style G_O3 fill:#0969da,color:#fff
-    style G_O4 fill:#0969da,color:#fff
-    style G_R1 fill:#2da44e,color:#fff
-    style G_R2 fill:#2da44e,color:#fff
-    style G_R3 fill:#2da44e,color:#fff
-    style G_R4 fill:#2da44e,color:#fff
+    style A6 fill:#f0883e,color:#000
+    style B1 fill:#6e40c9,color:#fff
+    style B2 fill:#f0883e,color:#000
+    style B3 fill:#2da44e,color:#fff
+    style B4 fill:#0969da,color:#fff
+    style B5 fill:#0969da,color:#fff
+    style B6 fill:#0969da,color:#fff
+    style B7 fill:#2da44e,color:#fff
+    style B8 fill:#0969da,color:#fff
 ```
 
 **How to read it:**
-- **ADO Organization** → GitHub **Enterprise** account, which owns identity/SSO, billing, and cross-org policy **and holds the Red/Green/Sandbox organizations** (see §3.1). In ADO that identity role is filled by attaching the ADO Organization to an **Entra ID** tenant; GitHub's Enterprise tier absorbs that SSO/identity-connection role. (Enterprise-managed identity such as enterprise-wide SCIM applies to **Enterprise Managed Users (EMU)**; personal-account organizations use org-scoped SCIM.)
-- **ADO Project** → the ⚠️ marker: it has **no native GitHub container**. The recommended target is **not** a project-shaped org; instead the Project **decomposes** — its repos are sorted into a small, fixed set of orgs by **access/visibility level** (the **Red / Green / Sandbox / Archive** model, see §3.1), and its grouping is reintroduced with **teams**. A dedicated org per project is reserved for genuine hard-isolation cases only.
-- **Security / Access splits**: *who* is defined at the **Org/Enterprise** (identity, membership, team definitions, base permissions), while the *effective grant* — a team or user given a role — is attached to each **Repository**.
-- **Branch Policies → Rulesets, authored UP**: ADO branch policies map mostly to **Repository Rulesets** that you can author at **Org or Enterprise** scope (targeting many repos) and/or layer at the **repo**. This is the "author once, target many" shift. A few ADO policies (e.g., work-item linking, comment-resolution, path-specific reviewers) have **no direct ruleset equivalent** and need separate GitHub mechanisms.
-- **Pipelines split**: workflow runs and environments live at the **Repo**. Reusable workflows are themselves **repo-stored files** (typically in a central automation repo); the **Org/Enterprise** governs their sharing/access plus shared secrets/variables, runner groups, and Actions policy.
+- **Trace each row straight across** — left is the ADO concept, right is where it lands in GitHub, colored by tier (🟪 Enterprise, 🟦 Organization, 🟩 Repository).
+- **ADO Organization → GitHub Enterprise:** the Enterprise owns identity/SSO, billing, and cross-org policy **and holds the Red/Green/Sandbox organizations** (§3.1). In ADO that identity role comes from attaching the org to an **Entra ID** tenant; the Enterprise tier absorbs it. (Enterprise-wide SCIM applies to **Enterprise Managed Users (EMU)**; personal-account orgs use org-scoped SCIM.)
+- **ADO Project → no container:** it has **no native GitHub container**. Its repos are sorted into the **Red / Green / Sandbox** orgs by access level (§3.1) and its grouping is reintroduced with **teams**. A dedicated org per project is reserved for genuine hard-isolation only.
+- **Left-node colors:** **orange** marks ADO concepts that move ▲ UP or dissolve (Project, Teams, Security/Access, Branch Policies); **blue** marks the ADO Organization (which maps up to the Enterprise). Uncolored left nodes (Repositories, Pipelines, Boards) land primarily at the repo/org without a tier jump.
+- **▲ UP = moves up a tier:** Teams, base access, and branch policies that ADO manages **per Project** are authored **once at the org/enterprise** in GitHub — the core "project-based → repo-based + central governance" shift.
+- **Split rows list every landing place** (each with its tier emoji; the fill shows the primary tier): **Security/Access** (the *who* is org-level base permissions/roles; the effective **role grant is per-repo**, while **CODEOWNERS** assigns *review ownership*, not access), **Branch Policies** (org/enterprise rulesets **plus** a repo rules layer; a few ADO policies like work-item linking have no direct ruleset equivalent), and **Pipelines** (Actions/Environments run at the repo; shared secrets, runner groups, and Actions policy are governed at the org).
 
 > **Why this matters:** In ADO you typically re-create project teams, access grants, and branch policies **for every new project**. In the recommended GitHub target state you author teams, base access, and **rulesets once at the org/enterprise level and scope them to many repos** — reducing duplication and enabling centrally-enforced, non-overridable guardrails (subject to any configured bypass actors). This is *target-state configuration*, not an automatic platform default.
 
