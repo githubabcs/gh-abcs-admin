@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>The GitHub Copilot App — Executive Briefing</title>
+<meta name="description" content="Executive-level briefing deck on the GitHub Copilot app: the agent-native desktop experience for directing a fleet of AI agents from idea to merge." />
+<style>
+  :root{
+    --bg:#ffffff; --tint:#dbf0ff; --soft:#f2f6fb; --navy:#01233f; --ink:#17293a;
+    --brand:#064dd9; --brand-2:#73c4ef; --blue:#064dd9; --sky:#73c4ef; --line:#dfe6ee;
+    --mut:#475569; --ok:#0a7a4d; --warn:#a83e00; --agent:#8250df;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:var(--bg);color:var(--ink);
+    font-family:-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+  html{overflow:hidden}
+  body{height:100vh;overflow:hidden}
+  html,body,.slide,.overview{scrollbar-width:none;-ms-overflow-style:none}
+  html::-webkit-scrollbar,body::-webkit-scrollbar,.slide::-webkit-scrollbar,.overview::-webkit-scrollbar{width:0;height:0;display:none}
+  .progress{position:fixed;top:0;left:0;height:4px;background:linear-gradient(90deg,var(--navy),var(--brand) 55%,var(--brand-2));width:0;z-index:50;transition:width .3s}
+  .slide{display:none;height:100vh;overflow-y:auto;padding:clamp(24px,4.3vh,58px) clamp(26px,6vw,110px);
+    flex-direction:column;justify-content:center;background:var(--bg)}
+  .slide.active{display:flex;animation:fade .45s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  .slide.dark{background:radial-gradient(1200px 600px at 15% 0%, #06345a 0%, var(--navy) 55%)}
+  .slide.dark, .slide.dark h1, .slide.dark h2{color:#fff}
+  .slide.dark .lead{color:#c7daf0}
+  .slide.dark .kicker{color:var(--brand-2)}
+  .slide.dark .card{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.16)}
+  .slide.dark .card h3{color:#fff}.slide.dark .card p{color:#b9cde3}
+  .kicker{color:var(--brand);letter-spacing:.16em;text-transform:uppercase;font-size:clamp(12px,1.1vw,15px);font-weight:800;margin-bottom:16px}
+  h1{color:var(--navy);font-size:clamp(38px,6vw,76px);line-height:1.02;font-weight:850;letter-spacing:-.025em}
+  h2{color:var(--navy);font-size:clamp(30px,3.9vw,48px);line-height:1.08;font-weight:820;letter-spacing:-.015em;margin-bottom:8px}
+  .accent{color:var(--brand)}
+  .lead{color:var(--mut);font-size:clamp(17px,1.75vw,24px);margin-top:clamp(16px,2.1vh,26px);max-width:66ch;line-height:1.5}
+  .grid{display:grid;gap:clamp(16px,2.1vh,24px);margin-top:clamp(24px,3.5vh,44px)}
+  .g2{grid-template-columns:repeat(2,1fr)} .g3{grid-template-columns:repeat(3,1fr)}
+  .g2 .card{min-height:clamp(150px,22vh,192px);display:flex;flex-direction:column;justify-content:center}
+  .g4{grid-template-columns:repeat(4,1fr)} .g5{grid-template-columns:repeat(5,1fr)}
+  .card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:clamp(22px,2.9vh,32px) 22px;
+    box-shadow:0 1px 2px rgba(11,27,52,.04),0 8px 24px rgba(11,27,52,.05);transition:transform .2s,box-shadow .2s}
+  .card:hover{transform:translateY(-3px);box-shadow:0 10px 30px rgba(6,77,217,.12)}
+  .card h3{color:var(--navy);font-size:clamp(16px,1.55vw,21px);margin-bottom:7px;display:flex;align-items:center;gap:9px}
+  .card p{color:var(--mut);font-size:clamp(14px,1.3vw,17px);line-height:1.5}
+  .card .em{font-size:clamp(22px,2.3vw,30px);line-height:1;display:block;margin-bottom:12px}
+  .num{font-weight:850;color:var(--brand);font-size:clamp(20px,2vw,26px)}
+  .badge{display:inline-block;font-size:12px;font-weight:800;padding:4px 11px;border-radius:999px;background:var(--tint);color:var(--brand)}
+  .badge.ok{background:#e6f4ea;color:var(--ok)}
+  .badge.sky{background:#e7f2fc;color:#0b6ea8}
+  .badge.warn{background:#fdeee3;color:var(--warn)}
+  .pill{display:inline-flex;gap:8px;align-items:center;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.22);
+    border-radius:999px;padding:9px 16px;font-size:14px;color:#eaf3fb;margin:6px 8px 0 0}
+  .flow{display:flex;align-items:stretch;gap:8px;margin-top:32px;flex-wrap:wrap}
+  .node{flex:1 1 0;min-width:120px;background:#fff;border:1px solid var(--line);border-top:3px solid var(--brand);
+    border-radius:12px;padding:14px;text-align:center;box-shadow:0 6px 18px rgba(11,27,52,.05)}
+  .node .em{font-size:clamp(22px,2.4vw,32px);display:block;margin-bottom:8px}
+  .node .t{font-weight:800;color:var(--navy);font-size:clamp(13px,1.3vw,16px)}
+  .node .s{color:var(--mut);font-size:clamp(13.5px,1.25vw,16px);margin-top:4px}
+  .node.blue{border-top-color:var(--blue)} .node.ok{border-top-color:var(--ok)} .node.sky{border-top-color:var(--sky)}
+  .arrow{align-self:center;color:#0b6ea8;font-size:22px;font-weight:800}
+  table{width:100%;border-collapse:collapse;margin-top:22px;font-size:clamp(13px,1.25vw,17px)}
+  th,td{text-align:left;padding:11px 12px;border-bottom:1px solid var(--line)}
+  th{color:var(--navy);font-weight:800} td{color:var(--ink)}
+  .big{font-size:clamp(34px,4.6vw,66px);font-weight:850;letter-spacing:-.02em;line-height:1;color:var(--brand);white-space:nowrap}
+  .metric{color:var(--mut);font-size:clamp(14px,1.3vw,17px);margin-top:10px;line-height:1.35}
+  .center{align-items:center;text-align:center}
+  .foot{position:fixed;bottom:14px;right:18px;color:var(--mut);font-size:13px;z-index:40;
+    background:rgba(255,255,255,.9);padding:4px 11px;border-radius:999px;border:1px solid var(--line)}
+  .nav{position:fixed;bottom:12px;left:18px;display:flex;gap:8px;z-index:40}
+  .nav button{background:rgba(255,255,255,.94);border:1px solid var(--line);color:var(--navy);
+    border-radius:9px;padding:8px 14px;cursor:pointer;font-size:15px;font-weight:600}
+  .nav button:hover{border-color:var(--brand);color:var(--brand)}
+  .ul{list-style:none} .ul li{position:relative;padding-left:24px;margin:11px 0;color:var(--ink);font-size:clamp(15px,1.4vw,19px);line-height:1.45}
+  .ul li::before{content:"";position:absolute;left:0;top:.45em;width:10px;height:10px;border-radius:50%;background:var(--brand)}
+  .slide.dark .ul li{color:#d8e4f2}
+  .tag{display:inline-block;font-size:13px;font-weight:700;color:var(--navy);background:var(--soft);border:1px solid var(--line);border-radius:8px;padding:6px 11px;margin:6px 8px 0 0}
+  .live-demo{display:inline-flex;align-items:center;gap:7px;background:#cf222e;color:#fff;font-weight:800;
+    font-size:clamp(11px,1.1vw,14px);padding:5px 13px;border-radius:999px;letter-spacing:.05em;vertical-align:middle;
+    box-shadow:0 2px 12px rgba(229,72,77,.45)}
+  .live-demo::before{content:"";width:9px;height:9px;border-radius:50%;background:#fff;animation:pulse 1.5s infinite}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(255,255,255,.85)}70%{box-shadow:0 0 0 7px rgba(255,255,255,0)}100%{box-shadow:0 0 0 0 rgba(255,255,255,0)}}
+  .slide.dark .live-demo{box-shadow:0 2px 14px rgba(229,72,77,.65)}
+  .preview{display:inline-block;font-size:12px;font-weight:800;padding:3px 10px;border-radius:999px;background:#fdeee3;color:var(--warn);letter-spacing:.04em;vertical-align:middle}
+  .docref{margin-top:22px;font-size:clamp(11px,1.05vw,13px);color:var(--mut)}
+  .docref a{color:var(--mut);text-decoration:none;border-bottom:1px dashed var(--line)}
+  .docref a:hover{color:var(--brand);border-color:var(--brand)}
+  .slide.dark .docref,.slide.dark .docref a{color:#9db4cc}
+  .brandrow{display:flex;gap:22px;justify-content:center;align-items:center;margin-top:30px;flex-wrap:wrap}
+  .brand{display:inline-flex;align-items:center;gap:10px}
+  .brand svg{width:32px;height:32px}
+  .brand .bt{font-weight:700;font-size:clamp(14px,1.5vw,19px);color:#fff;letter-spacing:-.01em}
+  .bsep{width:1px;height:26px;background:rgba(255,255,255,.22)}
+  .overview{position:fixed;inset:0;background:rgba(255,255,255,.98);z-index:100;display:none;overflow-y:auto;padding:clamp(24px,4vh,40px) clamp(24px,5vw,80px)}
+  .overview.active{display:block}
+  .overview h2{color:var(--navy);margin-bottom:18px;font-size:clamp(20px,2.4vw,30px)}
+  .ov-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:16px}
+  .thumb{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 16px;cursor:pointer;min-height:104px;
+    display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 1px 2px rgba(11,27,52,.04),0 6px 18px rgba(11,27,52,.05);transition:transform .15s,border-color .15s,box-shadow .15s}
+  .thumb:hover{border-color:var(--brand);transform:translateY(-3px);box-shadow:0 10px 26px rgba(6,77,217,.14)}
+  .thumb.current{border-color:var(--brand);background:var(--tint)}
+  .thumb .tn{font-size:11px;font-weight:800;color:var(--mut);letter-spacing:.12em;margin-bottom:6px}
+  .thumb .tt{font-size:15px;color:var(--navy);font-weight:700;line-height:1.3}
+  .thumb .tk{font-size:11px;color:var(--brand);margin-top:8px;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+  /* Playable loop flow (animated) */
+  .playbar{display:flex;align-items:center;gap:14px;margin:clamp(18px,2.6vh,30px) 0 clamp(12px,1.8vh,20px);flex-wrap:wrap}
+  .playbtn{display:inline-flex;align-items:center;gap:9px;background:var(--brand);color:#fff;border:none;
+    border-radius:999px;padding:11px 22px;font-size:clamp(14px,1.35vw,16px);font-weight:800;cursor:pointer;
+    box-shadow:0 6px 18px rgba(6,77,217,.28);transition:transform .15s,box-shadow .15s}
+  .playbtn:hover{transform:translateY(-2px);box-shadow:0 10px 26px rgba(6,77,217,.34)}
+  .playbtn:active{transform:translateY(0)}
+  .playhint{color:var(--mut);font-size:clamp(13px,1.15vw,15px)}
+  .pf{display:flex;align-items:stretch;gap:6px;flex-wrap:wrap;margin-top:6px}
+  .pf .step{flex:1 1 0;min-width:120px;background:#fff;border:1px solid var(--line);border-top:3px solid var(--line);
+    border-radius:12px;padding:clamp(16px,2.2vh,24px) 13px;text-align:center;opacity:.34;filter:saturate(.35);
+    transform:translateY(7px);box-shadow:0 6px 18px rgba(11,27,52,.04);
+    transition:opacity .5s ease,transform .5s ease,filter .5s ease,box-shadow .5s ease,border-color .5s ease}
+  .pf .step .ic{font-size:clamp(24px,2.6vw,34px);line-height:1;margin-bottom:10px}
+  .pf .step .t{font-weight:800;color:var(--navy);font-size:clamp(14px,1.4vw,18px);line-height:1.15}
+  .pf .step .s{color:var(--mut);font-size:clamp(12.5px,1.15vw,15px);margin-top:5px;line-height:1.25}
+  .pf .step.on{opacity:1;filter:none;transform:none;border-top-color:var(--brand);box-shadow:0 12px 28px rgba(6,77,217,.15)}
+  .pf .step.blue.on{border-top-color:var(--blue)}
+  .pf .step.agent.on{border-top-color:var(--agent)}
+  .pf .step.ok.on{border-top-color:var(--ok)}
+  .pf .step.pulse{animation:pfpop .55s ease}
+  @keyframes pfpop{0%{transform:scale(.96)}55%{transform:scale(1.045)}100%{transform:scale(1)}}
+  .pf .arrow{align-self:center;color:var(--line);font-size:22px;font-weight:800;opacity:.5;transition:color .4s,opacity .4s}
+  .pf .arrow.on{color:#0b6ea8;opacity:1}
+  .quote{margin-top:clamp(20px,3vh,36px);font-size:clamp(20px,2.4vw,32px);font-weight:750;color:var(--navy);line-height:1.28;letter-spacing:-.01em;max-width:20ch}
+  .slide.dark .quote{color:#fff}
+  .quote .accent{color:var(--brand)}
+  .src{color:var(--mut);font-size:clamp(13px,1.2vw,16px);margin-top:16px;font-weight:600}
+  .slide.dark .src{color:#9db4cc}
+  .split{display:grid;grid-template-columns:1fr 1fr;gap:clamp(20px,3vw,48px);align-items:center;margin-top:clamp(18px,2.4vh,30px)}
+  @media (max-width:820px){.g3,.g4,.g5,.split{grid-template-columns:1fr 1fr}.g2{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <symbol id="i-gh" viewBox="0 0 98 96"><path fill="currentColor" fill-rule="evenodd" clip-rule="evenodd" d="M48.854 0C21.839 0 0 22 0 49.217c0 21.756 13.993 40.172 33.405 46.69 2.427.49 3.316-1.059 3.316-2.362 0-1.141-.08-5.052-.08-9.127-13.59 2.934-16.42-5.867-16.42-5.867-2.184-5.704-5.42-7.17-5.42-7.17-4.448-3.015.324-3.015.324-3.015 4.934.326 7.523 5.052 7.523 5.052 4.367 7.496 11.404 5.378 14.235 4.074.404-3.178 1.699-5.378 3.074-6.6-10.839-1.141-22.243-5.378-22.243-24.283 0-5.378 1.94-9.778 5.014-13.2-.485-1.222-2.184-6.275.486-13.038 0 0 4.125-1.304 13.426 5.052a46.97 46.97 0 0 1 12.214-1.63c4.125 0 8.33.571 12.213 1.63 9.302-6.356 13.427-5.052 13.427-5.052 2.67 6.763.97 11.816.485 13.038 3.155 3.422 5.015 7.822 5.015 13.2 0 18.905-11.404 23.06-22.324 24.283 1.78 1.548 3.316 4.481 3.316 9.126 0 6.6-.08 11.897-.08 13.526 0 1.304.89 2.853 3.316 2.364 19.412-6.52 33.405-24.935 33.405-46.691C97.707 22 75.788 0 48.854 0z"/></symbol>
+  <symbol id="i-ms" viewBox="0 0 23 23"><path fill="#f25022" d="M1 1h10v10H1z"/><path fill="#7fba00" d="M12 1h10v10H12z"/><path fill="#00a4ef" d="M1 12h10v10H1z"/><path fill="#ffb900" d="M12 12h10v10H12z"/></symbol>
+  <symbol id="i-cop" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2c-1.1 0-2 .9-2 2 0 .37.1.72.28 1.02C7.6 5.3 5.5 6.9 4.7 9.1 3.7 9.4 3 10.3 3 11.4v2.2c0 .9.5 1.7 1.2 2.2C5.1 19 8.2 21 12 21s6.9-2 7.8-5.2c.7-.5 1.2-1.3 1.2-2.2v-2.2c0-1.1-.7-2-1.7-2.3-.8-2.2-2.9-3.8-5.58-4.08.18-.3.28-.65.28-1.02 0-1.1-.9-2-2-2Zm-3.2 9.2c.66 0 1.2.72 1.2 1.6s-.54 1.6-1.2 1.6-1.2-.72-1.2-1.6.54-1.6 1.2-1.6Zm6.4 0c.66 0 1.2.72 1.2 1.6s-.54 1.6-1.2 1.6-1.2-.72-1.2-1.6.54-1.6 1.2-1.6Z"/></symbol>
+</defs></svg>
+<div class="progress" id="pg"></div>
+<div class="deck" id="deck">
+
+  <!-- 1 TITLE -->
+  <section class="slide dark active center">
+    <div class="kicker">Executive Briefing</div>
+    <h1>The GitHub <span style="color:var(--brand-2)">Copilot App</span></h1>
+    <p class="lead" style="margin-inline:auto">The agent-native desktop experience — one control center to <b style="color:#fff">direct a fleet of AI agents</b> from idea to merge, across your connected repositories.</p>
+    <div style="margin-top:26px">
+      <span class="pill">🖥️ macOS · Windows · Linux</span>
+      <span class="pill">⚡ Built on the Copilot CLI runtime</span>
+      <span class="pill">🚀 Microsoft Build 2026 · Preview</span>
+    </div>
+    <div class="brandrow">
+      <span class="brand gh"><svg><use href="#i-gh"/></svg><span class="bt">GitHub</span></span>
+      <span class="bsep"></span>
+      <span class="brand"><svg><use href="#i-ms"/></svg><span class="bt">Microsoft</span></span>
+    </div>
+  </section>
+
+  <!-- 2 THE SHIFT -->
+  <section class="slide dark">
+    <div class="kicker">Why now</div>
+    <h2 style="color:#fff">The job is changing: from <span style="color:var(--brand-2)">writing code</span> to <span style="color:var(--brand-2)">directing agents</span>.</h2>
+    <div class="grid g3">
+      <div class="card center"><div class="big">1.4B+</div><div class="metric">commits per month on GitHub — nearly <b>2× year over year</b></div></div>
+      <div class="card center"><div class="big">2B+</div><div class="metric">GitHub Actions minutes run <b>every week</b></div></div>
+      <div class="card center"><div class="big">∞ tabs</div><div class="metric">terminals, IDEs, browsers — where agent work <b>fragments today</b></div></div>
+    </div>
+    <p class="lead">Agents now run workstreams and open pull requests. Existing tools were never designed to <b style="color:#fff">direct many agents at once</b>.</p>
+    <p class="src">Figures GitHub-reported at launch (Build 2026).</p>
+  </section>
+
+  <!-- 3 IN ONE SENTENCE -->
+  <section class="slide center">
+    <div class="kicker">The idea in one line</div>
+    <div class="quote" style="max-width:26ch">If the IDE is where you <span class="accent">write</span> code with an assistant, the Copilot app is where you <span class="accent">direct &amp; verify</span> a fleet of agents that do the work.</div>
+    <p class="lead" style="margin-inline:auto">idea → issue → plan → pull request → merge — from a single desktop control center.</p>
+  </section>
+
+  <!-- 4 WHAT IT IS -->
+  <section class="slide">
+    <div class="kicker">What it is</div>
+    <h2>One control center. <span class="accent">Everything in one place.</span></h2>
+    <div class="grid g2">
+      <div class="card"><span class="em">🗂️</span><h3>My Work</h3><p>Every active session, issue, PR, and automation across your connected repos — one view that tells you what needs attention next.</p></div>
+      <div class="card"><span class="em">⛓️</span><h3>Parallel, isolated sessions</h3><p>Each new-working-tree or cloud session works on its own branch — avoids working-tree collisions, no branch juggling.</p></div>
+      <div class="card"><span class="em">🎛️</span><h3>An autonomy dial</h3><p>Interactive, Plan, or Autopilot — you decide how much the agent does on its own, and change it any time.</p></div>
+      <div class="card"><span class="em">🔗</span><h3>Native to GitHub</h3><p>Repos, branches, issues, PRs, and CI work out of the box. No plumbing, no extra setup.</p></div>
+    </div>
+  </section>
+
+  <!-- 5 THE PROBLEM IT SOLVES -->
+  <section class="slide">
+    <div class="kicker">The problem it removes</div>
+    <h2>Agent work today is <span class="accent">scattered and unverifiable</span>.</h2>
+    <div class="split">
+      <div>
+        <ul class="ul">
+          <li>Context scatters across windows and tools</li>
+          <li>You lose track of what's actually running</li>
+          <li>Code lands in PRs <b>without a clear trail</b> of what the agent tried or validated</li>
+          <li>Too much time lost reviewing and context-switching</li>
+        </ul>
+      </div>
+      <div class="card" style="border-top:3px solid var(--brand)">
+        <span class="em">🧭</span>
+        <h3>The app's answer</h3>
+        <p>Make every agent's intent <b>visible, steerable, and reviewable</b> — isolated workspaces, shared surfaces to inspect work, and a clear path to merge. <i>"Agent autonomy stays bounded by what teams can verify."</i></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6 THE LOOP (animated) -->
+  <section class="slide">
+    <div class="kicker">The signature loop</div>
+    <h2>From idea to merge — <span class="accent">×3 in parallel</span></h2>
+    <div class="playbar">
+      <button class="playbtn" data-flow="loop"><span>▶</span> Play the flow</button>
+      <span class="playhint">Auto-plays on open · this is the story to tell</span>
+    </div>
+    <div class="pf" id="loop">
+      <div class="step"><div class="ic">💡</div><div class="t">Idea / Issue</div><div class="s">Pick up an issue or a prompt</div></div>
+      <div class="arrow">→</div>
+      <div class="step blue"><div class="ic">📋</div><div class="t">Plan</div><div class="s">Agent proposes, you approve</div></div>
+      <div class="arrow">→</div>
+      <div class="step agent"><div class="ic">🤖</div><div class="t">Build</div><div class="s">Code + tests in an isolated worktree</div></div>
+      <div class="arrow">→</div>
+      <div class="step"><div class="ic">🔀</div><div class="t">Pull request</div><div class="s">Review diff, CI, one-click fixes</div></div>
+      <div class="arrow">→</div>
+      <div class="step ok"><div class="ic">✅</div><div class="t">Agent Merge</div><div class="s">Drives CI green; merges when conditions met</div></div>
+    </div>
+    <p class="lead">Run this three times at once — one bug, one feature, one review — each in its own isolated session.</p>
+  </section>
+
+  <!-- 7 SESSION MODES -->
+  <section class="slide">
+    <div class="kicker">Stay in control</div>
+    <h2>Turn the <span class="accent">autonomy dial</span> to fit the task</h2>
+    <div class="grid g3">
+      <div class="card"><span class="em">🤝</span><h3>Interactive</h3><p>You and the agent collaborate step by step. Best for tight steering and exploration.</p><span class="tag">Most control</span></div>
+      <div class="card"><span class="em">📋</span><h3>Plan</h3><p>The agent proposes a plan; you approve before it spends effort. Validate scope first.</p><span class="tag">Approve-then-go</span></div>
+      <div class="card"><span class="em">🚀</span><h3>Autopilot</h3><p>The agent works fully autonomously — writes, tests, iterates. Best for well-defined tasks.</p><span class="tag">Hands-off</span></div>
+    </div>
+    <p class="lead">Also per session: pick the <b>model</b> and <b>reasoning effort</b> — or let <b>Auto</b> match model to task complexity to manage cost.</p>
+  </section>
+
+  <!-- 8 CANVASES -->
+  <section class="slide">
+    <div class="kicker">Agent Experience (AX)</div>
+    <h2>Canvases — a <span class="accent">shared surface</span> for humans and agents</h2>
+    <div class="split">
+      <div>
+        <p class="lead" style="margin-top:0">Instead of burying work in a chat thread, a canvas lets you <b>see</b>, <b>edit</b>, and <b>verify</b> what the agent is doing — in context, in real time.</p>
+        <div style="margin-top:14px">
+          <span class="tag">🗒️ Plan</span><span class="tag">🔀 Pull request</span><span class="tag">📊 Dashboard</span>
+          <span class="tag">🗂️ Kanban board</span><span class="tag">🐞 Issue triage</span><span class="tag">🖥️ Terminal</span>
+          <span class="tag">🌐 Browser</span><span class="tag">🚀 Deployment</span><span class="tag">📄 Doc / spreadsheet</span>
+        </div>
+      </div>
+      <div class="card" style="border-top:3px solid var(--brand)">
+        <span class="em">🎨</span>
+        <h3><code>/create-canvas</code></h3>
+        <p>Generated from your prompt — not a fixed template list. Both people (UI) and agents (capabilities like <code>add_card</code>, <code>move_card</code>) act on the <b>same shared state</b>.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 9 AUTOMATIONS + AGENT MERGE -->
+  <section class="slide">
+    <div class="kicker">Work that runs itself</div>
+    <h2>Automations &amp; <span class="accent">Agent Merge</span></h2>
+    <div class="grid g2">
+      <div class="card"><span class="em">⏰</span><h3>Automations</h3><p>Save recurring tasks to run <b>on a schedule</b>, <b>on demand</b>, or <b>when an issue is created</b>. Cloud automations run even when your machine is off — with only the tools you grant.</p><span class="tag">Daily issue triage</span><span class="tag">Morning PR sweep</span></div>
+      <div class="card"><span class="em">✅</span><h3>Agent Merge</h3><p>Carries a PR through <b>review, checks, and merge conditions</b> — monitors CI, addresses failing checks, waits for reviewers. <b>You choose how far it goes.</b></p><span class="tag">Green-to-merge</span></div>
+    </div>
+    <p class="lead">Unattended work is bounded by the <b>tools you preauthorize</b> — grant least privilege. Cloud runs consume AI credits <b>and</b> Actions minutes.</p>
+  </section>
+
+  <!-- 10 SAFETY / SANDBOXES -->
+  <section class="slide">
+    <div class="kicker">Bounded by design</div>
+    <h2>Isolation &amp; safety, <span class="accent">so agents stay reviewable</span></h2>
+    <div class="grid g3">
+      <div class="card"><span class="em">🌳</span><h3>Worktrees</h3><p>Each new-working-tree session on its own branch copy — avoids working-tree collisions between parallel agents.</p><span class="badge sky">Not a security boundary</span></div>
+      <div class="card"><span class="em">📦</span><h3>Sandboxes</h3><p>A bounded place to run code — <b>cloud sandbox in the app</b> (GitHub-hosted Linux on Azure); <b>local sandbox via the Copilot CLI</b>.</p><span class="badge">Cloud (app) · local (CLI) · Preview</span></div>
+      <div class="card"><span class="em">🛡️</span><h3>Policy &amp; review gates</h3><p>Scoped tools, MDM/Intune policy, admin gating, and human review gates for defense in depth.</p><span class="badge ok">Governed</span></div>
+    </div>
+    <p class="lead"><b>Honest framing:</b> a worktree is not a security boundary — pair it with sandboxes, scoped credentials, and review gates. These <i>reduce</i> risk; they don't eliminate it.</p>
+  </section>
+
+  <!-- 11 EXTENSIBILITY -->
+  <section class="slide">
+    <div class="kicker">One runtime, many surfaces</div>
+    <h2>Adapts to <span class="accent">your stack</span></h2>
+    <div class="grid g3">
+      <div class="card"><span class="em">🔌</span><h3>MCP servers</h3><p>Connect agents to external tools and data — built-in catalog plus your own.</p></div>
+      <div class="card"><span class="em">🧩</span><h3>Skills · agents · plugins</h3><p>Custom agents, agent skills, and installable plugins tailor behavior to your teams.</p></div>
+      <div class="card"><span class="em">🛠️</span><h3>Copilot SDK <span class="badge ok">GA</span></h3><p>Same runtime in Node, Python, Go, .NET, Rust, Java — build your own agent tools.</p></div>
+      <div class="card"><span class="em">🖼️</span><h3>Canvas extensions</h3><p>Ship shared, agent-driven UIs your whole team can use.</p></div>
+      <div class="card"><span class="em">🔑</span><h3>Bring your own key</h3><p>Use your own model provider — works even with <b>no Copilot plan</b>.</p></div>
+      <div class="card"><span class="em">🤝</span><h3>Partner agents</h3><p>Broader GitHub ecosystem: LaunchDarkly, Sonar, PagerDuty, Miro &amp; more — assignable to issues.</p></div>
+    </div>
+  </section>
+
+  <!-- 12 ADVANTAGES (exec) -->
+  <section class="slide">
+    <div class="kicker">Why it matters — the business case</div>
+    <h2>Consolidate the tools. <span class="accent">Compound the productivity.</span></h2>
+    <div class="grid g4">
+      <div class="card"><span class="em">⚡</span><h3>Velocity</h3><p>Many agents in parallel — progress on several tasks without waiting.</p></div>
+      <div class="card"><span class="em">🎯</span><h3>Focus</h3><p>Triage, direct, review, and land — without tool-switching tax.</p></div>
+      <div class="card"><span class="em">🔍</span><h3>Verifiability</h3><p>Plans, canvases, diffs, CI, and Agent Merge make work reviewable.</p></div>
+      <div class="card"><span class="em">💰</span><h3>Cost control</h3><p>Auto model selection, usage insights, and mode choice tune AI spend.</p></div>
+    </div>
+    <p class="lead">A governed pilot can unlock developer uplift on a platform that keeps compounding as your agent workforce grows.</p>
+  </section>
+
+  <!-- 13 SIGNATURE DEMO -->
+  <section class="slide">
+    <div class="kicker">Not just slides &nbsp;<span class="live-demo">LIVE DEMO</span></div>
+    <h2>The demo to run: a <span class="accent">fleet of agents</span></h2>
+    <div class="flow">
+      <div class="node"><span class="em">🐞</span><div class="t">Session 1</div><div class="s">Investigate a production bug</div></div>
+      <div class="arrow">+</div>
+      <div class="node blue"><span class="em">✨</span><div class="t">Session 2</div><div class="s">Implement a backlog issue</div></div>
+      <div class="arrow">+</div>
+      <div class="node ok"><span class="em">💬</span><div class="t">Session 3</div><div class="s">Work through PR feedback</div></div>
+      <div class="arrow">→</div>
+      <div class="node" style="border-top-color:var(--brand-2)"><span class="em">🎨</span><div class="t">Canvas open</div><div class="s">Make one agent's work visible</div></div>
+      <div class="arrow">→</div>
+      <div class="node ok"><span class="em">✅</span><div class="t">Agent Merge</div><div class="s">Land the change</div></div>
+    </div>
+    <p class="lead">Three sessions at once, each in its own isolated worktree — the story is <b>directing, not doing</b>. It hits parallelism, AX, and verifiability in one flow.</p>
+    <p class="lead" style="font-size:clamp(14px,1.3vw,17px)"><span class="preview">Demo safely</span> &nbsp;Use a disposable private repo, protected test branches, Plan/Interactive mode, least-privilege tools, and keep a prerecorded fallback.</p>
+  </section>
+
+  <!-- 14 COOL DEMOS -->
+  <section class="slide">
+    <div class="kicker">Crowd-pleasers to show</div>
+    <h2>Cool things that <span class="accent">land in a demo</span></h2>
+    <div class="grid g3">
+      <div class="card"><h3>🗂️ Agentic kanban canvas</h3><p>People move cards in the UI; the agent moves them via capabilities — human + agent on one board.</p></div>
+      <div class="card"><h3>🐞 Issue triage board</h3><p>Live board of top issues, themes, and pain points — a maintainer favorite.</p></div>
+      <div class="card"><h3>🦆 Rubber-duck critique</h3><p>Needs a Claude or GPT main model. A second model critiques the plan/code, then the main agent applies the feedback.</p></div>
+      <div class="card"><h3>🔒 <code>/security-review</code> <span class="preview">Preview</span></h3><p>Prioritized, high-confidence findings with fixes you apply in the same session.</p></div>
+      <div class="card"><h3>☁️ Cloud hand-off across devices</h3><p>Start a cloud session, stop, and resume on another device — no re-setup.</p></div>
+      <div class="card"><h3>🎙️ CLI voice + <code>/every</code></h3><p>On-device voice input and scheduled recurring prompts — same shared runtime.</p></div>
+    </div>
+  </section>
+
+  <!-- 15 AVAILABILITY & GOVERNANCE -->
+  <section class="slide">
+    <div class="kicker">Availability &amp; governance</div>
+    <h2>Works with <span class="accent">any plan</span> — governed for the enterprise</h2>
+    <div class="grid g2">
+      <div class="card"><span class="em">🎟️</span><h3>Any Copilot plan — or none</h3><p>Free, Pro, Pro+, Business, Enterprise — or <b>bring your own key</b> with no plan. The base app works with any plan; <b>individual features may need entitlements/policies</b>.</p></div>
+      <div class="card"><span class="em">🏛️</span><h3>Admin &amp; trust controls</h3><p>Business/Enterprise enable the <b>Copilot CLI policy</b>; cloud automations require the cloud-agent policy and org allow-listing. Local sandbox policy via Intune/MDM.</p></div>
+    </div>
+    <p class="lead"><span class="preview">Preview</span> &nbsp;Announced at Build 2026 and evolving fast. <b>Trust review before rollout:</b> public-code-matching policy, data handling, and telemetry — and verify plans, policies, and feature availability against live docs.</p>
+  </section>
+
+  <!-- 16 TRAINING -->
+  <section class="slide">
+    <div class="kicker">Enablement</div>
+    <h2>How your teams <span class="accent">skill up</span></h2>
+    <div class="grid g3">
+      <div class="card"><span class="em">🎓</span><h3>Microsoft Learn</h3><p>"Copilot Across Environments" module includes a unit on the Copilot app, plus Copilot Fundamentals paths.</p></div>
+      <div class="card"><span class="em">📚</span><h3>GitHub Docs</h3><p>Authoritative how-tos: getting started, agent sessions, canvases, automations, sandboxes.</p></div>
+      <div class="card"><span class="em">🛠️</span><h3>Hands-on &amp; community</h3><p>GitHub Skills, the <code>github/app</code> repo (releases, changelog, discussions), and Build 2026 sessions.</p></div>
+    </div>
+    <p class="lead">The app is new, so pair the single Learn unit with the GitHub Docs how-tos for depth — full links in the companion guide.</p>
+    <div class="docref">📄 Full guide &amp; references: <a href="24-github-copilot-app.md" target="_blank">docs/24-github-copilot-app.md</a></div>
+  </section>
+
+  <!-- 17 CLOSE / CTA -->
+  <section class="slide dark center">
+    <div class="kicker">The takeaway</div>
+    <h1>Start <span style="color:var(--brand-2)">directing</span>, not just coding.</h1>
+    <p class="lead" style="margin-inline:auto">One desktop control center for a fleet of agents — parallel, isolated, and <b style="color:#fff">verifiable</b>. Pick one repo, run the three-agent loop, and land a PR with Agent Merge.</p>
+    <div style="margin-top:22px">
+      <span class="pill">💬 Q&amp;A</span>
+      <span class="pill">📄 Companion guide: docs/24-github-copilot-app.md</span>
+    </div>
+    <div class="brandrow" style="margin-top:26px">
+      <span class="brand gh"><svg><use href="#i-gh"/></svg><span class="bt">GitHub</span></span>
+      <span class="bsep"></span>
+      <span class="brand"><svg><use href="#i-cop" style="color:var(--brand-2)"/></svg><span class="bt">Copilot</span></span>
+    </div>
+    <p class="src" style="margin-top:22px">Sources: GitHub Blog launch post · github/app · GitHub Docs · Microsoft Learn · DevOps.com — see the companion guide's References.</p>
+  </section>
+
+</div>
+
+<div class="overview" id="overview">
+  <h2>All slides — click any to jump</h2>
+  <div class="ov-grid" id="ovGrid"></div>
+</div>
+<div class="foot"><span id="cur">1</span> / <span id="tot">17</span></div>
+<div class="nav"><button onclick="go(-1)">‹ Prev</button><button onclick="go(1)">Next ›</button><button onclick="toggleOv()" title="Overview (press O or Esc)" aria-label="Slide overview">⊞ Overview</button><button onclick="fs()" title="Fullscreen (press F)" aria-label="Toggle fullscreen">⛶ Fullscreen</button></div>
+
+<script>
+  const slides=[...document.querySelectorAll('.slide')];let i=0;const tot=slides.length;
+  document.getElementById('tot').textContent=tot;
+  const overview=document.getElementById('overview'),ovGrid=document.getElementById('ovGrid');
+  slides.forEach((s,k)=>{
+    const h=s.querySelector('h1,h2'),kk=s.querySelector('.kicker');
+    const kt=kk?(((kk.childNodes[0]&&kk.childNodes[0].nodeValue)||kk.textContent||'').replace(/\u00a0/g,' ').trim()):'';
+    const ht=h?h.textContent.replace(/\s+/g,' ').trim():'—';
+    const t=document.createElement('div');t.className='thumb';
+    const top=document.createElement('div');
+    const num=document.createElement('div');num.className='tn';num.textContent='SLIDE '+String(k+1).padStart(2,'0');
+    const tit=document.createElement('div');tit.className='tt';tit.textContent=ht;
+    top.appendChild(num);top.appendChild(tit);
+    const kd=document.createElement('div');kd.className='tk';kd.textContent=kt;
+    t.appendChild(top);t.appendChild(kd);
+    t.addEventListener('click',()=>{show(k);closeOv();});
+    ovGrid.appendChild(t);
+  });
+  overview.addEventListener('click',e=>{if(e.target===overview)closeOv();});
+  function markOv(){[...ovGrid.children].forEach((t,k)=>t.classList.toggle('current',k===i));}
+  function openOv(){overview.classList.add('active');markOv();}
+  function closeOv(){overview.classList.remove('active');}
+  function toggleOv(){overview.classList.contains('active')?closeOv():openOv();}
+  function show(n){i=Math.max(0,Math.min(tot-1,n));slides.forEach((s,k)=>s.classList.toggle('active',k===i));
+    document.getElementById('cur').textContent=i+1;document.getElementById('pg').style.width=(i/(tot-1)*100)+'%';
+    slides[i].scrollTop=0;markOv();}
+  function go(d){show(i+d)}
+  function fs(){const el=document.documentElement;if(!document.fullscreenElement){(el.requestFullscreen||el.webkitRequestFullscreen||function(){}).call(el)}else{(document.exitFullscreen||document.webkitExitFullscreen||function(){}).call(document)}}
+  addEventListener('keydown',e=>{if(['ArrowRight','PageDown',' '].includes(e.key)){e.preventDefault();go(1)}
+    else if(['ArrowLeft','PageUp'].includes(e.key)){e.preventDefault();go(-1)}
+    else if(e.key==='Home')show(0);else if(e.key==='End')show(tot-1);
+    else if(e.key==='f'||e.key==='F'){e.preventDefault();fs()}
+    else if(e.key==='o'||e.key==='O'){e.preventDefault();toggleOv()}
+    else if(e.key==='Escape'){closeOv()}});
+  show(0);
+</script>
+<script>
+  /* Playable loop flow — highlight each step in sequence; auto-plays when its slide opens. */
+  (function(){
+    function parts(pf){return [...pf.querySelectorAll('.step,.arrow')];}
+    function reset(pf){parts(pf).forEach(el=>el.classList.remove('on','pulse'));}
+    function run(pf){
+      clearTimeout(pf._t);reset(pf);
+      const els=parts(pf);let k=0;
+      (function next(){
+        if(k>=els.length)return;
+        const el=els[k++];
+        el.classList.add('on');
+        if(el.classList.contains('step'))el.classList.add('pulse');
+        pf._t=setTimeout(next,el.classList.contains('arrow')?240:600);
+      })();
+    }
+    document.querySelectorAll('.playbtn').forEach(btn=>{
+      btn.addEventListener('click',()=>{const pf=document.getElementById(btn.dataset.flow);if(pf)run(pf);});
+    });
+    const obs=new MutationObserver(ms=>ms.forEach(m=>{
+      if(m.attributeName!=='class')return;
+      const s=m.target;if(!s.classList.contains('active'))return;
+      const pf=s.querySelector('.pf');if(pf){clearTimeout(pf._t);pf._t=setTimeout(()=>run(pf),350);}
+    }));
+    document.querySelectorAll('.slide').forEach(s=>obs.observe(s,{attributes:true}));
+  })();
+</script>
+</body>
+</html>
