@@ -10,7 +10,7 @@ render_with_liquid: false
 > **Document status**
 >
 > - **Last reviewed:** 2026-07-20
-> - **Authorship:** Drafted with AI assistance (GitHub Copilot, multi-model review — GPT-5.6 Sol and Gemini 3.1 Pro critics; see the [Reviewer critique log](#appendix-reviewer-critique-log)) and reviewed by a human maintainer before publication.
+> - **Authorship:** Drafted by GitHub Copilot (Claude Opus 4.8), with critic review by GPT-5.6 Sol and Gemini 3.1 Pro, and reviewed by a human maintainer before publication.
 > - **Sources:** Based on public documentation — primarily [docs.github.com](https://docs.github.com), [learn.microsoft.com](https://learn.microsoft.com), and official vendor blogs cited inline.
 > - **Verify before acting:** The GitHub Copilot app was announced at **Microsoft Build 2026** and is in **technical/public preview**. GitHub and Microsoft update product documentation continuously, and preview products change quickly (UI labels, model/tier names, availability). Re-confirm against the live source pages before relying on this content for production decisions or demos.
 
@@ -502,31 +502,3 @@ Assign an issue to a **partner agent** (e.g., Sonar, PagerDuty, LaunchDarkly) to
 
 ### Secondary — industry press
 47. DevOps.com — *GitHub Copilot Gets Its Own App, and Agents Are the Reason Why*: https://devops.com/github-copilot-gets-its-own-app-and-agents-are-the-reason-why/
-
----
-
-### Appendix: Reviewer critique log
-
-This document was reviewed by two independent AI reviewers acting as critics — **GPT-5.6 Sol** and **Gemini 3.1 Pro** — and revised in response. Summary of findings and resolutions:
-
-**Addressed (both reviewers / GPT-5.6 Sol — grounded in the cited docs):**
-- **Worktree isolation over-generalized** → clarified that only *new-working-tree* and *cloud sandbox* sessions are isolated; *local-repository* sessions are not (§4, §13).
-- **"Nothing touches production" absolutes** → softened to defense-in-depth language throughout (§6, §9, §14).
-- **Local sandbox presented as an app feature** → corrected: the app exposes *cloud* sandboxes; *local* sandboxing is currently CLI-scoped (§5.8, §13).
-- **Automation authorization mischaracterized** → distinguished interactive per-write consent from preauthorized tool sets for unattended runs; added cost/visibility/public-repo caveats (§5.5, §13).
-- **Code-review section conflated three products** → split into in-app PR review, in-session `/security-review`, and platform-wide Copilot code review (§5.9).
-- **Rubber-duck command spelling** → flagged `/rubberduck` (blog) vs `/rubber-duck` (docs) (§5.9, §13).
-- **"Memory++" undefined** → scoped to `/chronicle` (documented for the app) with Memory++ marked as a verify-in-product platform capability (§5.10).
-- **Ecosystem items looked like app features** → reframed §5.11–5.15 as related ecosystem capabilities on other surfaces.
-- **Demos lacked prerequisites/safety** → added a pre-demo safety & prerequisites block and a calendar-connector caveat (§10, §10.4).
-- **Training usefulness overstated** → clarified the Learn app coverage is a single short unit and paths are mostly text/interactive; labeled video "series" as browse destinations (§11).
-- **Diagram/runtime nuance** → moved the CLI runtime inside the app; clarified the SDK *exposes* the same runtime; marked canvases/sandboxes optional (§4).
-- **Availability nuance** → added a feature-availability caveat and dated the guidance (§13).
-- **Windows caveat contradiction** (Gemini) → added the local-sandbox Windows caveat to the OS statement (§2).
-- **Merge-conflict handling omission** (Gemini) → added an honest note that in-app conflict resolution isn't documented (§4).
-- **Canvas "types" read as a built-in catalog** (GPT) → clarified they are generated examples, not first-party templates (§5.4).
-
-**Reviewed and intentionally not changed (reviewer assumption not supported by primary sources):**
-- **Gemini flagged the `github/app` repo, the Trust Center domain, the Microsoft Build blog slug, and BYOK-without-a-plan as "fabricated."** These were **verified against live GitHub/Microsoft pages** during research (the `github/app` README explicitly states you can use the app via BYOK with no Copilot plan, and `copilot.github.trust.page` / the Build 2026 blog URL resolve). Left as-is with citations. Because the product is in preview and future-dated, all such claims remain subject to change and are labeled accordingly.
-
-*Review completed 2026-07-20. Reviewers did not edit the file; all revisions were applied by the author.*
