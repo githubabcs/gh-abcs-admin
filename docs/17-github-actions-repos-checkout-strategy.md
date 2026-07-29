@@ -27,9 +27,10 @@ This guide covers the recommended pattern — a **dedicated GitHub App with a sh
 2. [`internal` Visibility Does Not Remove This Requirement](#-internal-visibility-does-not-remove-this-requirement)
 3. [Recommended Pattern: GitHub App + Short-Lived Token](#recommended-pattern-github-app--short-lived-token)
 4. [Decide First: Source Checkout vs. Built Artifact](#decide-first-source-checkout-vs-built-artifact)
-5. [Other Cross-Repo Access Options and Caveats](#other-cross-repo-access-options-and-caveats)
-6. [Recommended Rollout](#recommended-rollout)
-7. [References](#references)
+5. [Git Submodules for Multi-Repo Consolidation](#git-submodules-for-multi-repo-consolidation)
+6. [Other Cross-Repo Access Options and Caveats](#other-cross-repo-access-options-and-caveats)
+7. [Recommended Rollout](#recommended-rollout)
+8. [References](#references)
 
 ---
 
@@ -128,10 +129,84 @@ Before reaching for cross-repo checkout, classify each Azure Pipelines `resource
 
 ---
 
+## Git Submodules for Multi-Repo Consolidation
+
+Git submodules let a **parent (superproject)** repo reference other repos, each pinned to an exact commit, and pull them into subdirectories on checkout. This is the closest faithful translation of Azure Pipelines' native `resources: repositories:` when the relationship is truly *"always build these repos together at a known version."*
+
+> **Scope:** This organization does **not** permit public repositories, so every submodule is **`private` or `internal`**. The guidance below assumes that — there is no "public submodule needs no token" shortcut here.
+
+### Submodules Still Require the GitHub App Token
+
+Submodules change *how the relationship is declared*, not *how authentication works*. In GitHub Actions:
+
+- `actions/checkout` with `submodules: true | recursive` reuses the **same token passed to the checkout step**.
+- The default `GITHUB_TOKEN` is scoped to the superproject repo only, so it **clones the parent but fails on every private/internal submodule**.
+- You **must** pass a **GitHub App token** (or an SSH deploy key per submodule) that can read every submodule repo.
+
+```yaml
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      # Token scoped to the superproject AND every submodule repo
+      - uses: actions/create-github-app-token@v3
+        id: app-token
+        with:
+          app-id: ${{ vars.SHARED_CI_APP_ID }}
+          private-key: ${{ secrets.SHARED_CI_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: "superproject,shared-lib,build-tools"
+          permission-contents: read
+
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          token: ${{ steps.app-token.outputs.token }}   # applies to parent + submodules
+          persist-credentials: false
+```
+
+### `.gitmodules` Must Use HTTPS URLs (Not SSH)
+
+The App token is injected as an **HTTPS** credential. It only applies to submodules whose `.gitmodules` URL is HTTPS:
+
+```ini
+# .gitmodules — correct for token-based CI
+[submodule "shared-lib"]
+    path = shared-lib
+    url = https://github.com/your-org/shared-lib.git
+```
+
+- ✅ `https://github.com/your-org/shared-lib.git` — the App token authenticates the fetch.
+- ❌ `git@github.com:your-org/shared-lib.git` — SSH URL; the token does **not** apply. You'd need SSH deploy keys instead, or rewrite the URL at runtime:
+
+  ```yaml
+  - run: git config --global url."https://github.com/".insteadOf "git@github.com:"
+  ```
+
+Standardize `.gitmodules` on HTTPS so one App token covers the whole tree.
+
+### App Installation and Permissions
+
+- Install the App on the **superproject and every submodule repo** (or an org-wide install scoped down via the `repositories:` input).
+- `contents: read` is sufficient for checkout; keep it least-privilege.
+- List **every** submodule repo by exact name in `repositories:` so the token is scoped precisely.
+
+### When Submodules Fit — and When They Don't
+
+| Use submodules when | Prefer another pattern when |
+|---------------------|------------------------------|
+| You build the repos **together** at a **pinned** version | You only consume a **built library** → use **Artifactory / GitHub Packages** |
+| You want the version **recorded in git** and reviewable in PRs | You need shared **CI logic** → use **reusable workflows / composite actions** |
+| The set of repos is **stable** and intentionally coupled | Repos move fast / need "follow latest" → side-by-side `checkout` with `ref:` |
+
+**Trade-offs to expect:** submodule pointers are **manual bumps** (a consumer must commit a new SHA to pick up changes — no automatic "latest"), contributors must remember `--recurse-submodules`, and detached-HEAD states cause confusion. These are workflow costs, not auth costs — the App token requirement is identical to side-by-side checkout.
+
+---
+
 ## Other Cross-Repo Access Options and Caveats
 
 - **Deploy keys** — a per-repo, read-only SSH key is a valid single-repo alternative to a PAT, but it's one key per repo, has no expiry, and has weaker lifecycle management than a GitHub App. Fine for one stable dependency; poor at scale.
-- **Private git submodules** — `actions/checkout` with `submodules: true|recursive` still needs a token or SSH key that can read **every** private submodule; the default `GITHUB_TOKEN` alone will fail on private submodules.
+- **Private/internal git submodules** — as covered above, `actions/checkout` with `submodules: true|recursive` still needs the **GitHub App token** (or an SSH deploy key) that can read **every** submodule; the default `GITHUB_TOKEN` alone will fail. See [Git Submodules for Multi-Repo Consolidation](#git-submodules-for-multi-repo-consolidation).
 - **Fork PRs and Dependabot** — secrets (including the App private key) are **not** available to untrusted fork pull requests or Dependabot-triggered runs; cross-repo checkout that depends on those secrets will not work there by design.
 - **Untrusted code safety** — never expose the App private key or a minted token to untrusted code paths such as `pull_request_target` or `workflow_run` that check out and run PR contents.
 
@@ -155,5 +230,7 @@ Before reaching for cross-repo checkout, classify each Azure Pipelines `resource
 - [Managing GitHub Actions settings for a repository (Access)](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/enabling-features-for-your-repository/managing-github-actions-settings-for-a-repository#allowing-access-to-components-in-a-private-repository)
 - [Ensuring workflow access to your package](https://docs.github.com/en/packages/learn-github-packages/configuring-a-packages-access-control-and-visibility#ensuring-workflow-access-to-your-package)
 - [Managing deploy keys](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/managing-deploy-keys)
+- [Checking out submodules in actions/checkout](https://github.com/actions/checkout#checkout-submodules)
+- [Git submodules (Pro Git book)](https://git-scm.com/book/en/v2/Git-Tools-Submodules)
 - [About repository visibility (internal repositories)](https://docs.github.com/en/repositories/creating-and-managing-repositories/about-repositories#about-internal-repositories)
 - [15-azure-pipelines-github-repos-integration.md](15-azure-pipelines-github-repos-integration.md) — hybrid model (Azure Pipelines consuming GitHub repos)
