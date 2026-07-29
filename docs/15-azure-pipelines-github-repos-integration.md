@@ -27,8 +27,9 @@ When migrating repositories from Azure DevOps Repos to GitHub while continuing t
 6. [Triggers and Automation Impact](#triggers-and-automation-impact)
 7. [Authentication and Authorization](#authentication-and-authorization)
 8. [Migration Scenarios and Solutions](#migration-scenarios-and-solutions)
-9. [Step-by-Step Remediation Guide](#step-by-step-remediation-guide)
-10. [Best Practices and Recommendations](#best-practices-and-recommendations)
+9. [Phase 2: GitHub Actions Multi-Repo Checkout](#phase-2-github-actions-multi-repo-checkout)
+10. [Step-by-Step Remediation Guide](#step-by-step-remediation-guide)
+11. [Best Practices and Recommendations](#best-practices-and-recommendations)
 
 ---
 
@@ -498,6 +499,16 @@ pr:
 
 ---
 
+## Phase 2: GitHub Actions Multi-Repo Checkout
+
+The sections above address the **hybrid model** (source in GitHub, CI/CD staying in Azure Pipelines). Once you move CI/CD into **GitHub Actions** (Phase 2), the multi-repo pattern changes again: the Azure Pipelines `resources: repositories:` declaration has **no native 1:1 equivalent**, and the default `GITHUB_TOKEN` is scoped to the workflow's own repo, so checking out a secondary private/internal repo needs explicit authentication.
+
+That topic has its own dedicated guide:
+
+> 📘 **See [17-github-actions-repos-checkout-strategy.md](17-github-actions-repos-checkout-strategy.md)** — covers `GITHUB_TOKEN` scoping, the `internal` vs `private` nuance, the recommended **GitHub App + short-lived token** pattern, the source-checkout-vs-artifact triage (reusable workflows / Artifactory / GitHub Packages), and enterprise caveats (deploy keys, submodules, fork PRs).
+
+---
+
 ## Step-by-Step Remediation Guide
 
 ### Pre-Migration Checklist
@@ -675,3 +686,5 @@ Create a tracking document with:
 - [Resources in YAML pipelines](https://learn.microsoft.com/en-us/azure/devops/pipelines/process/resources)
 - [GitHub service connection](https://learn.microsoft.com/en-us/azure/devops/pipelines/library/service-endpoints#github-service-connection)
 - [Azure Pipelines GitHub App](https://github.com/apps/azure-pipelines)
+
+- [GitHub Actions Multi-Repo Checkout Strategy (Phase 2)](17-github-actions-repos-checkout-strategy.md)

@@ -54,7 +54,8 @@ Comprehensive L400-level technical documentation for GitHub Enterprise Cloud adm
 - [📄 ADO to GitHub Migration Business Case (HTML)](docs/ADO-to-GitHub-Migration-Business-Case.html) - Formatted business case document
 - [🔀 GitHub Enterprise Importer ADO Guide](docs/14-github-enterprise-importer-ado-guide.md) - Step-by-step guide for using GitHub Enterprise Importer with Azure DevOps
 - [� Azure Pipelines with GitHub Repos Integration](docs/15-azure-pipelines-github-repos-integration.md) - Impact analysis of using Azure Pipelines with GitHub repositories after migration
-- [🔍 Azure DevOps to GitHub Migration Analysis](docs/16-azure-devops-to-github-migration-analysis.md) - Detailed technical analysis of the migration process
+- [� GitHub Actions Multi-Repo Checkout Strategy](docs/17-github-actions-repos-checkout-strategy.md) - Phase 2 guide for cross-repo checkout in GitHub Actions: GITHUB_TOKEN scoping, internal vs private, GitHub App short-lived tokens, reusable workflows, and artifact registries
+- [�🔍 Azure DevOps to GitHub Migration Analysis](docs/16-azure-devops-to-github-migration-analysis.md) - Detailed technical analysis of the migration process
 - [🗺️ ADO to GitHub Structural Mapping (Visual)](docs/ado-to-github-structural-mapping.md) - High-level Mermaid visuals mapping ADO concepts (Organization, Project, Repos, Teams, Security, Pipelines, Governance) onto GitHub's Enterprise/Org/Repo tiers; explains the project-based vs repo-based shift and the Red-Green-Sandbox target org model
 - [🔑 ADO REST API Authentication Without PATs](docs/ado-rest-api-auth-without-pat.md) - Alternatives to Personal Access Tokens for Azure DevOps REST API authentication in CI/CD pipelines
 - [🧹 ADO Tenant & Org Cleanup](docs/ADO-Tenant-Org-Cleanup.md) - Post-migration cleanup of Azure DevOps tenant connections, PAT policies, orphaned orgs
