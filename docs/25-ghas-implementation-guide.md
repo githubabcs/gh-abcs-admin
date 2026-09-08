@@ -872,6 +872,40 @@ inventory; it does not itself detect vulnerabilities or prove provenance.
 
 ## Dependabot Across All Repositories
 
+### Default Behavior and When a Local File Is Required
+
+For a GitHub-native security baseline, centrally enable dependency graph,
+Dependabot alerts, and Dependabot security updates through security
+configurations. A repository does not need a Dependabot configuration file
+merely to receive alerts and supported security-fix PRs. Feature availability
+is not enablement: explicitly configure and verify the baseline. [S05], [S29]
+
+| Requirement | When it runs | Local Dependabot configuration required |
+| --- | --- | --- |
+| Identify known vulnerable dependencies | Initial enablement, dependency-graph changes, and newly applicable reviewed advisories; not a user-configurable daily/weekly schedule | No, provided dependency graph and alerts are enabled and dependencies are recognized |
+| Open PRs fixing known vulnerabilities | Alert-driven: when enabled, Dependabot attempts fixes for open alerts with available patches; not delayed until the version-update schedule | No for standard behavior; optional for supported customization or access requirements |
+| Keep dependencies current even without vulnerabilities | According to each configured version-update schedule; without a configuration there is no routine version-update schedule | Yes, on the repository's default branch |
+| Apply one organization-wide version-update schedule to heterogeneous repositories | No native inherited schedule or universal ecosystem autodetection configuration | Generate the appropriate local file for each repository |
+
+There is no universal "Dependabot runs weekly by default" rule. The setup UI
+offers a starter file with `interval: weekly`, but the version-update engine
+requires an explicit `schedule.interval`. When you choose `weekly` and omit
+the day, it defaults to Monday. If you omit the time, GitHub assigns one;
+explicit times default to UTC. `daily` means weekdays. These settings govern
+version updates, not vulnerability alerts or security-update timing. [S28]
+
+Standard security updates attempt the minimum patched version rather than
+always moving every package to its latest release. Resolution/build constraints,
+unsupported updates, inaccessible private packages, or paused update jobs can
+prevent PR creation. Alert-driven does not mean a guaranteed immediate PR.
+Review update-job errors and inactivity pauses as part of operations. [S27]
+
+Recommended choice: use no local file for repositories needing only the
+standard security baseline; add a minimal, repository-appropriate file when
+routine version updates or supported custom update behavior are required.
+Organization-level private registries and grouping can satisfy some customization
+needs without repeating them in local files.
+
 ### Keep the Three Capabilities Separate
 
 | Capability | Trigger and coverage | Configuration |
@@ -948,8 +982,54 @@ Implement centrally governed configuration as a reconciliation service:
 The repository still contains the generated Dependabot file, but teams do not
 need to hand-maintain standard boilerplate. If the requirement is **no local
 configuration file of any kind**, native Dependabot version updates cannot
-meet it. Keep native alerts/security updates and evaluate a separately governed
-dependency-update service rather than inventing unsupported inheritance.
+meet it. Keep native alerts/security updates and explicitly record that routine
+version updates are not enabled; do not imply unsupported inheritance.
+
+### Generate Only the Ecosystems Each Repository Uses
+
+Centralize policy and generation, not an identical all-ecosystem file. Each
+configured updater needs supported manifests at its configured location.
+Irrelevant entries can produce missing-manifest update errors; adding them
+is not a supported conditional discovery strategy. The remaining valid
+ecosystems are not necessarily all blocked by one failed update job. [S28]
+
+Discover package manifests and workspace/lockfile structure, not just the
+repository's primary programming language. For example:
+
+| Repository contents | Entries to generate |
+| --- | --- |
+| NuGet application plus workflows | `nuget` at the relevant project roots and `github-actions` at `/` |
+| Python requirements or supported Poetry/Pipenv project plus workflows | `pip` at its project roots and `github-actions` at `/` |
+| uv-managed Python project | `uv` at its project root; add Actions only if applicable |
+| JavaScript/TypeScript application using npm, Yarn, or pnpm | `npm` at its workspace/project roots |
+| Mixed NuGet backend and npm frontend | Both `nuget` and `npm` with their actual locations, plus Actions if applicable |
+| No applicable manifests or action references | No irrelevant version-update entries; retain the security baseline |
+
+JavaScript and Node.js are not separate Dependabot package ecosystems for npm
+dependencies. Updating the Node runtime itself is a separate concern. Multiple
+ecosystems may coexist in one repository, and the package manager determines
+the updater. See [supported ecosystems](https://docs.github.com/en/code-security/reference/supply-chain-security/supported-ecosystems-and-repositories).
+
+Use shared defaults for schedule, PR limits, and labels; apply only supported
+ecosystem-specific grouping/cooldown options; then merge approved repository
+exceptions. Respect shared lockfiles, workspaces, NuGet central package
+management, and Python tooling. Do not assume `/` recursively discovers every
+project for every updater or generate overlapping entries for one ecosystem
+and target branch. Use `directories` where appropriate. [S28]
+
+Run the configuration generator centrally after onboarding/first code push,
+on relevant manifest changes, and on a periodic reconciliation schedule.
+Regenerate affected configurations when policy changes. Open or update one
+reviewed configuration PR per repository only when the desired file differs.
+Preserve approved exceptions. A failed or incomplete discovery must never be
+interpreted as "no dependencies" and used to remove working coverage.
+
+This is a proposed platform-owned automation pattern, not a built-in Dependabot
+service or an implemented generator supplied with this guide. It can run in
+one central Actions repository using an appropriately scoped GitHub App; target
+repositories need the generated Dependabot file, not a generator workflow.
+The generator's reconciliation frequency is separate from Dependabot's
+version-update schedule and its alert-driven security updates.
 
 ### Example Generated Dependabot Configuration
 
