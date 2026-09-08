@@ -8,6 +8,13 @@ render_with_liquid: false
 
 ## Scope and Research Method
 
+> [!NOTE]
+> This is a supplementary authoring and review record. Share the
+> [implementation guide](25-ghas-implementation-guide.md) and
+> [resource catalog](26-ghas-reusable-resources.md) as the customer-facing
+> guidance. Model-assisted review and syntax/link checks are not an independent
+> security assessment, GitHub endorsement, or production deployment approval.
+
 The implementation target is GitHub Enterprise Cloud with thousands of
 repositories. The deliverable is an implementation guide, not a deployment into
 an authenticated enterprise. GitHub Enterprise Server requires separate,
@@ -18,7 +25,7 @@ GitHub documentation as the authority for product behavior. Recommendations
 must distinguish native capabilities, platform-team automation, and
 repository-specific decisions.
 
-Two independent reviewers completed both a pre-draft challenge and a
+Separate read-only model-assisted reviewers completed a pre-draft challenge and
 post-draft technical/reader review using GPT-5.4 and Claude Sonnet 4.6 model
 selections. Model selections describe tool requests, not independently
 verified runtime identities. The resulting
@@ -162,7 +169,8 @@ security and quality AI application card.
 
 ## Validation Evidence
 
-The following checks were performed locally on 2026-09-08:
+The following checks were performed locally on 2026-09-08 against the initial
+drafting revision. Counts describe that revision, not the current document set:
 
 * Markdownlint passed for both new documents, with MD013 disabled to permit
    source URLs and wide reference tables. No repository lint configuration was
@@ -174,7 +182,8 @@ The following checks were performed locally on 2026-09-08:
 * Rendered source-citation targets were checked. Adjacent shortcut references
    were separated to prevent Markdown from combining different source IDs.
 * All 40 distinct external URLs in the guide and research note returned
-   successful HTTP responses, following redirects.
+   successful HTTP responses, following redirects. This was a reachability
+   check, not proof that every claim was supported by each linked page.
 * VS Code reported no errors in the new guide and research note at the checked
    revision. The final whitespace check uses `git diff --check`.
 
@@ -200,7 +209,8 @@ It answers how a copied workflow becomes the advanced CodeQL implementation
 without accepting a second file from the GUI, and which public
 `advanced-security` components merit reuse.
 
-Research inventoried 102 public repositories, then read the organization
+Research inventoried 102 public repositories in a 2026-09-08 API snapshot,
+then read the organization
 profile, curated CodeQL/Dependabot/secret-scanning lists, selected relevant
 READMEs, and the concrete workflows/configurations listed in the catalog.
 This was a selected-content assessment, not an audit of all code in the
@@ -216,15 +226,80 @@ organization. Immutable source revisions anchor the significant findings.
 | Audit/SBOM/reporting tools have scope and support limits | Separate default-setup audits, advanced scan freshness, dependency inventory, and release-specific coverage |
 | Custom pattern deployment uses browser sessions; revocation has operational impact | Require restricted credentials/session storage, human-controlled promotion, and incident-tested remediators |
 
-Two independent follow-up reviews used requested GPT-5.4 and Claude Sonnet 4.6
+Two read-only model-assisted follow-up reviews used requested GPT-5.4 and Claude Sonnet 4.6
 model selections. The first checked setup transitions, CLI behavior, enforced
 configuration, and onboarding ordering. The second checked the resource
-recommendations and source-specific defects. Both reported no blocking or
-high/medium inaccuracies in the reviewed additions. These reviews were
-read-only; no tools were installed in a GitHub organization and no settings,
+recommendations and source-specific defects. Neither reported additional
+blocking issues in that revision; this was a scoped model-assisted assessment,
+not an external sign-off or guarantee of correctness. No tools were installed
+in a GitHub organization and no settings,
 workflows, alerts, or credentials were changed remotely.
 
 The validation harness was extended to include the new catalog, its YAML caller
 example, navigation links, and cited upstream URLs. The Bash operator examples
 are documentation only; a successful syntax check does not establish their
 authorization or end-to-end behavior in the target enterprise.
+
+## Customer Pre-Share Critic Review
+
+The 2026-09-08 pre-share review covers the implementation guide, the reusable
+resource catalog, and this authoring record. Related GHAS statements in the
+older security overview and security-by-default checklist were checked for
+contradictions, not re-audited as complete documents.
+
+Three `ait-code-reviewer` invocations used requested GPT-5.4 and Claude Sonnet
+4.6 model selections. Their initial findings were adjudicated against the
+actual document wording and live source pages; model agreement or disagreement
+was not treated as authoritative evidence. No reviewer approval constitutes a
+human or independent external security sign-off.
+
+| Review item | Disposition | Evidence or correction |
+| --- | --- | --- |
+| Grouping default table could be read as recommending version groups for security fixes | Clarified | Recommendation now explicitly says `applies-to: security-updates`; the existing example already used the correct value |
+| Onboarding commands used one example filename while describing arbitrary retained workflows | Clarified | `WORKFLOW_FILE` is defined once and reused; examples explicitly run in the same Bash session |
+| Older security overview described layered security-configuration inheritance | Corrected | It now distinguishes the associated configuration from policies/global settings and links to effective governance |
+| Older policy checklist recommended default setup indiscriminately | Corrected | Organization/repository rows now select native or managed-advanced profiles; required workflows are identified as PR checks, not cron |
+| Model-assisted reviews and historical counts could be mistaken for current external sign-off | Clarified | Authoring record labeled supplementary; prior counts are revision-scoped; URL reachability is distinguished from factual verification |
+| Critic asserted there was no implicit three-day version-update cooldown | Rejected after live verification | [Options reference](https://docs.github.com/en/code-security/reference/supply-chain-security/dependabot-options-reference) explicitly documents three days even without a configured cooldown |
+| Critic asserted a ten-PR security-update cap | Rejected after live verification | The same current reference explicitly says there is no open-PR limit for security updates; the guide does not promise unlimited throughput |
+| Critic questioned the 180-day managed scan pause and monthly continuation | Confirmed current wording | [Organization global settings](https://docs.github.com/en/code-security/how-tos/secure-at-scale/configure-organization-security/establish-complete-coverage/configure-global-settings) documents 180 days and 30-day continuation; 60-day public Actions inactivity is a different rule |
+| Critic questioned repository-level merge-queue scope | Confirmed current wording | [Available rules](https://docs.github.com/en/enterprise-cloud@latest/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/available-rules-for-rulesets) explicitly excludes the merge-queue rule from organization-level rulesets |
+| Critic questioned preview licensing and dependency-review defaults | Reverified and made more explicit | [AI detections](https://docs.github.com/en/code-security/concepts/code-scanning/ai-powered-security-detections) documents both licenses; dependency-review v5 documents low severity/runtime scope defaults |
+| Upstream wrapper defects, mutable nested references, incomplete policy evaluation | Already documented; reinforced | Catalog remains reference-only for broken wrappers; guide now also requires a negative policy test and full nested-reference review |
+| Private-registry authentication and SHA-pinned Actions advisory gaps | Added explicit acceptance checks | Dependabot OIDC is not CodeQL default-setup OIDC; version-update support for SHA pins is not proof of native alert coverage |
+
+The source-level catalog findings remain scoped to their cited upstream
+commits. No upstream code was changed and no upstream tool was executed against
+an organization. The review preserves GitHub-native recommendations and does
+not introduce a competing dependency-update service.
+
+For customer sharing, use the implementation guide and resource catalog with
+their scope/preview/pilot caveats intact. This record can accompany them as
+background if useful, but is not an implementation runbook. Deployment still
+requires confirmation of tenant entitlements and the documented pilot tests.
+
+### Final Review Outcome
+
+The final T-004 (requested GPT-5.4) and T-005 (requested Claude Sonnet 4.6)
+critic passes reported no blocking documentation findings. T-004 rechecked
+example consistency, governance, repository profiles, and publication claims.
+T-005 verified the added SHA-pinned Actions alert limitation and CodeQL
+default-setup OIDC limitation against their live official sources. The parent
+review separately reverified the disputed defaults, inactivity rules, preview
+licensing, and ruleset scope against current documentation.
+
+Validation on 2026-09-08 passed:
+
+* Markdown lint on the three new GHAS documents, excluding line-length rule
+   MD013 for tables and URLs.
+* Parsing of six frontmatter blocks, nine YAML/JSON examples, and six Bash
+   syntax examples across the scoped document set.
+* Resolution of 72 local links/anchors and 104 source-reference citations.
+* HTTP reachability for all 97 distinct external URLs, following redirects.
+* Editor diagnostics on the five edited documents, with no errors reported.
+
+These checks establish documentation consistency and source reachability, not
+successful execution of examples. No authenticated tenant test, scanner run,
+Dependabot generator deployment, or GitHub Pages/Jekyll rendering test was
+performed. Customer-specific entitlements, live pilot acceptance, and human
+approval remain required before production rollout.

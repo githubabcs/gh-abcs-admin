@@ -16,7 +16,7 @@ This document provides comprehensive security policy and settings recommendation
 > **Document status**
 >
 > - **Last reviewed:** 2026-05-19
-> - **Authorship:** Drafted with AI assistance (GitHub Copilot, multi-model review) and reviewed by a human maintainer before publication.
+> - **Authorship:** Drafted with AI assistance. This page does not record human approval for the current GHAS implementation changes.
 > - **Sources:** Based on public documentation — primarily [docs.github.com](https://docs.github.com), [learn.microsoft.com](https://learn.microsoft.com), and official vendor blogs cited inline.
 > - **Verify before acting:** GitHub and Microsoft update product documentation continuously. Re-confirm against the live source pages before relying on this content for production decisions.
 
@@ -165,7 +165,7 @@ Organization settings provide granular control within the boundaries set by ente
 | Organization | **Push Protection Bypass** | Controls who can bypass push protection | **Restrict** - Limit bypass to specific roles/teams | [GitHub Well-Architected - Governance Policies](https://wellarchitected.github.com/library/governance/recommendations/governance-policies-best-practices/) |
 | Organization | **Custom Secret Patterns** | Define custom patterns for organization-specific secrets | **Configure** - Add patterns for internal tokens, API keys, credentials | [Defining custom patterns](https://docs.github.com/en/enterprise-cloud@latest/code-security/secret-scanning/using-advanced-secret-scanning-and-push-protection-features/custom-patterns/defining-custom-patterns-for-secret-scanning) |
 | Organization | **Non-Provider Pattern Detection** | Detect generic secrets like private keys | **Enable** - Enable detection of SSH keys, PGP keys, connection strings | [Supported secret scanning patterns](https://docs.github.com/en/enterprise-cloud@latest/code-security/secret-scanning/introduction/supported-secret-scanning-patterns) |
-| Organization | **Code Scanning** | Automated code security analysis | **Enable** - Enable default setup for all repositories | [About code scanning](https://docs.github.com/en/enterprise-cloud@latest/code-security/code-scanning/introduction-to-code-scanning/about-code-scanning) |
+| Organization | **Code Scanning** | Automated code security analysis | Enable the appropriate profile: default setup for eligible native repositories; preserve managed-advanced/external scanning and separately handle unsupported code | [Recommended repository profiles](25-ghas-implementation-guide.md#recommended-repository-profiles) |
 
 ### GitHub Actions (Organization Level)
 
@@ -173,7 +173,7 @@ Organization settings provide granular control within the boundaries set by ente
 |-------|---------------|-------------|---------------------|-----------|
 | Organization | **Actions Permissions** | Controls which actions can run | **Restrict** - Allow only explicitly allowlisted actions (do not rely on verified creators) | [Disabling or limiting GitHub Actions](https://docs.github.com/en/enterprise-cloud@latest/organizations/managing-organization-settings/disabling-or-limiting-github-actions-for-your-organization) |
 | Organization | **Runner Groups** | Organizes self-hosted runners | **Configure** - Create runner groups limited to specific repositories | [GitHub Well-Architected - Governance Policies](https://wellarchitected.github.com/library/governance/recommendations/governance-policies-best-practices/) |
-| Organization | **Required Workflows** | Enforces workflows across repositories | **Configure** - Define required security/compliance workflows | [Required workflows](https://docs.github.com/en/enterprise-cloud@latest/organizations/managing-organization-settings/disabling-or-limiting-github-actions-for-your-organization) |
+| Organization | **Required Workflows** | Enforces PR/merge-queue workflows across repositories | Configure ruleset workflows for PR-controlled target branches; this does not provide an organization-wide cron scheduler | [Central PR checks](25-ghas-implementation-guide.md#central-pr-checks-and-merge-protection) |
 
 ### Webhooks and Integrations
 
@@ -225,7 +225,7 @@ Repository settings provide the most granular control for individual repositorie
 | Repository | **Secret Scanning** | Detects committed secrets | **Enable** - Enable secret scanning | [About secret scanning](https://docs.github.com/en/enterprise-cloud@latest/code-security/secret-scanning/introduction/about-secret-scanning) |
 | Repository | **Push Protection** | Blocks commits containing secrets | **Enable** - Prevent secret exposure at commit time | [About push protection](https://docs.github.com/en/enterprise-cloud@latest/code-security/secret-scanning/introduction/about-push-protection) |
 | Repository | **Secret Scanning Validity Checks** | Validates if detected secrets are active | **Enable** - Prioritize active secrets for remediation | [Enabling validity checks](https://docs.github.com/en/enterprise-cloud@latest/code-security/secret-scanning/enabling-secret-scanning-features/enabling-validity-checks-for-your-repository) |
-| Repository | **Code Scanning (CodeQL)** | Static analysis security scanning | **Enable default setup** - Enable CodeQL for supported languages | [About code scanning](https://docs.github.com/en/enterprise-cloud@latest/code-security/code-scanning/introduction-to-code-scanning/about-code-scanning) |
+| Repository | **Code Scanning (CodeQL)** | Static analysis security scanning | Enable and verify the selected native or managed-advanced profile; do not overwrite an existing advanced scanner with default setup | [Recommended repository profiles](25-ghas-implementation-guide.md#recommended-repository-profiles) |
 | Repository | **Private Vulnerability Reporting** | Allows private security reports | **Enable** - Enable for responsible disclosure | [About private vulnerability reporting](https://docs.github.com/en/enterprise-cloud@latest/code-security/security-advisories/guidance-on-reporting-and-writing-information-about-vulnerabilities/privately-reporting-a-security-vulnerability) |
 
 ### Repository Configuration

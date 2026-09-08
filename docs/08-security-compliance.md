@@ -16,7 +16,7 @@ render_with_liquid: false
 > **Document status**
 >
 > - **Last reviewed:** 2026-05-19
-> - **Authorship:** Drafted with AI assistance (GitHub Copilot, multi-model review) and reviewed by a human maintainer before publication.
+> - **Authorship:** Drafted with AI assistance. This page does not record human approval for the current GHAS implementation changes.
 > - **Sources:** Based on public documentation — primarily [docs.github.com](https://docs.github.com), [learn.microsoft.com](https://learn.microsoft.com), and official vendor blogs cited inline.
 > - **Verify before acting:** GitHub and Microsoft update product documentation continuously. Re-confirm against the live source pages before relying on this content for production decisions.
 
@@ -95,7 +95,7 @@ Implementing GHAS across enterprise organizations requires standardized security
 
 **Baseline Security Policies**: Establish minimum security standards across all organizations through enterprise policies. These may include mandatory code scanning on critical repositories, mandatory secret scanning with push protection, and required dependency vulnerability reviews before merge.
 
-**Organization Inheritance Hierarchy**: As described in [Policy Inheritance Architecture](./06-policy-inheritance.md), security configurations flow from enterprise to organization to repository levels. GHAS enablement policies cascade through this hierarchy, with organizations inheriting enterprise mandates while adding organization-specific controls.
+Security configuration association is not layered YAML inheritance. A repository has one associated security configuration; reattachment changes that association. Enterprise defaults do not replace an existing organization default. Policies, global settings, and rulesets have their own scopes and override semantics. See [effective GHAS governance](25-ghas-implementation-guide.md#enterprise-and-organization-governance).
 
 **Tiered Implementation Levels**: Organizations should classify repositories into tiers (critical, important, standard) and apply proportionate security scanning configurations. Critical repositories might require all GHAS features with strict blocking policies, while standard repositories enable core scanning with advisory-only configurations.
 

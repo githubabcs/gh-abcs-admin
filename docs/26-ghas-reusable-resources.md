@@ -36,6 +36,12 @@ to `5742e73e06b8bf6c9bbd0d079653b0b12ac26cd9`. These are reviewed snapshots,
 **not production-approved revisions**. Recheck newer releases before adoption.
 Recent pushes can be dependency automation, not proof of a tested integration.
 
+Repository counts are discovery snapshots, not a claim that all repository
+code or READMEs were reviewed. A reachable link does not establish production
+readiness. In particular, the dependency-review and pack-publisher wrappers
+below need correction before adoption; their presence in this catalog is not
+an approval to deploy them unchanged.
+
 ## Adoption Order
 
 1. Implement the [existing-workflow onboarding procedure](25-ghas-implementation-guide.md#reuse-an-existing-codeql-workflow).

@@ -88,7 +88,9 @@ procedures here for GHAS scheduling, centralization, and defaults.
 | [Chargeback design](22-github-chargeback-system-design.md) | Attribute security licenses and scanner compute separately |
 
 Research decisions, review outcomes, and validation evidence are maintained in
-[the research and implementation plan](25-ghas-research-and-plan.md).
+[the research and implementation plan](25-ghas-research-and-plan.md), a
+supplementary authoring record rather than customer implementation instructions
+or external technical sign-off.
 
 ## Feature and Licensing Map
 
@@ -118,7 +120,7 @@ spend cap. [S04]
 | Code scanning and CodeQL CLI | Static application security testing and SARIF ingestion | Code Security for private/internal repositories; public code scanning has free availability |
 | Dependency review | Inspect dependency changes and enforce a PR policy using the action | Available for public repositories on GitHub.com; budget Code Security for private/internal repositories |
 | Copilot Autofix | Suggested fixes for supported code scanning alerts | Code Security capability; a separate Copilot subscription is not required for ordinary CodeQL Autofix |
-| AI-powered security detections | Additional PR-only findings for coverage gaps | Public preview; current docs require GHAS and Copilot licenses, consume AI credits, and require default setup |
+| AI-powered security detections | Additional PR-only findings for coverage gaps | Public preview; current docs require GHAS and Copilot licenses, consume AI credits, and require default setup; confirm current entitlements before purchase [S11] |
 | Custom Dependabot auto-triage | Centrally dismiss, snooze, or trigger remediation according to policy | Premium Code Security capability; distinguish from GitHub preset rules |
 | Secret scanning | Detect supported secrets in history and repository collaboration surfaces | Secret Protection for private/internal repositories; public secret scanning has free availability |
 | Push protection | Block supported secrets before accepting a push | Secret Protection for governed private/internal repository coverage |
@@ -135,6 +137,12 @@ Use the live [product comparison][S01], [billing documentation][S04], and
 individual feature documentation to confirm entitlements. In particular,
 do not assume that because public CodeQL scanning is free, campaigns, custom
 auto-triage, or every advanced secret-governance feature are also free.
+
+For the AI-powered detection preview, GitHub currently states: "require a
+GitHub Advanced Security license and a GitHub Copilot license." This is not
+the ordinary CodeQL Autofix licensing model. Recheck preview entitlements,
+eligible Copilot plans, and AI-credit billing with GitHub before purchase or
+rollout and again at general availability. [S11]
 
 GHAS does not replace dynamic application testing, penetration testing,
 runtime detection, container-image vulnerability scanning, infrastructure
@@ -394,11 +402,14 @@ command line. The identity needs endpoint-appropriate repository administration
 for setup changes, Actions write for enable/dispatch, and code scanning read for
 verification. Prefer separate provisioning/runtime identities.
 
-Read the current setup and repository association first:
+Run these blocks in the same Bash session. Set the repository and the actual
+existing workflow filename; `code-ql.yml` is only an example. Read the current
+setup and repository association first:
 
 ```bash
 set -euo pipefail
 TARGET_REPOSITORY='example-org/application'
+WORKFLOW_FILE='code-ql.yml'
 gh api "repos/$TARGET_REPOSITORY/code-security-configuration"
 gh api "repos/$TARGET_REPOSITORY/code-scanning/default-setup"
 ```
@@ -423,7 +434,7 @@ repository is not ready. Do not hide a failed setup call with `|| true`.
 ```bash
 SETUP_STATE=$(gh api "repos/$TARGET_REPOSITORY/code-scanning/default-setup" --jq '.state')
 [[ "$SETUP_STATE" == 'not-configured' ]]
-gh api "repos/$TARGET_REPOSITORY/actions/workflows/code-ql.yml" \
+gh api "repos/$TARGET_REPOSITORY/actions/workflows/$WORKFLOW_FILE" \
   --jq '{id, path, state}'
 ```
 
@@ -433,10 +444,10 @@ against the repository's actual default branch. The dispatch command requires
 if it is missing.
 
 ```bash
-gh workflow enable code-ql.yml --repo "$TARGET_REPOSITORY"
+gh workflow enable "$WORKFLOW_FILE" --repo "$TARGET_REPOSITORY"
 DEFAULT_BRANCH=$(gh api "repos/$TARGET_REPOSITORY" --jq '.default_branch')
-gh workflow run code-ql.yml --repo "$TARGET_REPOSITORY" --ref "$DEFAULT_BRANCH"
-gh run list --repo "$TARGET_REPOSITORY" --workflow code-ql.yml --limit 5
+gh workflow run "$WORKFLOW_FILE" --repo "$TARGET_REPOSITORY" --ref "$DEFAULT_BRANCH"
+gh run list --repo "$TARGET_REPOSITORY" --workflow "$WORKFLOW_FILE" --limit 5
 gh api --method GET "repos/$TARGET_REPOSITORY/code-scanning/analyses" \
   -f ref="refs/heads/$DEFAULT_BRANCH" -f tool_name=CodeQL \
   --jq '.[] | {commit_sha, analysis_key, category, error, created_at}'
@@ -474,6 +485,10 @@ weekly analysis of every protected/release ref. After 180 days without pushes
 or PRs, weekly scans pause. The organization can instead retain scans every
 30 days for inactive repositories; that interval is not configurable.
 [S02], [S03], [S08]
+
+This 180-day managed-default-setup rule is distinct from the 60-day inactivity
+rule for user-authored scheduled Actions workflows in public repositories.
+Do not substitute one threshold for the other. [S08], [S17]
 
 If a repository has no supported languages, enabling default setup is not the
 same as analyzing it. If all language analyses fail, default setup can remain
@@ -753,6 +768,10 @@ profiles, queries, runner selection, and reporting. For scheduled multi-branch
 coverage it must still enumerate refs and use correct ref/SHA attribution, or
 dispatch runs against the branches with the required workflow present.
 
+A SHA-pinned caller does not pin nested mutable action references or runtime
+downloads inside the shared implementation. Review the full dependency chain;
+see [source-level reuse caveats](26-ghas-reusable-resources.md#source-level-caveats-before-reuse).
+
 Changing checkout `ref` alone does not change the workflow event's `GITHUB_REF`
 or `GITHUB_SHA`. Do not copy a matrix checkout example without validating the
 uploaded analysis metadata. Use the explicit CLI publisher contract above when
@@ -782,6 +801,12 @@ and select it in an organization ruleset's **Require workflows to pass before
 merging** rule. Configure repository access to the source workflow and runner
 groups. This is the native way to require a central PR workflow without copying
 it into every repository.
+
+The current rules documentation also supports ruleset workflows at enterprise
+scope; the organization-scoped procedure here remains suitable for individual
+organizations. Apply required workflows only to branches whose updates go
+through PRs. Applying the rule to all branches can block ordinary direct pushes
+to development branches. [S15]
 
 The source repository must have compatible visibility: a public source can
 serve any target visibility, an internal source can serve internal/private
@@ -815,7 +840,8 @@ Prefer `allow-licenses`: `deny-licenses` is deprecated for possible removal in
 the next major action release. The two options are mutually exclusive. Use the
 action's supported shared configuration option to centralize policy. [S24]
 
-The action defaults to `fail-on-severity: low` and `fail-on-scopes: runtime`.
+The reviewed dependency-review action v5 documentation defaults to
+`fail-on-severity: low` and `fail-on-scopes: runtime`. [S24]
 Set these explicitly: the example starts blocking at high severity and includes
 development and unknown scopes because build dependencies can compromise CI.
 Unknown licenses are reported but do not automatically fail this action;
@@ -843,6 +869,14 @@ as workflow inputs instead of a YAML configuration file. Provide dependency
 snapshots for base and head when manifests alone do not reveal resolved
 dependencies. Treat missing graph data and submission failures as gaps, not a
 clean bill of health. [S24], [S25]
+
+Before enforcing the gate, use a pilot PR with a deliberately disallowed
+license or vulnerable dependency to prove the intended configuration is loaded
+and fails the check. A green run can otherwise hide broken configuration
+handoff or fallback defaults. Aggregate policy tools also require all expected
+checks to complete: missing permissions or a nonzero error count must not be
+treated as zero violations. See the
+[evaluated resource catalog](26-ghas-reusable-resources.md#reporting-and-policy-components).
 
 ### Dependency Submission and SBOM Operations
 
@@ -934,12 +968,12 @@ preferable to relying on defaults that change over time. [S28]
 | `schedule.interval` | Required, no implicit interval | Weekly routine updates; more frequent checks for selected critical packages |
 | Weekly day | Monday | Spread repository cohorts over the week |
 | Time and zone | Randomly assigned time; explicitly specified times default to UTC | Keep randomized spreading or generate deterministic staggered times |
-| `daily` | Weekdays, Monday through Friday | Use `cron` when a seven-day schedule is required |
+| `daily` | Weekdays, Monday through Friday [S28] | Use `interval: cron` with `cronjob` when a seven-day version-update schedule is required |
 | Version-update PR limit | Five open PRs; no more until some are merged or closed | Start at five per update configuration and monitor backlog |
-| Security-update PR limit | No open-PR limit in the current reference; security PRs do not count toward the version limit | Control noise through grouping and rollout, not the version PR limit |
-| Cooldown | Three days for version updates, even without `cooldown`; does not apply to security updates | Keep or deliberately customize for supported ecosystems |
+| Security-update PR limit | No open-PR limit in the current options reference; security PRs do not count toward the version limit [S28] | Control noise through grouping and rollout, not the version PR limit; this is not a throughput guarantee |
+| Cooldown | Three days for version updates, even without `cooldown`; does not apply to security updates [S28] | Set the approved policy explicitly for supported ecosystems rather than depending on changing defaults |
 | Grouping | Individual dependency PRs unless grouping is configured | Group compatible nonbreaking version updates; keep security updates separate |
-| `groups.applies-to` | `version-updates` | Set explicitly for security groups |
+| `groups.applies-to` | `version-updates` | Set `applies-to: security-updates` explicitly for security groups |
 | Target branch | Repository default branch | Explicit entries for maintained non-default version-update targets |
 | Rebase strategy | Automatic rebasing on documented events | Keep enabled unless a measured operational problem justifies changing it |
 | Labels | `dependencies`; ecosystem labels where applicable; existing SemVer labels may be added | Provision any custom labels before using them |
@@ -952,6 +986,13 @@ The version-update schedule and cooldown do **not** delay security updates.
 `open-pull-requests-limit: 0` disables version PR creation for that entry while
 allowing supported security-update customization to remain. It does not
 globally disable alerts or security updates.
+
+These defaults were checked against the detailed options reference on
+2026-09-08. That reference is used for individual YAML fields where a broad
+overview gives conflicting summaries, notably security-update PR limits and
+`target-branch`. Recheck the exact field and deployment version before relying
+on it; the listed defaults do not guarantee a job will run or a PR will be
+created within a fixed time. [S28], [S29]
 
 ### What Can Be Customized Centrally
 
@@ -1070,6 +1111,14 @@ does not suppress major security fixes. Do not globally ignore major updates
 or all development dependencies: build/test dependencies can compromise CI.
 Broad `ignore` rules can also suppress security remediation; alert triage and
 update suppression are separate decisions. [S28]
+
+For Actions dependencies, keep full-SHA pinning and version-update maintenance.
+GitHub currently documents that native Dependabot alerts for Actions cover
+semantic-version references, not SHA references. Do not treat absent alerts on
+SHA-pinned actions as proof that the referenced code is vulnerability-free.
+Evaluate supported dependency submission or advisory-to-commit mapping for
+additional visibility and validate a known advisory in the pilot; version
+updates and alert coverage are separate controls. [S26]
 
 Organization grouped security updates provide a useful starting point;
 repository `groups` rules provide finer control and take precedence for the
@@ -1442,6 +1491,9 @@ enterprise permissions, feature availability, or branch attribution.
 | PR high-severity finding | Correct required tool blocks; clean reviewed change can merge |
 | Fork PR and merge queue | Supported scans/checks run or a documented compensating policy blocks unsafe merging |
 | Dependency update | Alerts/security PRs work independently of version schedule; registry credentials and network access verified |
+| Organization OIDC registries | Dependabot authenticates successfully; CodeQL default setup uses separately supported non-OIDC access and resolves private dependencies; configured registry presence alone is not proof of access |
+| SHA-pinned Actions dependencies | Pin maintenance and any supplementary advisory mapping/submission are validated; absence of native alerts is not reported as verified security coverage |
+| Dependency policy negative test | A disallowed dependency/license fails under the intended shared config; missing config, missing permissions, and partial evaluations cannot silently pass |
 | Release dependency change | Backport/SCA process detects release-only risk; target-branch version updates are not misreported as alerts |
 | Secret prevention | Approved synthetic test pattern triggers expected block, bypass review, and audit without using a real secret |
 | Secret response | Incident drill demonstrates rotation, restricted evidence, and owner routing |
