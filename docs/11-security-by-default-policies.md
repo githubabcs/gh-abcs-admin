@@ -1,4 +1,15 @@
-# GitHub Security-by-Default: Policies and Settings Recommendations
+---
+title: GitHub Security-by-Default - Policies and Settings Recommendations
+description: Recommended enterprise, organization, and repository security policies for GitHub Enterprise Cloud.
+---
+
+## GitHub Security-by-Default Policies
+
+> [!IMPORTANT]
+> Use the [GHAS implementation guide](25-ghas-implementation-guide.md) for current
+> fleet-scale procedures. Feature availability, enforced enablement, successful
+> scanning, and required merge checks are different controls. Required workflows
+> centralize PR checks; they do not provide organization-wide scheduled scanning.
 
 This document provides comprehensive security policy and settings recommendations for GitHub Enterprise Cloud across three hierarchical levels: **Enterprise**, **Organization**, and **Repository**. Following these recommendations will help establish a strong security posture following the principle of "security by default."
 

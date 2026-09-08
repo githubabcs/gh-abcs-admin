@@ -1,4 +1,9 @@
-# GitHub Administration & Governance Workshop (L400)
+---
+title: GitHub Administration & Governance Workshop (L400)
+description: GitHub Enterprise Cloud administration, governance, security, and implementation workshop documentation.
+---
+
+## GitHub Administration & Governance Workshop (L400)
 
 > **Advanced Workshop** | Expert-level training for GitHub Enterprise Cloud administration, governance, and best practices. This workshop covers enterprise hierarchy, organization strategies, identity management (including Enterprise Managed Users), policy enforcement, security compliance, and the GitHub Well-Architected Framework.
 
@@ -33,6 +38,9 @@ Comprehensive L400-level technical documentation for GitHub Enterprise Cloud adm
 
 ### Security Policies
 - [🛡️ Security-by-Default Policies](docs/11-security-by-default-policies.md) - Comprehensive security settings and policy recommendations for Enterprise, Organization, and Repository levels
+- [GHAS Organization-Wide Implementation Guide](docs/25-ghas-implementation-guide.md) - Security architecture for thousands of repositories: weekly multi-branch CodeQL without local workflows, current Dependabot defaults, centralized governance, and repository responsibilities
+- [GHAS Research and Implementation Plan](docs/25-ghas-research-and-plan.md) - Existing-documentation assessment, architecture decisions, two-model review, and validation evidence
+- [GHAS Reusable Workflows and Tools](docs/26-ghas-reusable-resources.md) - Evaluated advanced-security workflows, configs, onboarding helpers, dependency/SBOM tools, secret-pattern tooling, and source-level adoption caveats
 - [⚠️ GitHub Actions Security: Echo Command Injection](docs/17-github-actions-security-echo-command-injection.md) - Echo command injection vulnerability (HackerBot Claw attack) prevention in GitHub Actions workflows
 
 ### AI & Copilot Governance

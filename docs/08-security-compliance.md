@@ -1,8 +1,17 @@
 ---
+title: Security and Compliance
+description: GitHub security capabilities, compliance concepts, and related implementation guidance.
 render_with_liquid: false
 ---
 
-# Security and Compliance
+## Security and Compliance
+
+> [!IMPORTANT]
+> For current fleet implementation recommendations, see the
+> [GHAS organization-wide implementation guide](25-ghas-implementation-guide.md).
+> It covers weekly multi-branch scanning, centralized CodeQL configuration,
+> current Dependabot defaults, and the limits of enterprise/org enforcement.
+> Older examples below are conceptual, not a production deployment baseline.
 
 > **Document status**
 >
@@ -78,7 +87,7 @@ graph TD
     style F fill:#d4edda
 ```
 
-Enterprise administrators can enforce GitHub Code Security and Secret Protection through enterprise policies, requiring organizations to enable those paid capabilities on all repositories, or allow organizations to selectively enable them based on criticality, compliance requirements, or development maturity. Dependabot alerts and security updates remain available independently of GHAS licensing.
+Enterprise policies govern feature availability and administrative permissions. Apply enterprise or organization security configurations to enable and enforce supported settings on repositories, then verify actual scanning coverage. Availability is not proof of execution. Dependabot alerts and security updates remain available independently of GHAS licensing. See [configuration governance](25-ghas-implementation-guide.md#enterprise-and-organization-governance).
 
 ### Security Configurations at Scale
 
@@ -111,10 +120,13 @@ CodeQL analysis operates through multiple phases:
 **Default Setup** provides pre-configured CodeQL scanning with GitHub-maintained queries covering OWASP Top 10, CWE Top 25, and common security anti-patterns. Default setup automatically:
 
 - Detects the repository's primary language(s)
-- Downloads pre-built CodeQL databases for compiled languages
+- Creates CodeQL databases from repository source using the supported build mode
 - Executes GitHub-maintained query suites
 - Reports findings as code scanning alerts in the Security tab
-- Runs on pull requests and on a weekly schedule
+- Runs on pushes to default/protected branches and eligible pull requests targeting them; current default setup excludes fork pull requests
+- Uses a managed weekly schedule that can pause after 180 days of inactivity; an organization can opt into fixed 30-day inactive scans
+
+Default setup needs no committed workflow and supports [central analysis configuration](25-ghas-implementation-guide.md#share-a-codeql-configuration-file). It does not provide configurable weekly scanning of every release branch. Use the [maintained-branch scanning procedure](25-ghas-implementation-guide.md#weekly-scanning-of-maintained-branches) for that requirement.
 
 Default setup is ideal for:
 - Standard applications with single or dual primary languages
@@ -409,13 +421,9 @@ Dependabot is an automated dependency management system that:
 - Automatically creates pull requests for security updates and version upgrades
 - Monitors for outdated dependencies across the entire dependency tree
 
-Dependabot operates at three levels:
+Dependabot has three distinct capabilities: alerts based on known vulnerable dependencies, alert-driven security-update PRs, and scheduled version-update PRs. Digest changes are an update behavior, not a separate security feature. Explicitly enable alerts and security updates; neither should be inferred from the presence of a version-update configuration. A matching advisory need not have a CVE identifier.
 
-**Security Updates**: Automatic PRs when a dependency has a published CVE. These are high-priority and should merge quickly. Enabled by default when Dependabot is active.
-
-**Version Updates**: Periodic PRs for newer versions of dependencies. Frequency configurable (daily, weekly, monthly). Allows batching non-critical updates.
-
-**Digest Updates**: For Docker images and other digested dependencies, updates to latest digest even when version remains the same.
+See [Dependabot across all repositories](25-ghas-implementation-guide.md#dependabot-across-all-repositories) for current defaults, organization registry access, generated configuration, and release-branch limits.
 
 Configuration through `dependabot.yml`:
 
@@ -428,13 +436,10 @@ updates:
     schedule:
       interval: "daily"
       time: "03:00"
-    security-updates-only: false
     commit-message:
       prefix: "deps:"
     pull-request-branch-name:
       separator: "/"
-    reviewers:
-      - "platform-team"
     assignees:
       - "tech-lead"
     labels:
@@ -459,8 +464,6 @@ updates:
     directory: "/docker"
     schedule:
       interval: "daily"
-    registries:
-      - docker-hub
     
   # GitHub Actions
   - package-ecosystem: "github-actions"
@@ -476,26 +479,23 @@ Dependency review gates pull request merging based on vulnerability criteria:
 - **Blocking Criteria**: Automatic block if PR introduces high or critical vulnerabilities
 - **Advisory Criteria**: Comment on PR with medium and low severity vulnerabilities for developer awareness
 - **License Compliance**: Flag dependencies with incompatible licenses (GPL vs MIT, etc.)
-- **Supply Chain Risk**: Flag dependencies with unusual maintainer changes, deprecated status, or unusual activity
+- **Coverage Boundary**: Dependency review is not a general detector of maintainer compromise or all supply-chain attacks; use complementary controls
 
 GitHub's Dependency Review API enables custom governance policies:
 
 ```yaml
 - name: Dependency Review
-  uses: actions/dependency-review-action@v3
+  uses: actions/dependency-review-action@v5
   with:
     fail-on-severity: high
-    allow-licenses: |
-      MIT
-      Apache-2.0
-      ISC
-    deny-licenses: |
-      GPL-2.0
-      LGPL-2.1
+    fail-on-scopes: runtime, development, unknown
+    allow-licenses: MIT, Apache-2.0, ISC
     vulnerability-check: true
     license-check: true
-    comment-summary-in-pr: true
+    comment-summary-in-pr: never
 ```
+
+The action reference is illustrative; pin an approved full commit SHA for production. The license list needs legal approval, and unidentified licenses do not automatically fail this action. See the [central dependency-review gate](25-ghas-implementation-guide.md#dependency-review-gate) for current defaults and enforcement requirements.
 
 ### Dependency Graph Architecture
 
