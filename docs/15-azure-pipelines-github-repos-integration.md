@@ -342,6 +342,63 @@ Keep useful template reuse and security controls. Consolidate unnecessarily frag
 
 Limiting agent concurrency does not necessarily limit template expansion, because expansion happens before an agent is requested. Pinning template versions improves reproducibility but is not a documented throttling mitigation.
 
+### Batch CI Runs and Cancel Superseded PR Validations
+
+Audit batching and cancellation settings alongside authentication and peak load. GitHub Actions calls its cancellation setting `concurrency.cancel-in-progress`; Azure Pipelines uses different controls. Do not copy the GitHub Actions key into Azure Pipelines YAML or treat batching as cancellation.
+
+| Situation | Azure Pipelines control | Behavior and boundary |
+| --- | --- | --- |
+| More pushes or merges to the same branch while its CI run is active | `trigger.batch: true` | Lets the active run finish, then starts a run containing changes not yet built. Applies per pipeline and branch; default is `false`. |
+| A new commit updates an already-open GitHub PR | `pr.autoCancel: true` | Cancels superseded in-progress validation runs for that same PR. Default is `true`; confirm it has not been disabled or overridden. |
+| Multiple different PRs target `main` | Keep required validation for each PR | `autoCancel` does not combine these PRs or cancel their validations merely because they share a target branch. |
+| Overlapping runs reach a stage or protected resource that must be used exclusively | Exclusive lock with `lockBehavior: runLatest` or `sequential` | Controls access at the lock, not pipeline admission or template retrieval. Choose latest-only execution or execution of each waiting run according to policy. |
+| Manual, scheduled, or external API/webhook runs overlap | Review that trigger's orchestration separately | These CI/PR settings are not a universal same-branch concurrency or cancellation policy. |
+
+Approving a PR is not the same as merging it: approval alone is not a native push trigger. Ten separate merges into `main` can queue ten CI runs without batching; whether those runs execute concurrently depends on available parallel jobs and agents.
+
+With batching enabled, if the first merge starts a CI run and the next nine arrive while it is active, the normal outcome is that active run plus one follow-up run containing the remaining changes. This is timing-dependent, not a guarantee of exactly two runs. Batching does not cancel the active run or retroactively collapse unrelated runs already queued by other mechanisms.
+
+Use the following trigger fragment in the pipeline's main YAML file, not an included template. It validates PRs targeting `main` and batches post-merge CI on `main`; merge the settings into existing branch/path filters rather than replacing needed coverage:
+
+```yaml
+trigger:
+  batch: true
+  branches:
+    include:
+    - main
+
+pr:
+  autoCancel: true
+  branches:
+    include:
+    - main
+```
+
+This configuration avoids an additional push-triggered CI run on each feature branch while preserving PR validation and post-merge validation. Those latter two validations serve different purposes and are not automatically redundant.
+
+CI batching waits for the whole run to reach a terminal state, including its stages and approvals. For long-lived deployment pipelines, consider separating batched CI from deployment orchestration. Batching is not supported for repository resource triggers. It is appropriate only when validating the accumulated branch state is sufficient; retain per-commit builds when required for release artifacts, audit, or testing policy.
+
+For stage-level serialization in Azure DevOps Services, an explicitly named stage with `lockBehavior` creates a stage lock. With `runLatest`, supersession is scoped to that stage's waiting runs on the same branch; a resource-level exclusive lock has a different scope. The active lock holder finishes before another run proceeds. This is not a whole-pipeline cancel-on-push switch. Use `sequential` when each waiting run must proceed rather than be superseded.
+
+In GitHub Actions, scope a cancellation group to the workflow and ref, for example `${{ github.workflow }}-${{ github.ref }}`, with `cancel-in-progress: true`. Avoid grouping all PR validations by the target branch alone: different PRs must not cancel each other's required checks. This Actions configuration belongs in a GitHub workflow, not in the Azure Pipelines trigger fragment above.
+
+Cancellation can reduce remaining job work, but it does not undo template-fetch API calls or checkouts that already occurred. These controls reduce avoidable load; they do not guarantee that GitHub throttling cannot happen. Do not cancel unrelated required PR checks or interrupt deployments without a defined cleanup and recovery policy.
+
+Validate the effective behavior in a non-production pipeline:
+
+- [ ] Inspect the main YAML and any CI/PR trigger overrides in pipeline settings.
+- [ ] Enable CI batching where intermediate branch commits do not each need a separate build.
+- [ ] Confirm a second update to the same PR cancels its older in-progress validation and starts validation for the new revision.
+- [ ] Confirm two different PRs targeting `main` retain their own required validations.
+- [ ] Push several changes to `main` during an active CI run and verify a subsequent batched run covers the remaining changes.
+- [ ] Check schedules, manual runs, and API/webhook integrations separately for duplicate queueing.
+- [ ] If using exclusive locks, test latest-only versus sequential behavior and the intended branch/resource scope.
+- [ ] Confirm required checks, artifacts, and deployment approvals still behave as intended.
+
+Sources: [CI batching syntax and defaults](https://learn.microsoft.com/en-us/azure/devops/pipelines/yaml-schema/trigger?view=azure-pipelines), [PR cancellation syntax and defaults](https://learn.microsoft.com/en-us/azure/devops/pipelines/yaml-schema/pr?view=azure-pipelines), and [batching GitHub CI runs](https://learn.microsoft.com/en-us/azure/devops/pipelines/repos/github?view=azure-devops#batching-ci-runs).
+
+For concurrency controls, see [Azure Pipelines exclusive locks](https://learn.microsoft.com/en-us/azure/devops/pipelines/process/approvals?view=azure-devops#exclusive-lock), [stage-level lock scope](https://learn.microsoft.com/en-us/azure/devops/release-notes/2024/sprint-243-update#exclusive-lock-check-at-stage-level), and [GitHub Actions concurrency](https://docs.github.com/en/actions/how-tos/write-workflows/choose-when-workflows-run/control-workflow-concurrency).
+
 ### Detect and Recover from Throttling
 
 | Signal | Interpretation and response |
