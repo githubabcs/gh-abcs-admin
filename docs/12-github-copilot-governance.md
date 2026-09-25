@@ -18,15 +18,16 @@ This document provides comprehensive guidance for configuring GitHub Copilot pol
 3. [Policy Architecture](#policy-architecture)
 4. [Configuring Enterprise Policies](#configuring-enterprise-policies)
 5. [Configuring Organization Policies](#configuring-organization-policies)
-6. [Content Exclusions](#content-exclusions)
-7. [Network Configuration](#network-configuration)
-8. [License Management](#license-management)
-9. [Driving Enterprise Adoption](#driving-enterprise-adoption)
-10. [Best Practices for Using Copilot](#best-practices-for-using-copilot)
-11. [Copilot cloud agent governance](#copilot-cloud-agent-governance)
-12. [Audit and Compliance](#audit-and-compliance)
-13. [Troubleshooting](#troubleshooting)
-14. [References](#references)
+6. [Auto Model Selection](#auto-model-selection)
+7. [Content Exclusions](#content-exclusions)
+8. [Network Configuration](#network-configuration)
+9. [License Management](#license-management)
+10. [Driving Enterprise Adoption](#driving-enterprise-adoption)
+11. [Best Practices for Using Copilot](#best-practices-for-using-copilot)
+12. [Copilot cloud agent governance](#copilot-cloud-agent-governance)
+13. [Audit and Compliance](#audit-and-compliance)
+14. [Troubleshooting](#troubleshooting)
+15. [References](#references)
 
 ---
 
@@ -270,6 +271,70 @@ Organizations can opt into Copilot preview features and feedback collection:
 - Improves Copilot quality over time
 - Helps GitHub prioritize improvements
 - Feedback is anonymized and aggregated
+
+## Auto Model Selection
+
+When a user picks **Auto** in the model picker, Copilot chooses a model on their behalf instead of the user selecting one manually. This raises a common governance question: **can administrators configure which models Auto can use, or is the list locked by GitHub?**
+
+**Short answer:** You cannot define an arbitrary custom allowlist that applies *only* to Auto. GitHub controls the base pool of models Auto can route to and owns the routing logic. However, administrators **can narrow** that pool—Auto only ever selects from models that are allowed by your plan and your model-access policies.
+
+### How Auto model selection works
+
+Auto model selection combines two systems:
+
+- **Task optimization**: Evaluates the complexity of each prompt and routes it to the model best suited to solve it efficiently—reserving higher-cost reasoning models for genuinely complex tasks and sending straightforward tasks to faster, lower-cost models.
+- **Reliability and availability**: Chooses models based on real-time system health and performance to reduce rate limiting, latency, and errors.
+
+Routing occurs along natural cache boundaries to avoid extra cache-related costs. Routing decisions are language-invariant—they depend on *what* you are trying to do, not the natural or programming language of the prompt.
+
+### What administrators can and cannot control
+
+| Aspect | Controlled by | Notes |
+| --- | --- | --- |
+| The base set of models Auto can route to | **GitHub** | GitHub maintains the supported list per Copilot product (Chat, CLI, cloud agent, GitHub Copilot app) and updates it over time. |
+| The routing/selection algorithm | **GitHub** | Not configurable. |
+| Which of those models are *available* to Auto | **Administrators** | Auto respects your enterprise/organization model-access policies and plan. |
+| Data-residency / FedRAMP restrictions | **Administrators** | Policies restricting Copilot to data-resident or FedRAMP-compliant models also constrain Auto. |
+| Evaluation models in Auto | **Admins / individuals** | Can be disabled via the Evaluation models policy (individuals on personal plans can opt out). |
+
+Auto model selection **won't** include:
+
+- Models not available in your Copilot plan.
+- Models excluded by enterprise or organization **model-access policies** (Settings → Copilot → **Models**).
+- Models excluded by policies restricting Copilot to data-resident or FedRAMP-compliant models.
+- Models excluded by policies restricting evaluation models.
+
+In other words, if you disable a model under the **Models** policy, Auto will no longer route to it. This is the primary lever for governing Auto's behavior.
+
+> [!NOTE]
+> As the long-term support (LTS) model, **GPT-5.3-Codex** is used as the fallback when no other model is available to Auto. See [Base and long-term support (LTS) models](https://docs.github.com/en/copilot/concepts/models/fallback-and-lts-models).
+
+### Auto tiers
+
+When using Auto with task optimization, three tiers let you influence how Auto prioritizes routing. The **same models remain available in each tier**—the tier changes only how preferred models are selected per prompt:
+
+| Tier | Priority | Typical use |
+| --- | --- | --- |
+| **Efficiency** | Cost | Fast, straightforward tasks. |
+| **Balance** | Balances cost, quality, and latency | A good fit for everyday work. |
+| **Intelligence** | Quality | Complex tasks. |
+
+Auto tiers are available in **VS Code, Copilot CLI, and the GitHub Copilot app**. Usage is charged based on the model Auto actually selects, regardless of tier.
+
+### Availability
+
+Auto model selection with task optimization is generally available in Copilot Chat (GitHub website and VS Code), Copilot CLI, the GitHub Copilot app, and the Copilot cloud agent. In JetBrains IDEs, Eclipse, Xcode, and Visual Studio, Auto is optimized for model reliability and availability. Third-party coding agents (OpenAI Codex, Anthropic Claude) expose their own Auto model sets, still subject to your policies and subscription.
+
+### Cost note
+
+Users on a paid Copilot plan receive a **10% discount** on model costs while using Auto model selection in Copilot Chat, Copilot CLI, the GitHub Copilot app, or the Copilot cloud agent.
+
+### Governance recommendations
+
+- Use the organization/enterprise **Models** policy to govern the pool: explicitly disable any model you do not want Auto (or manual selection) to use. Note that explicitly disabling today's models is not a durable allowlist—newly released GA models can become available via the enterprise/organization **default availability for released models** setting. To keep a tightly controlled pool, also turn off default availability for unconfigured models so new models are opt-in.
+- If you operate under data-residency or FedRAMP obligations, enable the corresponding restriction policies—these automatically constrain Auto.
+- Decide intentionally whether to permit evaluation models in Auto, especially on plans for individuals.
+- Remember the LTS fallback: even a tightly restricted policy leaves the LTS model available so Copilot keeps working.
 
 ## Content Exclusions
 
@@ -927,6 +992,10 @@ This document is part of the GitHub Enterprise Cloud Administration series:
 - [Managing Policies and Features for GitHub Copilot in Your Enterprise](https://docs.github.com/en/enterprise-cloud@latest/copilot/managing-copilot/managing-copilot-for-your-enterprise/managing-policies-and-features-for-copilot-in-your-enterprise)
 - [Managing Policies and Features for GitHub Copilot in Your Organization](https://docs.github.com/en/enterprise-cloud@latest/copilot/managing-copilot/managing-github-copilot-in-your-organization/setting-policies-for-copilot-in-your-organization/managing-policies-for-copilot-in-your-organization)
 - [GitHub Copilot Policies to Control Availability of Features and Models](https://docs.github.com/en/enterprise-cloud@latest/copilot/concepts/policies)
+- [About Copilot Auto Model Selection](https://docs.github.com/en/copilot/concepts/models/auto-model-selection)
+- [Supported AI Models in GitHub Copilot](https://docs.github.com/en/copilot/reference/ai-models/supported-models)
+- [Configuring Access to AI Models in GitHub Copilot](https://docs.github.com/en/copilot/how-tos/copilot-on-github/set-up-copilot/configure-access-to-ai-models)
+- [Base and Long-Term Support (LTS) Models](https://docs.github.com/en/copilot/concepts/models/fallback-and-lts-models)
 - [Best Practices for Using GitHub Copilot](https://docs.github.com/en/enterprise-cloud@latest/copilot/get-started/best-practices)
 - [Excluding Content from GitHub Copilot](https://docs.github.com/en/copilot/managing-copilot/managing-github-copilot-in-your-organization/setting-policies-for-copilot-in-your-organization/excluding-content-from-github-copilot)
 - [Setting up GitHub Copilot for Your Enterprise](https://docs.github.com/en/copilot/setting-up-github-copilot/setting-up-github-copilot-for-your-enterprise)
