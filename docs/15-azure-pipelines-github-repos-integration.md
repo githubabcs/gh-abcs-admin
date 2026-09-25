@@ -8,7 +8,7 @@ render_with_liquid: false
 
 > **Document status**
 >
-> - Last technical review: 2026-09-11
+> - Last technical review: 2026-09-25
 > - Review status: AI-assisted documentation review; human maintainer approval is required before publication.
 > - Sources: Public [GitHub documentation](https://docs.github.com) and [Microsoft Learn](https://learn.microsoft.com), cited inline and in the references.
 > - **Verify before acting:** GitHub and Microsoft update product documentation continuously. Re-confirm against the live source pages before relying on this content for production decisions.
@@ -28,15 +28,17 @@ GitHub API throttling can affect YAML retrieval before jobs start, while agent c
 3. [Pipeline Template References](#pipeline-template-references)
 4. [Repository Resources and Checkout](#repository-resources-and-checkout)
 5. [Service Connections Requirements](#service-connections-requirements)
-6. [GitHub Throttling and Pipeline Reliability](#github-throttling-and-pipeline-reliability)
-7. [Triggers and Automation Impact](#triggers-and-automation-impact)
-8. [Authentication and Authorization](#authentication-and-authorization)
-9. [Migration Scenarios and Solutions](#migration-scenarios-and-solutions)
-10. [Phase 2: GitHub Actions Multi-Repo Checkout](#phase-2-github-actions-multi-repo-checkout)
-11. [Step-by-Step Remediation Guide](#step-by-step-remediation-guide)
-12. [Best Practices and Recommendations](#best-practices-and-recommendations)
-13. [Summary: Key Takeaways](#summary-key-takeaways)
-14. [References](#references)
+6. [Multi-Project Repository Isolation](#multi-project-repository-isolation)
+7. [One-Organization Project-Isolation Solutions](#one-organization-project-isolation-solutions)
+8. [GitHub Throttling and Pipeline Reliability](#github-throttling-and-pipeline-reliability)
+9. [Triggers and Automation Impact](#triggers-and-automation-impact)
+10. [Authentication and Authorization](#authentication-and-authorization)
+11. [Migration Scenarios and Solutions](#migration-scenarios-and-solutions)
+12. [Phase 2: GitHub Actions Multi-Repo Checkout](#phase-2-github-actions-multi-repo-checkout)
+13. [Step-by-Step Remediation Guide](#step-by-step-remediation-guide)
+14. [Best Practices and Recommendations](#best-practices-and-recommendations)
+15. [Summary: Key Takeaways](#summary-key-takeaways)
+16. [References](#references)
 
 ---
 
@@ -284,6 +286,691 @@ resources:
 
 - "This pipeline needs permission to access a resource"
 - Click "Authorize resources" to grant access
+
+---
+
+## Multi-Project Repository Isolation
+
+### Research Conclusion
+
+The Azure Pipelines GitHub App and an Azure DevOps service connection enforce
+different boundaries:
+
+| Control | Boundary | What it restricts |
+| --------- | ---------- | ------------------- |
+| GitHub App installation repository selection | GitHub account or organization | Repositories for which GitHub can issue installation-token access |
+| Azure DevOps service-connection project permissions | Azure DevOps organization containing the endpoint | Projects in that organization that can reference the endpoint |
+| Azure DevOps service-connection pipeline permissions | Azure DevOps project | Pipelines that can use the endpoint |
+| Azure DevOps service-connection user roles | Azure DevOps project or organization | Users and groups that can administer or use the endpoint |
+
+Multiple Azure DevOps projects, including projects in different Azure DevOps
+organizations, can create pipelines that use the installed Azure Pipelines App.
+Their project-local endpoints can have different Azure DevOps owners and
+pipeline permissions. No documented first-party setting gives each endpoint a
+narrower subset of the repositories selected on the GitHub App installation.
+If one GitHub repository is connected to pipelines in several Azure DevOps
+organizations, Microsoft documents automatic GitHub CI and PR triggers only for
+the first organization. Pipelines in secondary organizations can still run
+manually or on a schedule. See [create pipelines in multiple Azure DevOps organizations and projects](https://learn.microsoft.com/en-us/azure/devops/pipelines/repos/github?view=azure-devops#create-pipelines-in-multiple-azure-devops-organizations-and-projects).
+
+> [!IMPORTANT]
+> If the Azure Pipelines App is installed with **All repositories**, an
+> installation token can access all public and private repositories in that
+> GitHub organization. Creating one service connection per Azure DevOps project
+> does not reduce that GitHub-side scope.
+
+Microsoft recommends either selecting only the repositories the App requires or
+separating private repositories into another organization. GitHub manages
+repository selection on the installed App through **All repositories** or
+**Only select repositories**. See [secure GitHub repository access](https://learn.microsoft.com/en-us/azure/devops/pipelines/security/secure-access-to-repos?view=azure-devops#github-repositories)
+and [modify an installed GitHub App](https://docs.github.com/en/apps/using-github-apps/reviewing-and-modifying-installed-github-apps).
+
+### Documented Cross-Project Checkout Behavior
+
+As of September 25, 2026, an authorized pipeline in Azure DevOps Project A can
+declare and check out a private GitHub repository normally built by Project B
+when both projects use connections backed by an Azure Pipelines App installation
+with **All repositories** access.
+
+> [!WARNING]
+> A GitHub repository does not belong to an Azure DevOps project as an
+> authorization boundary. Project B might contain the pipeline that normally
+> builds the repository, but Project A can still request that repository if
+> Project A's authorized service connection can access it.
+
+Microsoft states that a pipeline can currently access all GitHub repositories
+its service connection allows, without a per-repository Azure Pipelines
+restriction. This is a documented product gap, not an inference from the user
+interface. See [Control access to GitHub repositories](https://learn.microsoft.com/en-us/azure/devops/release-notes/roadmap/control-access-to-github-repos).
+
+The supported checkout uses a GitHub repository resource:
+
+```yaml
+resources:
+  repositories:
+  - repository: projectBRepo
+    type: github
+    name: GitHubOrg/ProjectBPrivateRepo
+    endpoint: ProjectA-GitHub-App-Connection
+    ref: refs/heads/main
+
+steps:
+- checkout: projectBRepo
+```
+
+Changing `name` to another repository covered by the same App installation does
+not introduce a documented Project B approval or GitHub repository authorization
+gate. The YAML schema identifies a GitHub repository by `owner/repository` and
+the service connection in `endpoint`. It does not include an Azure DevOps
+project qualifier. By contrast, cross-project Azure Repos references use
+`ProjectName/RepositoryName`. See the [repository resource schema](https://learn.microsoft.com/en-us/azure/devops/pipelines/yaml-schema/resources-repositories-repository?view=azure-pipelines)
+and [multi-repository checkout](https://learn.microsoft.com/en-us/azure/devops/pipelines/repos/multi-repo-checkout?view=azure-devops).
+
+The checkout succeeds when all of these conditions are true:
+
+1. The target repository belongs to the GitHub account or organization where
+   the Azure Pipelines App is installed.
+2. The installation has **All repositories** access, or the target is included
+   when **Only select repositories** is used.
+3. The App installation has sufficient repository-content permission and is
+   active.
+4. Project A has a service connection backed by that installation.
+5. The pipeline is explicitly authorized to use the connection, unless the
+   connection was deliberately opened to all pipelines.
+6. Any approvals and checks attached to the service connection pass.
+7. The repository name and requested ref are valid.
+
+The documented authorization sequence is therefore:
+
+```text
+Pipeline A
+└── authorized to use Project A service connection
+    └── backed by the GitHub App installation
+        └── allowed to read every repository in the installation repository set
+```
+
+Azure DevOps does not add this sequence:
+
+```text
+Target GitHub repository
+└── assigned to Azure DevOps Project B
+    └── Project B must approve Project A
+```
+
+No documented assignment or approval relationship of that kind exists for an
+external GitHub repository. Microsoft also states that **Protect access to
+repositories in YAML pipelines** does not apply to GitHub repositories. The
+Azure DevOps protected-resource gate is the service connection, not an
+individual external GitHub repository.
+
+This behavior can still be constrained through governance:
+
+* Prevent unauthorized changes to effective pipeline YAML with branch
+  protection, rulesets, CODEOWNERS, and required reviews.
+* Restrict service-connection pipeline permissions instead of granting open
+  access.
+* Attach approvals, required-template checks, or other checks to the service
+  connection.
+* Limit who can create, edit, share, and administer service connections.
+
+These controls can stop an unauthorized YAML change or pipeline run. They do
+not narrow the GitHub repositories reachable through a connection after its
+pipeline is authorized.
+
+Do not use `persistCredentials: true` and a separate `git clone` as the
+validation method. That setting only leaves the checkout credential in Git
+configuration and does not document cross-repository reuse. Declare the target
+under `resources.repositories` and use the supported `checkout` step when
+testing this boundary.
+
+### Why Separate Connections Do Not Segment Repositories
+
+A project-local service connection is still valuable. It prevents an
+unauthorized Azure Pipeline from using the endpoint when pipeline permissions
+are restricted. It also provides project-specific ownership and audit records.
+However, the connection remains a consumer of the same GitHub App installation.
+
+The following design provides Azure DevOps administrative separation, but not
+disjoint GitHub repository authorization:
+
+```text
+GitHub organization
+└── Azure Pipelines App installation: All repositories
+    ├── Azure DevOps Project A: local service connection A
+    └── Azure DevOps Project B: local service connection B
+```
+
+Sharing a service connection through its **Project permissions** page has the
+same GitHub limitation. Sharing adds project references to the existing
+endpoint; it does not clone the credential or create another GitHub
+installation. See [service-connection project permissions](https://learn.microsoft.com/en-us/azure/devops/pipelines/policies/permissions?view=azure-devops#set-service-connection-project-permissions)
+and the [Share Service Endpoint REST API](https://learn.microsoft.com/en-us/rest/api/azure/devops/serviceendpoint/endpoints/share-service-endpoint?view=azure-devops-rest-7.1).
+
+GitHub's installation model exposes the organization's installation of a
+particular App as a singular resource. The same App can be installed in several
+different GitHub organizations or accounts, but the documented model does not
+provide parallel installations of that App in one organization, each with a
+different repository list. GitHub documents installations across multiple
+accounts in [installing a GitHub App from a third party](https://docs.github.com/en/apps/using-github-apps/installing-a-github-app-from-a-third-party)
+and the singular organization lookup in [Get an organization installation for the authenticated app](https://docs.github.com/en/rest/apps/installations#get-an-organization-installation-for-the-authenticated-app).
+
+### Controls Versus Security Boundaries
+
+| Mechanism | Classification | Security effect |
+| ----------- | ---------------- | ----------------- |
+| App installation with **Only select repositories** | GitHub-enforced boundary for private repository access | GitHub denies installation-token access to private repositories outside the selected set; the set is shared by every Azure DevOps consumer of the installation, and public repository visibility still applies |
+| Separate GitHub organizations and App installations | Strong hard boundary | Creates distinct installation IDs, repository sets, owners, and policies |
+| Fine-grained PAT restricted to selected repositories | GitHub-enforced token boundary | Repository selection is fixed for the issued token and is stronger than mutable account membership; approval, revocation, and replacement remain administrative operations |
+| Project-local connection with named pipeline permissions | Azure DevOps usage boundary | Prevents unapproved pipelines from using the endpoint, but does not narrow its GitHub repository set |
+| Shared service connection | Expanded trust boundary | Allows more Azure DevOps projects to use the same endpoint and credential |
+| Required templates, approvals, and pipeline policies | Governance control | Constrains approved pipeline behavior, but does not change token capabilities |
+| GitHub rulesets, branch protection, and CODEOWNERS | Change governance | Protects refs and review workflows, but does not remove App read access |
+| Broker, mirror, or artifact promotion | Hard boundary when credentials are separated | Keeps the broad source credential out of downstream projects |
+
+Azure Repos repositories can have Azure Pipelines checks and pipeline
+permissions configured under **Project settings > Repositories**. Microsoft
+states that **Protect access to repositories in YAML pipelines** does not apply
+to GitHub repositories. Declaring a GitHub repository under
+`resources.repositories` does not create an additional GitHub authorization
+boundary. For GitHub, protect both the service connection in Azure DevOps and
+the App installation in GitHub. See [secure repository access](https://learn.microsoft.com/en-us/azure/devops/pipelines/security/secure-access-to-repos?view=azure-devops)
+and [protect a repository resource](https://learn.microsoft.com/en-us/azure/devops/pipelines/process/repository-resource?view=azure-devops).
+
+### Enterprise Implementation Patterns
+
+#### Pattern A: One Selected-Repository Trust Domain
+
+Use one App installation with **Only select repositories** when all consuming
+Azure DevOps projects can legitimately share the union of selected
+repositories.
+
+1. Select only the repositories required by the trust domain.
+2. Create a project-local service connection in each Azure DevOps project.
+3. Keep **Grant access permission to all pipelines** disabled.
+4. Authorize named pipelines and minimize service-connection Administrator and
+   User roles.
+5. Review the installation repository list and endpoint consumers
+   periodically.
+
+This pattern improves ownership and limits accidental use. It does not prevent
+an authorized pipeline from attempting to access another repository in the
+installation's selected set.
+
+#### Pattern B: Separate GitHub Organizations
+
+Use a separate GitHub organization for each regulatory, customer, subsidiary,
+or high-impact trust domain. Install Azure Pipelines independently in each
+organization and select only that domain's repositories.
+
+This is the most direct supported way to obtain separate installations of the
+same first-party Azure Pipelines App. The cost is additional organization
+administration, policy alignment, repository moves, and cross-organization
+dependency management.
+
+Keep each Azure DevOps project authorized only for its own domain's connection.
+Do not share a domain connection into another project's trust boundary or
+authorize that project to use a second domain's connection.
+
+#### Pattern C: Project-Specific Fine-Grained PATs
+
+When repositories must remain in one GitHub organization, use a dedicated
+nonhuman account and fine-grained PAT for each security domain. Restrict each
+token to the required repositories and minimum permissions, then create a
+project-local PAT-backed service connection.
+
+Remove or deny access to broader App-backed and user-backed connections in
+those projects. A narrow PAT does not provide isolation if the same pipeline can
+use another connection with broader GitHub access.
+
+GitHub organizations can require approval for fine-grained PATs and enforce
+token-lifetime policies. See [managing fine-grained PATs](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens).
+
+Trade-offs include secret rotation, user-linked identity lifecycle, no GitHub
+Checks integration, and task-specific compatibility testing. Microsoft
+recommends App authentication for normal CI, so use PATs only when the
+additional repository boundary justifies these costs.
+
+#### Pattern D: Broker, Mirror, or Artifact Promotion
+
+For high-assurance environments, give GitHub access only to a controlled broker
+pipeline or service. It can validate a commit and then:
+
+* Mirror an approved branch or commit into a project-specific Azure Repos
+  repository
+* Publish an immutable source bundle
+* Publish signed build artifacts with provenance and digest metadata
+
+Downstream Azure DevOps projects consume the mirror or artifact without
+receiving the source GitHub credential. This pattern enables project-scoped
+Azure DevOps identities and protected-resource controls, but adds promotion,
+freshness, provenance, retention, and incident-recovery responsibilities.
+
+### High-Level Boundary Choices
+
+See [One-Organization Project-Isolation Solutions](#one-organization-project-isolation-solutions)
+for the detailed compatibility matrix, security prerequisites, and rollout
+guidance.
+
+| Requirement | Recommended pattern |
+| ------------- | --------------------- |
+| Several projects may access the same approved repository set | One selected-repository installation with project-local connections |
+| Projects require disjoint, enforceable repository sets | Separate GitHub organizations and App installations, with no cross-domain connection sharing |
+| Repositories cannot move, but per-project credential scope is mandatory | Dedicated accounts and fine-grained PATs, after compatibility validation and removal of broader connections |
+| Downstream projects must never receive source credentials | Broker, mirror, or artifact promotion |
+| Only project ownership and pipeline-use separation are required | Project-local connections with named pipeline permissions |
+| Central endpoint administration is more important than isolation | Shared connection, documented as a common trust boundary |
+
+### Operational Caveats
+
+* Microsoft does not document a per-service-connection repository filter for
+  the first-party Azure Pipelines App.
+* Do not assume the generic GitHub API ability to mint a repository-narrowed
+  installation token is used by Azure Pipelines for each service connection.
+  No public Azure Pipelines contract promises this behavior.
+* App-authenticated checkout and triggers do not prove that every built-in or
+  marketplace task supports the `InstallationToken` authorization scheme.
+  Validate every GitHub-integrated task.
+* Automation support for App-backed service connections is uneven. For example,
+  the Azure CLI request to create `InstallationToken` GitHub endpoints remains
+  tracked in [Azure/azure-cli-extensions#1971](https://github.com/Azure/azure-cli-extensions/issues/1971).
+  Test automation against the current Azure DevOps API before standardizing it.
+* The Azure DevOps roadmap item [Control access to GitHub repositories](https://learn.microsoft.com/en-us/azure/devops/release-notes/roadmap/control-access-to-github-repos)
+  describes the current gap and a future goal. Do not treat a roadmap item as an
+  available security control.
+
+---
+
+## One-Organization Project-Isolation Solutions
+
+### Product Constraint
+
+As of September 25, 2026, Azure Pipelines has no first-party configuration that
+simultaneously provides all of the following:
+
+1. One GitHub organization
+2. A different enforceable GitHub repository set for each Azure DevOps project
+3. Native Azure Pipelines checkout and CI/PR triggers
+4. GitHub Checks through the Microsoft-owned Azure Pipelines App
+
+The first-party App remains the lowest-maintenance integration when all selected
+repositories belong to one trust domain. It is not suitable when mutually
+isolated Azure DevOps projects require different repository subsets within the
+same GitHub organization.
+
+The practical one-organization solutions make one of these trade-offs:
+
+* Use a dedicated GitHub automation identity and retain native Azure Pipelines
+  triggers, checkout, and classic commit statuses, but not GitHub Checks.
+* Use GitHub Actions as the repository-scoped event and source boundary, then
+  hand an immutable artifact or source bundle to Azure Pipelines.
+* Operate a custom GitHub App and broker that recreates webhook, checkout, and
+  Checks integration with project-specific credentials.
+
+### Solution Comparison
+
+| Option | Native checkout | Native CI and PR triggers | GitHub result | Repository isolation | Operational cost |
+| -------- | ----------------- | --------------------------- | --------------- | ---------------------- | ------------------ |
+| First-party Azure Pipelines App | Yes | Yes | GitHub Checks | Installation-wide repository set, not per Azure DevOps project | Low |
+| Dedicated automation identity and OAuth | Yes | Yes when webhook operations succeed | Classic commit status | Account repository membership, subject to organization visibility and administrator changes | Medium |
+| Dedicated automation identity and PAT | Yes | Yes when webhook operations succeed | Classic commit status | Account membership and, for a fine-grained PAT, selected repositories | Medium |
+| GitHub Actions with artifact handoff | Azure Pipeline consumes an artifact, not GitHub checkout | GitHub Actions owns triggers | GitHub Actions check, with Azure result reconciliation | Repository-scoped workflow token and isolated artifact store | Medium to high |
+| Custom GitHub App and broker | Custom checkout | Custom webhook bridge | Custom Checks or statuses | App installation and token scope per trust domain | High |
+| GitHub-to-Azure-Repos mirror | Azure Pipeline checks out the mirror | Mirror event or Azure Repos trigger | Requires custom GitHub reconciliation | Azure Repos ACL and mirror credential | High |
+
+### Native Pattern: Dedicated Automation Identity
+
+The closest native solution is one GitHub automation account for each security
+domain, normally one per Azure DevOps project or project group. Grant the
+account access only to that domain's GitHub repositories, then create a
+project-local OAuth- or PAT-backed GitHub service connection.
+
+```text
+GitHub organization
+├── Project A repositories
+│   └── Automation account A
+└── Project B repositories
+    └── Automation account B
+
+Azure DevOps Project A
+└── GitHub connection A
+    └── authenticates as Automation account A
+
+Azure DevOps Project B
+└── GitHub connection B
+    └── authenticates as Automation account B
+```
+
+The GitHub identity creates a GitHub-enforced but administratively mutable
+boundary for private repositories it cannot read. If Project A requests a
+Project B private repository outside that identity's access, GitHub rejects the
+request.
+
+This boundary requires all of the following:
+
+* Set the GitHub organization base permission to **No permission**.
+* Do not use internal visibility for repositories outside the identity's trust
+  domain because enterprise members can read internal repositories.
+* Treat public repositories as readable regardless of project assignment.
+* Alert on team, collaborator, repository-role, and base-permission changes.
+* Review repository administrators who can add the automation identity and
+  silently widen its access.
+
+Use a separate GitHub machine user, GitHub's term for this automation account,
+for each trust domain. Do not make it an organization owner, add it to broad
+teams, or reuse it for unrelated automation. Assign a named human custodian,
+protect interactive login and 2FA recovery, authorize SAML SSO where required,
+and use the enterprise identity lifecycle required by Enterprise Managed Users.
+Private repository access can consume a GitHub license. GitHub recommends a
+GitHub App over a machine user where the target platform supports it. See
+[managing deploy keys and machine users](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/managing-deploy-keys).
+
+Organization membership enables fine-grained PAT ownership but also exposes the
+account to organization base permissions and internal repositories. Keeping the
+account as an outside collaborator avoids those organization-wide visibility
+paths, but GitHub documents that outside collaborators can use only classic
+PATs. Choose this trade-off explicitly.
+
+#### OAuth Option
+
+OAuth is documented as a native Azure Pipelines GitHub connection type. It
+supports checkout, push and PR triggers, Azure-created webhooks, and classic
+commit-status reporting when the account can create and manage the required
+repository webhooks. It does not support GitHub Checks. Protect and periodically
+review the non-expiring OAuth authorization, and reauthorize it when identity,
+SSO, or organization policy changes invalidate it.
+
+OAuth authorization is not repository-selective. Its effective repository set
+is the set visible to the authorizing account. The account's GitHub team and
+repository membership must therefore remain narrow.
+
+#### PAT Option
+
+A fine-grained PAT adds a second GitHub-enforced restriction:
+
+* One resource owner
+* Explicit selected repositories
+* Explicit repository permissions
+* Organization approval
+* Expiration and revocation controls
+
+Expected permissions should be tested against the integration, but can include:
+
+* Metadata: read
+* Contents: read
+* Pull requests: read
+* Commit statuses: read and write
+* Webhooks: read and write
+
+Grant Contents write only when Azure Pipelines must commit pipeline YAML or
+other content. Native CI and PR triggers require webhook management. The token
+needs Webhooks write permission, while the automation account separately needs
+repository Admin or a custom repository role that includes **Manage webhooks**.
+Prefer a custom role with only the required webhook and content capabilities
+over general repository administration.
+
+> [!CAUTION]
+> Microsoft security guidance recommends a fine-grained PAT when PAT
+> authentication is necessary, but the main GitHub service-connection
+> documentation still describes classic scopes such as `repo`, `user`, and
+> `admin:repo_hook`; the GitHub integration page additionally lists
+> `read:user` and `user:email`. Microsoft also discourages PAT use when App
+> authentication can meet the requirement. Treat complete fine-grained PAT
+> compatibility as a required pilot result, not an assumption.
+
+The pilot must verify:
+
+1. Service-connection creation and validation
+2. Primary and additional repository checkout
+3. Push trigger delivery
+4. PR trigger delivery
+5. Webhook creation and redelivery
+6. Commit-status publication
+7. Token replacement and revocation
+8. User-profile and email calls used during connection validation
+9. PR comment triggers
+10. Every built-in or marketplace task that calls GitHub
+
+If a fine-grained PAT does not support the complete workflow, use OAuth or a
+classic PAT owned by the same narrowly entitled automation account. A classic
+`repo` PAT is broad, so containment depends on the account's administratively
+maintained repository visibility.
+
+> [!WARNING]
+> OAuth- and PAT-backed integrations publish classic commit statuses, which are
+> weaker merge gates than GitHub App checks. Another actor with permission to
+> write commit statuses can publish the same context name. Treat the Azure
+> status as informational, or enforce merge through a GitHub App- or GitHub
+> Actions-sourced check whose expected source can be pinned.
+
+Assume an authorized pipeline job can exercise the connection's complete
+credential authority. Do not expose the connection to untrusted YAML or fork
+builds, do not enable secrets for fork validations, and do not rely on
+`persistCredentials: false` as the repository boundary.
+
+#### Azure DevOps Hardening
+
+For every project-local connection:
+
+1. Keep **Grant access permission to all pipelines** disabled.
+2. Authorize only named pipelines.
+3. Do not share the connection with other projects.
+4. Restrict service-connection Administrator and User roles.
+5. Restrict who can create service connections.
+6. Remove the first-party Azure Pipelines App from these repositories when the
+   native App is not part of the approved design.
+7. Review membership in the Azure DevOps **Endpoint Creators** group and reserve
+   connection creation for a central integration team.
+8. Prevent human OAuth connections and broader App- or PAT-backed connections.
+9. Protect pipeline YAML with GitHub rulesets, CODEOWNERS, and required reviews.
+10. Query the service-endpoints API periodically and flag any unapproved
+    `InstallationToken`, `OAuth`, or `PersonalAccessToken` endpoint.
+11. Inventory GitHub memberships, PAT approvals, connection owners, and
+    authorized pipelines across every Azure DevOps organization that can use
+    the GitHub organization.
+
+A narrowly scoped connection does not provide isolation if the same project
+can create or use another connection with broader GitHub access.
+
+### GitHub Actions as the Repository Control Plane
+
+Organizations that prioritize repository isolation often let GitHub Actions
+retain the GitHub event and source context, then use Azure Pipelines for
+deployment, protected environments, approvals, or selected build stages.
+
+```text
+GitHub push or pull request
+└── GitHub Actions
+    ├── checks out the repository
+    ├── builds or packages immutable input
+    ├── records commit, PR, workflow, and artifact provenance
+    └── queues Azure Pipeline
+        ├── verifies provenance and digest
+        └── builds or deploys the exact input
+    └── polls or receives the Azure terminal result
+        └── completes the GitHub check
+```
+
+The Azure Pipeline must not clone GitHub through a broad connection after being
+queued. Store its YAML in Azure Repos or use a non-GitHub classic definition,
+and specify `checkout: none` so the job does not implicitly check out `self`.
+Transfer the exact input through an isolated store, for example:
+
+* Container image identified by digest
+* Immutable Azure Blob source bundle
+* Versioned package in Azure Artifacts
+* Signed artifact with provenance or attestation
+
+Pass an event envelope containing at least:
+
+* GitHub organization and repository
+* Event name and actor
+* Source ref and exact commit SHA
+* PR number and PR head SHA when applicable
+* GitHub workflow run ID, attempt, and URL
+* Artifact URI and immutable digest
+* Provenance identity
+* Azure DevOps project and pipeline
+* Unique correlation and deduplication key
+
+Queue success is not pipeline success. The GitHub Actions workflow or a broker,
+not the isolated Azure Pipeline, must capture the Azure run ID, keep the GitHub
+check pending, reconcile Azure's terminal result, and publish that result
+against the exact GitHub commit. Handle retries, cancellation, and superseded
+runs.
+
+The published [`Azure/pipelines`](https://github.com/Azure/pipelines) action
+demonstrates GitHub-initiated queueing, not artifact handoff. It requires an
+Azure DevOps PAT, returns after queueing, and does not provide a complete
+terminal-status bridge. When the Azure definition points to the same GitHub
+repository, the action passes the branch and SHA and lets Azure Pipelines clone
+the source through its own GitHub connection. Its latest published release,
+v1.2, is dated November 12, 2019. Review or replace it rather than adopting it
+unchanged. The action cannot accept a Microsoft Entra bearer token, so an OIDC
+design must call the Azure DevOps REST API directly.
+
+For new implementations, GitHub Actions can federate to a Microsoft Entra
+service principal. Use one service principal per trust domain and pin its
+federated credential subject to a specific GitHub repository and protected
+environment without broad subject matching. The Azure DevOps organization must
+be connected to the same Microsoft Entra tenant. Add the service principal's
+Enterprise applications object ID to Azure DevOps, assign the lowest validated
+access level, and grant **Queue builds** only on the target pipelines. Microsoft
+Entra application permissions do not grant Azure DevOps permissions.
+
+Acquire a short-lived token for Azure DevOps resource
+`499b84ac-1321-427f-aa17-267ca6975798` and call the Pipelines REST API. This
+avoids storing an Azure DevOps PAT.
+See [service principals and managed identities in Azure DevOps](https://learn.microsoft.com/en-us/azure/devops/integrate/get-started/authentication/service-principal-managed-identity?view=azure-devops).
+
+Public implementations of GitHub-initiated Azure Pipeline queueing include:
+
+| Organization | Example | Observed pattern |
+| -------------- | --------- | ------------------ |
+| Microsoft | [Power Query SDK release candidate workflow](https://github.com/microsoft/vscode-powerquery-sdk/blob/d596661f4b1ec72656db31ae89fd3616ab8d67ea/.github/workflows/rc.yml) | Packages in GitHub, then queues Azure Pipelines with the branch ref; the artifact is not transferred |
+| National Instruments | [grpc-labview Azure DevOps trigger](https://github.com/ni/grpc-labview/blob/2f07f0318a4f26bd4a6423b387f0343813f73f29/.github/workflows/trigger_azdo_ci.yml) | Reusable workflow with canonical-repository gating and run correlation |
+| SPS Commerce | [API standards release workflow](https://github.com/SPSCommerce/sps-api-standards/blob/03be383b750161618db8dfe24e90056a0fb7b20b/.github/workflows/release.yml) | GitHub release flow queues an Azure publishing pipeline without transferring an artifact |
+| Public Health Agency of Canada | [IRIDA Next Azure DevOps trigger](https://github.com/phac-nml/irida-next/blob/d11b985ac7cdcbb7c77b664377bdc7e7645cb96d/.github/workflows/trigger-azure-devops.yml) | Repository-owner gating and project-specific queue parameters |
+
+Most public examples use Azure DevOps PATs. They demonstrate the architecture,
+not artifact isolation or the preferred current authentication mechanism.
+
+### Custom GitHub App and Token Broker
+
+When GitHub Checks, short-lived credentials, and one-organization project
+isolation are all mandatory, create a different customer-owned GitHub App for
+each trust domain:
+
+```text
+GitHub organization
+├── Custom App for Project A
+│   └── installed only on Project A repositories
+└── Custom App for Project B
+    └── installed only on Project B repositories
+```
+
+Distinct App registrations allow different selected-repository installations
+inside one GitHub organization. A broker can mint one-hour installation tokens
+further restricted to one repository and minimal permissions. See [generating an installation access token](https://docs.github.com/en/apps/creating-github-apps/authenticating-with-a-github-app/generating-an-installation-access-token-for-a-github-app).
+
+Azure Pipelines does not document a native GitHub service-connection scheme in
+which customers supply an arbitrary App ID, installation ID, and private key.
+The broker must therefore implement or coordinate:
+
+1. Webhook validation and event-to-pipeline mapping
+2. Azure Pipeline queueing and cancellation
+3. Repository- and permission-scoped token minting
+4. Controlled checkout using the short-lived token
+5. GitHub Check Run or commit-status creation
+6. Terminal-result reconciliation
+7. Deduplication, retry policy, rate limiting, and outage recovery
+8. App-key rotation, audit records, and incident response
+
+One App registration and root key per trust domain provides stronger
+root-credential separation than one App with runtime token down-scoping. Store
+private keys in a vault or signing service and do not persist installation
+tokens. Use a separate broker deployment and key-vault access policy for each
+trust domain. One broker identity that can read every domain's private key
+collapses the intended root-credential separation.
+
+Restrict and audit the organization owners and GitHub App managers who can
+change each installation's selected-repository set. Alert on installation
+repository and permission changes.
+
+This pattern can meet all functional and isolation requirements, but it is a
+custom platform capability rather than an Azure Pipelines configuration.
+
+### Mirror and Artifact Patterns
+
+A one-way GitHub-to-Azure-Repos mirror lets Azure Pipelines use project-scoped
+Azure Repos identities and repository protected-resource controls. A true Git
+mirror preserves commits, trees, parentage, branches, tags, and SHAs, but not
+GitHub PR reviews, Checks, Actions runs, rulesets, or webhook actor identity.
+Scope the mirror's GitHub read credential and Azure Repos write identity to one
+trust domain.
+
+Operational requirements include:
+
+* Ref deletion and force-push handling
+* Git LFS synchronization
+* Mirror lag monitoring and recovery
+* Prevention of writes to the mirror
+* Duplicate-build suppression
+* GitHub status reconciliation
+* Explicit handling of `refs/pull/*` when PR validation is required
+* Isolation of untrusted fork content mirrored through pull-request refs
+
+Artifact-only promotion creates a cleaner boundary. GitHub Actions builds once,
+publishes an immutable artifact, and Azure Pipelines deploys that exact digest.
+Registry or feed ACLs plus mandatory provenance verification form the
+consumption boundary. Mutable tags, artifact names, and workflow ordering do
+not.
+
+### Governance Controls Are Not Credential Scope
+
+Required templates, service-connection checks, branch protection, rulesets,
+and CODEOWNERS improve prevention and review. They do not change the repository
+claims of a GitHub credential.
+
+A server-side required-template check is meaningful resource-use enforcement,
+but it governs only the protected resource to which it is attached. It does not
+provide GitHub repository isolation, and privileged resource administrators can
+bypass checks. Pin governed templates to a protected immutable tag or commit,
+or protect the central template branch as a high-value dependency.
+
+### Recommended Architecture by Requirement
+
+| Requirement | Recommended architecture |
+| ------------- | -------------------------- |
+| Native Azure checkout and triggers with one GitHub organization | Dedicated automation identity and project-local OAuth or PAT connection |
+| Defense-in-depth repository selection | Dedicated automation identity plus fine-grained PAT after compatibility validation |
+| GitHub Checks are mandatory | Custom App and broker, or accept the first-party App's shared installation scope |
+| No GitHub credential may enter Azure DevOps | GitHub Actions with immutable artifact handoff, Azure Repos-hosted pipeline YAML, and `checkout: none` |
+| Azure Pipelines is primarily a deployment system | GitHub Actions CI plus Azure Pipelines CD |
+| Existing task requires classic PAT scopes | Narrowly entitled automation identity plus classic PAT |
+| Highest one-organization isolation | Separate customer-owned Apps and brokers per trust domain |
+| Lowest operational overhead | First-party App, only when its complete repository set is one trust domain |
+
+### Recommended Rollout
+
+For most organizations that require native Azure Pipelines builds:
+
+1. Pilot one dedicated GitHub automation identity for one Azure DevOps project.
+2. Try a fine-grained PAT restricted to that project's repositories, while
+   documenting Microsoft's preference for App authentication and the reason it
+   cannot provide this project boundary.
+3. Validate checkout, push and PR triggers, webhooks, statuses, rotation, and
+   every GitHub-integrated task.
+4. Fall back to OAuth or a classic PAT on the same narrowly entitled account
+   only when compatibility requires it.
+5. Restrict service-connection creation and prohibit broader connections in the
+   project.
+6. Treat classic Azure commit statuses as informational unless a trusted
+   GitHub App or Actions workflow produces a source-pinned required check.
+7. Repeat with a different identity and connection for each trust domain.
+
+If GitHub Checks are mandatory, choose between a GitHub Actions bridge and a
+custom GitHub App broker. Do not restore the broad first-party App connection
+and describe the result as project isolation.
 
 ---
 
@@ -560,7 +1247,7 @@ These are the permissions documented for the Azure Pipelines App. Confirm the cu
 If your GitHub repos are in different organizations:
 
 - Install and approve the GitHub App separately in each required organization; select connections corresponding to those installations.
-- Reuse a connection for repositories it is authorized to access. Separate connections are appropriate for distinct credentials, installations, or trust boundaries, not automatically for every repository.
+- Reuse a connection for repositories it is authorized to access. Separate connections are appropriate for distinct credentials or installations. They create a GitHub repository trust boundary only when backed by different credentials or installations.
 - Apply organization policies, SSO authorization where applicable, and explicit pipeline permission to use each service connection.
 
 When the Azure Pipelines App connects one GitHub repository to multiple Azure DevOps organizations, Microsoft documents that only the first organization's pipelines receive automatic CI/PR triggers; secondary organizations can use manual or scheduled runs.
@@ -872,6 +1559,7 @@ Create a tracking document with:
 | Repository resource triggers | Not supported for GitHub resources or GitHub `self` | Implement signed webhooks or authenticated API alternatives |
 | CI/PR triggers | Supported, but provider configuration differs | Verify CI and configure GitHub PR validation/required checks |
 | Multi-repo checkout | Works with service connection | Add endpoint to resources |
+| Multi-project isolation | Connection permissions do not narrow the App installation's repository set | Choose an explicit trust-boundary pattern |
 | Throttling | API and Git traffic have distinct limits | Measure shared quota usage and bursts; define recovery |
 
 ### Migration Success Criteria
@@ -894,12 +1582,24 @@ Create a tracking document with:
 - [YAML templates in pipelines](https://learn.microsoft.com/en-us/azure/devops/pipelines/process/templates)
 - [Resources in YAML pipelines](https://learn.microsoft.com/en-us/azure/devops/pipelines/process/resources)
 - [GitHub service connection](https://learn.microsoft.com/en-us/azure/devops/pipelines/library/service-endpoints#github-service-connection)
+- [Authorize pipelines to use a service connection](https://learn.microsoft.com/en-us/azure/devops/pipelines/library/service-endpoints?view=azure-devops#authorize-pipelines)
+- [Manage Azure Pipelines service-connection security](https://learn.microsoft.com/en-us/azure/devops/pipelines/policies/permissions?view=azure-devops#set-service-connection-security-in-azure-pipelines)
+- [Share Service Endpoint REST API](https://learn.microsoft.com/en-us/rest/api/azure/devops/serviceendpoint/endpoints/share-service-endpoint?view=azure-devops-rest-7.1)
 - [Azure Pipelines GitHub App](https://github.com/apps/azure-pipelines)
+- [Azure Pipelines action for GitHub Actions](https://github.com/Azure/pipelines)
+- [Use service principals and managed identities in Azure DevOps](https://learn.microsoft.com/en-us/azure/devops/integrate/get-started/authentication/service-principal-managed-identity?view=azure-devops)
+- [Install a GitHub App from a third party](https://docs.github.com/en/apps/using-github-apps/installing-a-github-app-from-a-third-party)
+- [Review and modify installed GitHub Apps](https://docs.github.com/en/apps/using-github-apps/reviewing-and-modifying-installed-github-apps)
+- [Generate a GitHub App installation access token](https://docs.github.com/en/apps/creating-github-apps/authenticating-with-a-github-app/generating-an-installation-access-token-for-a-github-app)
+- [Manage GitHub deploy keys and machine users](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/managing-deploy-keys)
+- [Manage GitHub personal access tokens](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens)
 - [GitHub REST API rate limits](https://docs.github.com/en/rest/using-the-rest-api/rate-limits-for-the-rest-api)
 - [GitHub repository limits](https://docs.github.com/en/repositories/creating-and-managing-repositories/repository-limits)
 - [Pipeline processing and runs](https://learn.microsoft.com/en-us/azure/devops/pipelines/process/runs?view=azure-devops)
 - [Informational runs](https://learn.microsoft.com/en-us/azure/devops/pipelines/process/information-run?view=azure-devops)
 - [Secure repository access](https://learn.microsoft.com/en-us/azure/devops/pipelines/security/secure-access-to-repos?view=azure-devops)
+- [Protect a repository resource](https://learn.microsoft.com/en-us/azure/devops/pipelines/process/repository-resource?view=azure-devops)
+- [Azure DevOps roadmap: Control access to GitHub repositories](https://learn.microsoft.com/en-us/azure/devops/release-notes/roadmap/control-access-to-github-repos)
 - [Repository resource schema](https://learn.microsoft.com/en-us/azure/devops/pipelines/yaml-schema/resources-repositories-repository?view=azure-pipelines)
 - [Incoming webhook schema and authentication](https://learn.microsoft.com/en-us/azure/devops/pipelines/yaml-schema/resources-webhooks-webhook?view=azure-pipelines)
 - [GitHub Actions Multi-Repo Checkout Strategy (Phase 2)](17-github-actions-repos-checkout-strategy.md)
