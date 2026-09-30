@@ -24,6 +24,7 @@
    - [3.1 Targeting Repositories for Migration](#31-targeting-repositories-for-migration)
    - [3.2 Migration Strategy & Recommendations](#32-migration-strategy--recommendations)
    - [3.3 Handling Inactive/Archived Repositories](#33-handling-inactivearchived-repositories)
+   - [3.4 Archive Location: Azure Repos vs GitHub](#34-archive-location-azure-repos-vs-github)
 4. [Migration Process](#4-migration-process)
    - [4.1 Dry-Run / Trial Migrations](#41-dry-run--trial-migrations)
    - [4.2 Migration Duration & Timing](#42-migration-duration--timing)
@@ -260,20 +261,22 @@ The migration program typically provides:
 
 **Yes, it is possible to migrate repos to different GitHub organizations.** However, the `ado2gh generate-script` command targets a single GitHub organization per run. To migrate to multiple destinations:
 
-1. **Split your repository list** into groups by destination org
-2. **Run separate migration scripts** for each destination:
+1. **Split your repository list** into groups by destination org: copy the `repos.csv` from `inventory-report` into one CSV per destination (for example, `active-repos.csv` and `archive-repos.csv`)
+2. **Run separate migration scripts** for each destination, passing each CSV with `--repo-list`:
 
 ```bash
 # Active repos → primary org
 gh ado2gh generate-script \
   --ado-org ADO_ORG \
   --github-org primary-org \
+  --repo-list active-repos.csv \
   --output migrate-active.ps1
 
 # Archived repos → archive org
 gh ado2gh generate-script \
   --ado-org ADO_ORG \
   --github-org archive-org \
+  --repo-list archive-repos.csv \
   --output migrate-archived.ps1
 ```
 
@@ -299,6 +302,77 @@ GET https://dev.azure.com/{org}/{project}/_apis/git/repositories/{repoId}/pushes
 2. Filter repos where the last push date exceeds your inactivity threshold (e.g., 6+ months, 12+ months)
 3. Review the list with team leads to confirm repos can be archived
 4. Route inactive repos to the archive organization during migration
+
+---
+
+### 3.4 Archive Location: Azure Repos vs GitHub
+
+> **Recommendation:** Migrate inactive repositories that still have reference, audit, or compliance value directly into the GitHub archive organization, then archive them there. Do not keep them in Azure Repos as the long-term archive, and do not use **Disable Repository** as an archive: a disabled repository cannot be browsed or cloned, which is why it appears to disappear from the list. Keep the Azure Repos source **read-only (locked), not disabled**, only for a defined fallback window, then retire it.
+
+#### A. Options Compared
+
+| Option | Read, browse, clone | Reversible | Ongoing overhead | Best fit |
+|--------|---------------------|------------|------------------|----------|
+| **Migrate, then archive in GitHub** | ✅ Read-only code, PRs, branches, and tags; searchable; forkable | ✅ Repository admins can unarchive (the organization itself must not be archived) | Low; single system of record | Inactive repos with reference, audit, or compliance value |
+| **Keep in Azure Repos, read-only (locked)** | ✅ Browse and clone; no writes | ✅ Remove the Deny permissions | ADO org, projects, permissions, and access reviews must be maintained indefinitely | Short fallback window after migration |
+| **Keep in Azure Repos, disabled** | ❌ No browse, clone, PRs, or builds | ✅ Re-enable in Project settings | Same as above, with no usable access | Short quarantine step before deletion |
+| **Do not migrate, delete after retention** | ❌ | ⚠️ 30-day recycle bin only | None after deletion | Duplicates, experiments, confirmed no-value repos |
+
+#### B. What "Disable Repository" Does in Azure Repos
+
+- Microsoft describes the setting as disabling "access to the repository, including builds and pull requests" while keeping it "discoverable with a warning."
+- Server-side access is blocked, so the repository is no longer usable from the Repos hub. This is why it appears to disappear from the day-to-day list. Administrators manage and re-enable it under **Project settings → Repositories**. Existing local clones keep working, but nobody can read the history from the server.
+- The Repositories REST API returns `isDisabled: true`, which you can use to inventory disabled repositories.
+- **GEI does not migrate disabled repositories.** Never disable a repository that has not been migrated yet; re-enable it first if it needs to move.
+- **Conclusion:** disabling is a quarantine or pre-deletion state, not an archive.
+
+#### C. Making an Azure Repos Repository Read-Only (Archive in Place)
+
+Azure Repos has no native archive flag. Microsoft's tip for retiring a repository without deleting it is to rename it with an `_archived` prefix and lock its default branch, but a branch lock alone does not make the whole repository read-only. For a complete read-only state:
+
+1. **Update the README first** with a pointer to the new GitHub location. After the lock, nobody can commit the change without a temporary unlock.
+2. **Lock with GEI:** `gh ado2gh lock-ado-repo --ado-org ORG --ado-team-project PROJECT --ado-repo REPO` adds Deny permissions for the **Project Valid Users** group on the repository. It needs an ADO PAT (`ADO_PAT` or `--ado-pat`) with **Identity (Read)** and **Security (Manage)** scopes.
+3. **Or lock manually** at the repository security level for every group that can write: set **Contribute**, **Contribute to pull requests**, **Create branch**, **Create tag**, **Manage notes**, **Force push (rewrite history, delete branches and tags)**, **Bypass policies when pushing**, and **Bypass policies when completing pull requests** to **Deny**. Leave **Read** as **Allow**, and check for branch-level permission overrides.
+4. **Rename** with a consistent prefix or suffix (for example, `_archived-<name>` or `<name>-MIGRATED-TO-GITHUB`).
+5. **Disable pipelines and service hooks** that reference the repository.
+6. **Verify** effective permissions with **Why?** in the security dialog. Deny generally overrides Allow, but administrators can remove the Deny, so treat this as a process control rather than immutable storage.
+
+> ⚠️ **GEI script flags:** `generate-script --lock-ado-repos` locks each repository immediately **before** its migration, which enforces the code freeze. `--disable-ado-repos` disables each repository **after** a successful migration, and `--all` includes both. To keep the source readable during the fallback window, use `--lock-ado-repos` without `--disable-ado-repos` or `--all` (see [Locking Source Repositories After Migration](#locking-source-repositories-after-migration)).
+
+> ⚠️ **Licensing:** Readers still need **Basic** access. Stakeholder access provides no Azure Repos access in private projects. Since February 2025, Basic access is included for users with GitHub Enterprise Cloud licenses whose identities match in Microsoft Entra ID (see the [Business Case](./ADO-to-GitHub-Migration-Business-Case.md)).
+
+#### D. Recommended Decision Model
+
+| Repository category | GitHub destination | Azure Repos source |
+|---------------------|--------------------|--------------------|
+| **Active** | Target org by sensitivity (for example, Red or Green) | Lock for the fallback window, then disable, then delete per retention |
+| **Inactive with reference, audit, or compliance value** | Dedicated archive org (for example, `company-archive` in the [Red-Green-Sandbox-Archive model](./ado-to-github-structural-mapping.md)), then archive the repository | Lock for the fallback window, then disable, then delete per retention |
+| **Duplicate, experimental, or confirmed no-value** | Not migrated | Lock, then disable, then delete after owner sign-off |
+| **Unknown owner** | Not migrated yet | Lock and quarantine until an owner confirms the disposition |
+
+Suggested lifecycle for the Azure Repos copy (durations are planning recommendations, not vendor requirements):
+
+```text
+Locked before migration ──► Migrated ──► Locked fallback (90–180 days) ──► Disabled (e.g. 30 days) ──► Deleted (30-day recycle bin)
+```
+
+- Keep the lock period long enough to cover at least one release cycle and any audit that may need to compare source and target.
+- Confirm retention requirements with records management or legal before deletion. A `git clone --mirror` copy or `git bundle` preserves Git data only. If a legal hold applies, preserve Git LFS objects and any required PR or audit metadata separately, and get legal approval for the method.
+
+#### E. Archiving in GitHub After Migration
+
+GEI does not archive repositories during migration. Archive them as a post-migration step:
+
+```bash
+gh repo archive ARCHIVE_ORG/REPO --yes
+```
+
+- **Finish post-migration work first.** Archived repositories are read-only, so push Git LFS objects ([§1.2](#12-special-cases-git-lfs)), update the README and description, and set topics or custom properties before archiving. GitHub also recommends closing open issues and pull requests before archiving.
+- **Archive repositories, not the archive organization, while migration waves are running.** Archiving an organization makes every repository read-only, disables creating new repositories (which would block further GEI migrations into it), and prevents unarchiving individual repositories until the organization is unarchived. Consider organization-level archival only after the final wave.
+- **Keep security visibility.** Customers using GitHub Secret Protection can enable secret scanning on archived repositories.
+- **Access remains available.** Archived repositories, including their issues and pull requests, stay searchable. Users with access can still fork or star them.
+
+> 📖 **References:** [Archiving repositories](https://docs.github.com/en/repositories/archiving-a-github-repository/archiving-repositories) · [Archiving an organization](https://docs.github.com/en/organizations/managing-organization-settings/archiving-an-organization) · [Azure Repos: Disable repository setting](https://learn.microsoft.com/en-us/azure/devops/repos/git/repository-settings?view=azure-devops#disable-repository-setting) · [Azure Repos: Delete a repo (archive tip)](https://learn.microsoft.com/en-us/azure/devops/repos/git/delete-existing-repo?view=azure-devops) · [Stakeholder access](https://learn.microsoft.com/en-us/azure/devops/organizations/security/stakeholder-access?view=azure-devops)
 
 ---
 
@@ -389,14 +463,14 @@ GET https://dev.azure.com/{org}/{project}/_apis/git/repositories/{repoId}/pushes
 
 **GEI provides opt-in flags to lock or disable ADO repositories.** When generating a migration script, you can use:
 
-- `generate-script --lock-ado-repos` — locks source repos (read-only) after migration
-- `generate-script --disable-ado-repos` — disables source repos after migration
+- `generate-script --lock-ado-repos`: locks each source repo (read-only) immediately **before** its migration, enforcing the code freeze
+- `generate-script --disable-ado-repos`: disables each source repo **after** a successful migration. Disabled repos cannot be browsed or cloned, so omit this flag (and `--all`, which includes it) if the source should stay readable during a fallback window. See [§3.4](#34-archive-location-azure-repos-vs-github).
 
 If you are not using `generate-script`, you should manually lock the source repos in Azure DevOps after a successful migration:
 
-1. **Set repository permissions to read-only** — Deny "Contribute," "Force push," and "Create branch" for all groups
-2. **Rename the repository** (e.g., append `-MIGRATED-TO-GITHUB`) to signal the move
-3. **Update the README** with a redirect notice pointing to the new GitHub location
+1. **Update the README** with a redirect notice pointing to the new GitHub location (before locking)
+2. **Set repository permissions to read-only**: Deny "Contribute," "Contribute to pull requests," "Create branch," "Create tag," and "Force push" for all groups (full list in [§3.4 C](#c-making-an-azure-repos-repository-read-only-archive-in-place))
+3. **Rename the repository** (e.g., append `-MIGRATED-TO-GITHUB`) to signal the move
 4. **Disable associated pipelines** to prevent accidental builds
 
 ---
@@ -883,6 +957,9 @@ gh ado2gh wait-for-migration --migration-id MIGRATION_ID
 | Migrating repositories | [docs.github.com/en/migrations/ado/migrate-repositories-from-azure-devops-to-github-enterprise-cloud](https://docs.github.com/en/migrations/ado/migrate-repositories-from-azure-devops-to-github-enterprise-cloud) |
 | Reclaiming mannequins | [docs.github.com/en/migrations/.../reclaiming-mannequins](https://docs.github.com/en/migrations/using-github-enterprise-importer/completing-your-migration-with-github-enterprise-importer/reclaiming-mannequins-for-github-enterprise-importer) |
 | Troubleshooting | [docs.github.com/en/migrations/ado/troubleshoot-migrations-from-azure-devops-to-github-enterprise-cloud](https://docs.github.com/en/migrations/ado/troubleshoot-migrations-from-azure-devops-to-github-enterprise-cloud) |
+| Archiving repositories | [docs.github.com/en/repositories/archiving-a-github-repository/archiving-repositories](https://docs.github.com/en/repositories/archiving-a-github-repository/archiving-repositories) |
+| Archiving an organization | [docs.github.com/en/organizations/managing-organization-settings/archiving-an-organization](https://docs.github.com/en/organizations/managing-organization-settings/archiving-an-organization) |
+| Azure Repos repository settings (Disable repository) | [learn.microsoft.com/en-us/azure/devops/repos/git/repository-settings](https://learn.microsoft.com/en-us/azure/devops/repos/git/repository-settings?view=azure-devops#disable-repository-setting) |
 | ADO2GH CLI Extension | [github.com/github/gh-ado2gh](https://github.com/github/gh-ado2gh) — install via `gh extension install github/gh-ado2gh` |
 
 ---
@@ -897,6 +974,7 @@ This document answers all customer questions related to an ADO-to-GitHub migrati
 - Special cases — Git LFS objects and Go module/package handling
 - Customer effort and recommended team composition
 - Pre-migration analysis — inventory reports, targeting repos, detecting inactive repositories
+- Archive location decision — GitHub archive vs Azure Repos read-only vs disabled, and source repo retirement lifecycle
 - Trial (dry-run) migrations and validation in sandbox environments
 - Migration timing, duration estimates, and cutover best practices
 - Hybrid model — code hosted on GitHub with pipelines remaining in Azure DevOps
@@ -910,7 +988,7 @@ This document answers all customer questions related to an ADO-to-GitHub migrati
 
 ### Verification Process
 
-This report underwent **two rounds of independent multi-model review** (6 total review passes) to ensure accuracy before publication:
+This report underwent **three rounds of independent multi-model review** (8 total review passes) to ensure accuracy before publication:
 
 | Round | Model | Focus | Key Findings |
 |-------|-------|-------|-------------|
@@ -920,6 +998,8 @@ This report underwent **two rounds of independent multi-model review** (6 total 
 | **Round 2** | Claude Sonnet 4.6 | Final accuracy gate (source code cross-check) | Verified 24 technical claims against `gh-ado2gh` source code; found 2 remaining blockers — fixed |
 | **Round 2** | Claude Haiku 4.5 | Internal consistency and formatting | Found branch policy contradiction and CODEOWNERS ambiguity — resolved |
 | **Round 2** | GPT 5.3 Codex | Deep CLI flag verification (74 tool calls) | Confirmed same 3 issues as Sonnet — convergence across all models |
+| **Round 3** | GPT-6.1 Sol | Factual accuracy of §3.4 (archive location) against docs and `gh-gei` source | Found 4 blocking issues (`--lock-ado-repos` runs before, not after, migration; incomplete deny list; README after lock; Git-only legal hold) plus wording fixes; all corrected, including §3.3 `--repo-list` and §4.2 |
+| **Round 3** | Gemini 3.8 Flash | Consistency, anchors, and editorial review of §3.4 | Confirmed anchors, links, and tables; flagged archive-org model alignment, direct answer to the disable question, and §4.2 disable caveat; all addressed |
 
 ### Source Material Cross-Check
 
@@ -936,7 +1016,9 @@ The report was additionally cross-referenced against an independent Copilot Rese
 
 All CLI commands, flags, and syntax in this document were verified against the [`github/gh-ado2gh`](https://github.com/github/gh-ado2gh) source code (built from the [`github/gh-gei`](https://github.com/github/gh-gei) repository). Key verifications include:
 
-- ✅ `generate-script` flags: `--create-teams`, `--lock-ado-repos`, `--disable-ado-repos`, `--rewire-pipelines`
+- ✅ `generate-script` flags: `--create-teams`, `--lock-ado-repos`, `--disable-ado-repos`, `--rewire-pipelines`, `--repo-list`
+- ✅ Script ordering: `lock-ado-repo` runs before `migrate-repo`; `disable-ado-repo` runs after a successful migration; disabled repos are skipped by GEI
+- ✅ `lock-ado-repo` adds Deny permissions for the Project Valid Users group
 - ✅ `migrate-repo` flag: `--target-repo-visibility` (accepts `private`, `internal`, `public`)
 - ✅ `generate-mannequin-csv` and `reclaim-mannequin --csv` commands
 - ✅ Mannequin CSV header: `mannequin-user,mannequin-id,target-user` (strict validation)
