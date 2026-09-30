@@ -447,6 +447,7 @@ Configure alerting on privilege changes (Enterprise Owner / Organization Owner c
 - [Security and Compliance](./08-security-compliance.md)
 - [Security-by-Default Policies](./11-security-by-default-policies.md) — Enterprise / Organization / Repository tables
 - [GitHub Actions Security: Echo Command Injection](./17-github-actions-security-echo-command-injection.md) — Worked Actions hardening example
+- [GitHub Actions Security for IssueOps](./17-github-actions-security-issueops.md) — Hardening self-service automation that creates or updates GitHub resources
 - [Adoption Plan](./21-github-enterprise-adoption-plan.md) — §1.5 (Audit logging), §4.1–4.4 (GHAS), §7.1 (Security review checklist)
 
 ---

@@ -42,6 +42,7 @@ Comprehensive L400-level technical documentation for GitHub Enterprise Cloud adm
 - [GHAS Research and Implementation Plan](docs/25-ghas-research-and-plan.md) - Existing-documentation assessment, architecture decisions, two-model review, and validation evidence
 - [GHAS Reusable Workflows and Tools](docs/26-ghas-reusable-resources.md) - Evaluated advanced-security workflows, configs, onboarding helpers, dependency/SBOM tools, secret-pattern tooling, and source-level adoption caveats
 - [⚠️ GitHub Actions Security: Echo Command Injection](docs/17-github-actions-security-echo-command-injection.md) - Echo command injection vulnerability (HackerBot Claw attack) prevention in GitHub Actions workflows
+- [🔐 GitHub Actions Security for IssueOps and Resource Automation](docs/17-github-actions-security-issueops.md) - Hardening IssueOps workflows that create or update repositories, team access, and custom properties: untrusted input, schema parsing and allowlist validation, split GitHub App identities, environment approvals, digest-bound approvals, and a reference implementation
 
 ### AI & Copilot Governance
 - [🤖 GitHub Copilot Governance](docs/12-github-copilot-governance.md) - Enterprise Copilot policies, settings, content exclusions, license management, and best practices, including Copilot cloud agent governance and Copilot Spaces (formerly Knowledge Bases)
