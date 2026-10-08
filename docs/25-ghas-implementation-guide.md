@@ -824,7 +824,7 @@ Combine two native controls instead:
 | Layer | Where | Purpose |
 | --- | --- | --- |
 | Security configuration | Enterprise or organization security configurations | CodeQL default setup enabled, **Enforce** selected so repository admins cannot disable it, configuration set as the default for new repositories |
-| Shared analysis settings | Organization repository property `github-codeql-config-file` | One reviewed CodeQL configuration for the fleet, still without workflow files. See [Share a CodeQL configuration file](#share-a-codeql-configuration-file) |
+| Shared analysis settings | Organization-defined custom property `github-codeql-config-file`, with an organization-wide default value | The property is defined once at organization level and every repository inherits its default value, which points to one reviewed CodeQL configuration file in a central repository (for example `remote=example-org/security-config@main:codeql.yml`). Default setup reads the value on each run and merges that file into its generated configuration, still without workflow files. Explicit per-repository values override the default. See [Share a CodeQL configuration file](#share-a-codeql-configuration-file) |
 | Runners | Self-hosted or larger runners labeled `code-scanning` | Capacity, network access, and build support for managed analysis |
 | Merge gate | Organization or enterprise branch ruleset with **Require code scanning results** | Tool `CodeQL`; for example **Security alerts: High or higher** and **Alerts: Errors**; target `~DEFAULT_BRANCH` and protected release branches |
 
