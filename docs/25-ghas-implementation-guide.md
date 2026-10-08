@@ -28,6 +28,7 @@ repository. Default setup blocks those uploads. [S01], [S02], [S03]
 | Can one central Actions workflow scan all repositories weekly? | Yes, as a custom orchestrator with explicit repository access, branch enumeration, isolated workers, and target-attributed uploads. It is not workflow inheritance |
 | Can reusable workflows eliminate every caller? | No. Reuse centralizes implementation; ordinary event-driven use still requires a caller |
 | Can ruleset workflows remove local PR-check files? | Yes, for supported PR and merge-queue events. They do not supply scheduled scans |
+| Can CodeQL be required on PRs without any workflow file? | Yes. Default setup analyzes PRs and the **Require code scanning results** ruleset rule blocks merges. Running CodeQL actions from ruleset-required workflows is not supported and is not needed for this |
 | Can Dependabot be enabled everywhere centrally? | Alerts and security updates: yes. Version-update schedules and ecosystem paths still require repository configuration |
 | Can Dependabot credentials be centralized? | Yes. Organization private registries and organization Dependabot secrets are supported, with scoped repository access |
 | What remains local? | Build knowledge, manifest locations, maintained release branches, code ownership, remediation, and approved exceptions |
@@ -794,13 +795,164 @@ to repositories with unsupported languages and call the resulting blocked PRs
 successful security adoption. Security severity and diagnostic level
 (`error`, `warning`, `note`) are different dimensions. [S15]
 
+### Require CodeQL on PRs Without Local or Required Workflows
+
+A common misconception is that CodeQL PR gating needs either a workflow file
+in every repository or a ruleset-required workflow. Neither is needed.
+Running the CodeQL actions (`github/codeql-action/init` and `analyze`) from a
+ruleset-required workflow is not a supported code scanning setup path. The
+original required-workflows documentation stated that CodeQL is not supported
+in required workflows because CodeQL requires configuration at the repository
+level; the current ruleset documentation does not reintroduce support and
+instead points to default setup, advanced setup, and code scanning merge
+protection. [S40], [S15] That limitation does not prevent central enforcement.
+Combine two native controls instead:
+
+* **Default setup** runs a GitHub-managed analysis with no committed workflow.
+  It analyzes PRs targeting the default or protected branches (excluding PRs
+  from forks), pushes to those branches, and a weekly schedule. The CodeQL
+  check appears on the PR and new alerts are annotated on the diff.
+  [S02], [S03]
+* **Require code scanning results** in an organization or enterprise branch
+  ruleset blocks the merge when the required tool reports alerts at or above
+  the threshold, when its analysis is still in progress, or when the tool is
+  not configured for the repository. An unconfigured required tool therefore
+  fails closed. The rule is evaluated per tool, not per language: a completed
+  CodeQL analysis does not prove that every language in the PR was analyzed.
+  [S15]
+
+| Layer | Where | Purpose |
+| --- | --- | --- |
+| Security configuration | Enterprise or organization security configurations | CodeQL default setup enabled, **Enforce** selected so repository admins cannot disable it, configuration set as the default for new repositories |
+| Shared analysis settings | Organization repository property `github-codeql-config-file` | One reviewed CodeQL configuration for the fleet, still without workflow files. See [Share a CodeQL configuration file](#share-a-codeql-configuration-file) |
+| Runners | Self-hosted or larger runners labeled `code-scanning` | Capacity, network access, and build support for managed analysis |
+| Merge gate | Organization or enterprise branch ruleset with **Require code scanning results** | Tool `CodeQL`; for example **Security alerts: High or higher** and **Alerts: Errors**; target `~DEFAULT_BRANCH` and protected release branches |
+
+Create the merge gate in **Evaluate** mode first, review Rule Insights, then
+activate it. The `code_scanning` rule can also be managed through the rulesets
+REST API for repeatable, version-controlled policy.
+
+#### New-Language and Empty-Repository Gap
+
+Default setup selects languages from the content of the default branch. A PR
+that introduces a language not yet present there is analyzed only for the
+languages already detected; the new language is added after the change
+reaches the default branch. If the updated configuration fails validation,
+GitHub restores the previous configuration, so confirm the language actually
+appears in tool status. This applies to every repository, not only empty ones.
+The most visible case is the first code PR into a newly created, empty
+repository.
+
+Example: a repository whose default branch contains only C# receives a PR that
+adds JavaScript.
+
+| Stage | Default setup behavior |
+| --- | --- |
+| PR opened | Analysis runs for the configured languages only (C#). The new JavaScript/TypeScript files are not analyzed on this PR |
+| Merge gate | **Require code scanning results** sees a completed CodeQL analysis for C#, so the PR can merge even if the JavaScript contains vulnerabilities |
+| After merge | The push to the default branch triggers language detection; `javascript-typescript` is added and analyzed if the updated configuration succeeds. Alerts appear on the default branch, not on the PR that introduced the code |
+| Subsequent PRs | JavaScript/TypeScript is analyzed and gated normally |
+
+Validate this behavior in a pilot before relying on it, and choose one of the
+following postures per repository profile:
+
+* **Accept and remediate after merge.** The window lasts until the first
+  default-branch analysis that includes the new language. Track resulting
+  alerts through SLAs, security campaigns, or Copilot Autofix. Suitable for
+  most fleets.
+* **Detect language drift on the PR.** A ruleset-required workflow that does
+  not use CodeQL compares the file types changed in the PR with the languages
+  returned by `GET /repos/{owner}/{repo}/code-scanning/default-setup` and
+  fails when an unconfigured supported language appears. The job needs
+  `security-events: read` to query that endpoint. This forces review or an
+  audited bypass; it does not analyze the new code.
+* **Analyze every PR language.** Use the strict advanced-setup profile
+  described below.
+
+Close the empty-repository case with provisioning rather than
+per-repository workflows:
+
+1. Have the repository-creation process seed the default branch with the
+   intended language scaffold (for example a build manifest and a minimal
+   source file). Metadata-only content such as a README, `CODEOWNERS`, or
+   issue templates registers no CodeQL language, and workflow files under
+   `.github/workflows` register only the `actions` language.
+2. Attach the security configuration at creation time, then verify through
+   the default-setup API and tool status that the expected languages are
+   configured and a baseline analysis succeeded before the first PR is opened.
+3. Rely on the fail-closed behavior of the merge gate: a repository where
+   CodeQL is not configured cannot merge into protected branches until it is.
+   Target the ruleset with custom properties so documentation-only or
+   intentionally unsupported repositories are excluded and recorded as not
+   applicable rather than permanently blocked.
+4. Monitor tool status for repositories where a new language appears on the
+   default branch and confirm the next analysis includes it.
+
+#### Seeding Multiple Languages at Creation
+
+Language detection is not performed per PR. It runs against the default
+branch when default setup is enabled and again on later default-branch pushes.
+Seeding several languages at creation therefore configures all of them before
+the first PR, provided the baseline analyses succeed; seeding does not prevent
+the gap for languages added later. Exact detection timing is a product
+behavior to confirm in a pilot.
+
+Example: a repository seeded with C#, JavaScript, and Python source files.
+
+| Event | Analyzed languages |
+| --- | --- |
+| Repository created with seeded files | `csharp`, `javascript-typescript`, `python` configured from the start |
+| First and subsequent PRs | All three analyzed and gated |
+| PR adds `pom.xml` and Java sources | Still only the three seeded languages; Java is not analyzed on this PR |
+| After that PR merges | `java-kotlin` is added; later PRs include Java |
+
+Seeding considerations:
+
+* **Seed source files, not only manifests.** Detection is driven by code files.
+  A `pom.xml` alone is XML and does not register Java; include at least one
+  `.java`, `.cs`, `.js`/`.ts`, or `.py` file per intended language.
+* **Each configured language costs analysis time.** Every seeded language runs
+  its own CodeQL analysis on each PR and default-branch push, consuming Actions
+  minutes and lengthening PR checks. Seeding unused languages wastes capacity.
+* **Stub files add noise.** Placeholder code lives in the repository and teams
+  may delete it. Validate in a pilot whether removing the files changes the
+  configured languages.
+* **Coverage reporting can mislead.** A seeded but unused language appears as
+  covered. Record which languages were seeded so dashboards do not overstate
+  real coverage.
+
+Seed per stack rather than seeding every possible language. Offer provisioning
+templates per stack (for example .NET with JavaScript, Java with JavaScript, or
+Python), each containing minimal real source files for its languages. Handle
+languages introduced outside the template with one of the postures above.
+
+#### When Strict Coverage of Every PR Language Is Required
+
+If the residual new-language window is unacceptable, use advanced setup with a
+central reusable workflow and a minimal caller distributed by provisioning
+automation. CodeQL actions are supported in reusable workflows. Detect
+languages from the PR head checkout rather than from the repository languages
+API, which reflects the default branch. Protect the caller path with a push
+ruleset **Restrict file paths** rule (private and internal repositories),
+granting bypass only to the provisioning app. The **Require code scanning
+results** rule enforces findings for the tool, but because it is evaluated per
+tool, add a required validation check that compares the expected
+CodeQL-supported languages for the PR revision with the analyses actually
+processed for it. Default setup and advanced setup are
+mutually exclusive per repository, so assign these repositories a security
+configuration that does not enable default setup. [S15], [S16], [S38]
+
 ### Centrally Required Workflows
 
 Store the approved PR validation workflow in a protected central repository
 and select it in an organization ruleset's **Require workflows to pass before
 merging** rule. Configure repository access to the source workflow and runner
 groups. This is the native way to require a central PR workflow without copying
-it into every repository.
+it into every repository. Use it for non-CodeQL checks such as dependency
+review. In the native profile, CodeQL analysis is gated with default setup and
+the code scanning rule; advanced and external profiles supply their own PR
+analysis and use the same rule for the selected tool, as
+described above.
 
 The current rules documentation also supports ruleset workflows at enterprise
 scope; the organization-scoped procedure here remains suitable for individual
@@ -1489,6 +1641,10 @@ enterprise permissions, feature availability, or branch attribution.
 | Monorepo and compiled languages | Expected components, generated code, and dependency resolution validated |
 | Missing or unsupported language | Reported as a gap/not applicable, never a successful zero-finding analysis |
 | PR high-severity finding | Correct required tool blocks; clean reviewed change can merge |
+| PR gating with default setup only | Repository without any workflow file shows the CodeQL check on a feature-branch PR and the ruleset blocks a seeded high-severity finding |
+| First PR into a newly provisioned repository | Seeded scaffold language is analyzed on the first PR; a repository without CodeQL configured is blocked, not silently merged |
+| PR introducing a new language | Example: JavaScript added to a C#-only repository. Default setup analyzes only C# on the PR and adds JavaScript/TypeScript after merge; any drift check fires as designed, or the strict advanced-setup profile analyzes JavaScript on the PR |
+| Multi-language seeded repository | All seeded languages are configured with a successful baseline before the first PR; a language added later (for example Java) is analyzed only after merge; the observed configuration and analysis behavior after deleting seed files is recorded |
 | Fork PR and merge queue | Supported scans/checks run or a documented compensating policy blocks unsafe merging |
 | Dependency update | Alerts/security PRs work independently of version schedule; registry credentials and network access verified |
 | Organization OIDC registries | Dependabot authenticates successfully; CodeQL default setup uses separately supported non-OIDC access and resolves private dependencies; configured registry presence alone is not proof of access |
@@ -1544,6 +1700,7 @@ Dependabot defaults.
 * [S37: Adopting GHAS at scale][S37]
 * [S38: Configuring advanced setup][S38]
 * [S39: GitHub CLI workflow commands][S39]
+* [S40: Required workflows (legacy, GitHub Enterprise Cloud, archived) and CodeQL restriction][S40]
 
 [S01]: https://docs.github.com/en/get-started/learning-about-github/about-github-advanced-security
 [S02]: https://docs.github.com/en/code-security/concepts/code-scanning/setup-types
@@ -1584,3 +1741,4 @@ Dependabot defaults.
 [S37]: https://docs.github.com/en/code-security/tutorials/adopting-github-advanced-security-at-scale
 [S38]: https://docs.github.com/en/code-security/how-tos/find-and-fix-code-vulnerabilities/configure-code-scanning/configuring-advanced-setup-for-code-scanning
 [S39]: https://cli.github.com/manual/gh_workflow
+[S40]: https://web.archive.org/web/20231209162644/https://docs.github.com/en/enterprise-cloud@latest/actions/using-workflows/required-workflows#restrictions-and-behaviors-for-the-source-repository
