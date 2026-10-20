@@ -4,7 +4,7 @@
 
 > **Document status**
 >
-> - **Last reviewed:** 2026-05-19
+> - **Last reviewed:** 2026-10-20
 > - **Authorship:** Drafted with AI assistance (GitHub Copilot, multi-model review) and reviewed by a human maintainer before publication.
 > - **Sources:** Based on public documentation — primarily [docs.github.com](https://docs.github.com), [learn.microsoft.com](https://learn.microsoft.com), and official vendor blogs cited inline.
 > - **Verify before acting:** GitHub and Microsoft update product documentation continuously. Re-confirm against the live source pages before relying on this content for production decisions.
@@ -19,9 +19,10 @@
 4. [Migration Limitations](#migration-limitations)
 5. [Access Requirements](#access-requirements)
 6. [Migration Phases](#migration-phases)
-7. [Key Concepts](#key-concepts)
-8. [Post-Migration Tasks](#post-migration-tasks)
-9. [Official Documentation References](#official-documentation-references)
+7. [Migrating Large Repositories (2 GiB to 40 GiB)](#migrating-large-repositories-2-gib-to-40-gib)
+8. [Key Concepts](#key-concepts)
+9. [Post-Migration Tasks](#post-migration-tasks)
+10. [Official Documentation References](#official-documentation-references)
 
 ---
 
@@ -97,6 +98,8 @@ The following assets **remain in Azure DevOps** and are NOT migrated:
 |-------|-------|
 | Maximum Git repository size | 40 GiB (source code only, public preview) |
 | Maximum file size during migration | 400 MiB |
+
+For repositories larger than 2 GiB, see [Migrating Large Repositories (2 GiB to 40 GiB)](#migrating-large-repositories-2-gib-to-40-gib).
 
 ### Additional Limitations
 
@@ -292,6 +295,183 @@ Trial migrations help determine:
 
 ---
 
+## Migrating Large Repositories (2 GiB to 40 GiB)
+
+Repositories of 10 GiB or more can migrate with GitHub Enterprise Importer (GEI). GEI supports up to **40 GiB of Git source (public preview)**. The 2 GiB figure in the GitHub limits applies to a **single commit** and a **single push**, not to the total repository size. The 2 GiB per-commit limit still applies to GEI migrations. Validate every large repository with a trial migration before the production run.
+
+> [!IMPORTANT]
+> GEI measures the 40 GiB limit as **total blob size** reported by `git-sizer`. The size shown in Azure DevOps may differ, so measure each repository before planning.
+
+### Limits That Matter for Large Repositories
+
+| Limit | Value | Effect if exceeded |
+|-------|-------|--------------------|
+| Repository size (GEI, public preview) | 40 GiB total blob size | GEI cannot migrate the repository; shrink history or use the Git-only fallback |
+| Single file during migration | 400 MiB | Migration fails; move the file to Git LFS or remove it from history |
+| Single file after migration | 100 MiB | Migrates, but later pushes that add or modify a file this size are rejected |
+| Single commit | 2 GiB | Migration fails; split the commit or rewrite history |
+| Single push | 2 GiB | Applies to manual `git push`; the Git-only fallback must push in increments |
+| Git reference name | 255 bytes | Migration fails; rename the ref before migrating |
+| Git LFS objects | Not migrated by GEI | Push separately after migration; 5 GB maximum per LFS file on GitHub Enterprise Cloud |
+| Recommended repository size | < 1 GB ideal, < 5 GB strongly recommended | Larger repositories work, but GitHub may contact you about repository health |
+
+### GitHub Enterprise Cloud Considerations
+
+GEI migrates from Azure DevOps Cloud only into GitHub Enterprise Cloud, so this strategy is designed for GHEC. The size limits above apply to both GHEC on GitHub.com and GHEC with data residency (GHE.com). Check these GHEC settings before migrating large repositories:
+
+| Area | GitHub.com (GHEC) | GHE.com (data residency) |
+|------|-------------------|--------------------------|
+| `gh ado2gh` target | Default API URL | Add `--target-api-url https://api.SUBDOMAIN.ghe.com` to every command |
+| Git and LFS remotes (Steps 5 and 6 below) | `https://github.com/GITHUB_ORG/REPO.git` | `https://SUBDOMAIN.ghe.com/GITHUB_ORG/REPO.git` |
+| IP allow list | Add the GEI IP ranges for GitHub.com | Add the GEI IP ranges published for your GHE.com region |
+| LFS maximum file size | 5 GB | 5 GB |
+
+Additional GHEC checks:
+
+- GEI requires a personal access token (classic). It fails if the enterprise enforces the policy that restricts classic PATs from accessing organizations. Allow classic PATs for the migration account during the migration window.
+- With Enterprise Managed Users, the PAT must belong to a managed user account with the migrator role. Manual `git push` and `git lfs push` in Steps 5 and 6 below must also authenticate as a managed user.
+- Without Enterprise Managed Users, authorize the classic PAT for SAML single sign-on if the organization enforces it.
+- Temporarily disable IdP IP restrictions (for example, Entra ID Conditional Access) for the enterprise, and re-enable them after migration.
+- Make sure the enterprise Git LFS storage and bandwidth budget covers the LFS data you push in Step 5.
+
+### Step 1: Measure Each Repository
+
+Use a non-bare clone so that Git LFS commands work. Fetch all branches and tags.
+
+```bash
+git clone https://dev.azure.com/ORG/PROJECT/_git/REPO repo
+cd repo
+git fetch origin '+refs/heads/*:refs/remotes/origin/*' --tags
+
+# Total blob size (the 40 GiB check), largest blob, longest path
+git-sizer --verbose
+
+# List every blob above 100 MiB (use 419430400 for 400 MiB)
+git rev-list --objects --all \
+  | git cat-file --batch-check='%(objecttype) %(objectname) %(objectsize) %(rest)' \
+  | awk '$1=="blob" && $3>104857600' | sort -k3 -n -r
+
+# Files Git LFS would convert, and existing LFS object totals
+git lfs migrate info --everything --above=100MiB
+git lfs migrate info --everything --pointers=follow
+
+# Refs longer than 255 bytes
+git for-each-ref --format='%(refname)' | awk 'length($0)>255'
+```
+
+Record the following for each repository: total blob size, number of blobs above 100 MiB and above 400 MiB, LFS object count and size, number of pull requests, and any refs that are too long.
+
+> [!NOTE]
+> `git-sizer` does not measure the 2 GiB per-commit limit. Its "biggest checkout" value is the size of a full working tree, not the size of the change a commit introduces. Commits larger than 2 GiB are rare. They usually show up as a single commit that added a very large set of binaries. A trial migration confirms whether one exists.
+
+### Step 2: Classify Each Repository
+
+| Tier | Profile | Strategy | PR history |
+|------|---------|----------|------------|
+| A | Total blob size ≤ 40 GiB, no blob > 400 MiB, no commit > 2 GiB, no ref > 255 bytes | Migrate with GEI as-is. Blobs of 100 to 400 MiB in history migrate; move them to LFS on the branch tips after migration | Preserved |
+| B | Total blob size ≤ 40 GiB, but has blobs > 400 MiB or commits > 2 GiB | Rewrite history in place in Azure DevOps (convert binaries to LFS), then migrate with GEI | Preserved, with degraded diffs on rewritten commits |
+| C | Total blob size > 40 GiB | Shrink history (LFS conversion, remove generated artifacts, or split the monorepo) until under 40 GiB, then migrate with GEI | Preserved, with degraded diffs on rewritten commits |
+| D | Cannot be reduced below 40 GiB, or PR history is not required | Git-only fallback: push in increments below 2 GiB and keep Azure DevOps read-only as the archive | Not migrated |
+
+### Step 3: Remediate History (Tier B and C)
+
+> [!WARNING]
+> Rewriting history changes every downstream commit SHA. Existing pull requests, both open and completed, reference the original commits, so migrated PRs can lose diffs and review context. Every developer must re-clone after the rewrite. Run the rewrite inside an announced freeze window.
+
+To keep PR history, rewrite the **original** Azure DevOps repository in place. A new staging repository in Azure DevOps contains no pull requests, so GEI would migrate none. Use a staging repository only to rehearse the rewrite.
+
+```bash
+# Preview what would be converted
+git lfs migrate info --everything --above=100MiB
+
+# Option A: move every file above 100 MiB to LFS across all history
+git lfs migrate import --everything --above=100MiB
+
+# Option B: move specific binary types to LFS across all history
+git lfs migrate import --everything --include="*.zip,*.dll,*.iso,*.bin"
+
+# Option C: remove generated or unwanted content entirely (git filter-repo)
+git filter-repo --path build-output/ --invert-paths
+```
+
+`git lfs migrate import` does not allow `--above` together with `--include` or `--exclude`, so pick one option per run. `git filter-repo` removes the `origin` remote after it runs; re-add it before pushing.
+
+Push the rewritten history and the new LFS objects back to Azure DevOps. Push only branches and tags. Azure DevOps rejects updates to its internal `refs/pull/*` refs.
+
+```bash
+git lfs push --all origin
+git push --force origin 'refs/heads/*:refs/heads/*' 'refs/tags/*:refs/tags/*'
+```
+
+Force-pushing to Azure DevOps requires the **Force push** permission and a temporary bypass of branch policies. After the push, re-measure from a fresh clone. Azure DevOps may keep the old objects reachable for a while, so confirm the size with a trial migration rather than assuming it has dropped.
+
+### Step 4: Run Trial and Production Migrations
+
+- Run a trial migration into a sandbox organization for every repository larger than 5 GiB, and record the duration.
+- Add **Repository migrations** to the bypass list of every enterprise and organization ruleset (for example, file size or commit author email rules). The bypass applies only during the import, so rulesets stay enabled and apply to new contributions afterwards.
+- Migrate large repositories one at a time or in a small dedicated batch.
+- Use a PAT that will not expire during a multi-hour migration.
+- As a best practice, engage your GitHub account team before migrating repositories larger than 10 GiB.
+- For the production run, lock the Azure DevOps repository first so that no commits are lost during the migration.
+
+```bash
+gh ado2gh lock-ado-repo --ado-org ADO_ORG --ado-team-project PROJECT --ado-repo REPO
+
+gh ado2gh migrate-repo --ado-org ADO_ORG --ado-team-project PROJECT --ado-repo REPO \
+  --github-org GITHUB_ORG --github-repo REPO --queue-only
+# The command output includes the migration ID (RM_...)
+gh ado2gh wait-for-migration --migration-id MIGRATION_ID
+
+gh ado2gh download-logs --github-org GITHUB_ORG --github-repo REPO
+```
+
+If a large migration fails, review the migration log, fix the reported issue, and retry. If a retry within the 40 GiB public preview limit still fails, contact GitHub Support.
+
+### Step 5: Migrate Git LFS Objects
+
+GEI migrates LFS pointer files but not the LFS objects. Push them after the repository migration completes. This step downloads every LFS object from every ref, so provision enough disk space.
+
+```bash
+git clone https://dev.azure.com/ORG/PROJECT/_git/REPO repo
+cd repo
+git lfs fetch --all origin
+git remote add github https://github.com/GITHUB_ORG/REPO.git
+git lfs push --all github
+
+# Verify: clone from GitHub and check that LFS files resolve to real content
+git clone https://github.com/GITHUB_ORG/REPO.git verify && cd verify
+git lfs fsck --pointers
+```
+
+If you rewrote history in Step 3 and did not push the LFS objects to Azure DevOps, push them from the clone that performed the rewrite. Confirm GitHub LFS storage and bandwidth budgets before pushing large LFS sets.
+
+### Step 6: Git-Only Fallback (Tier D)
+
+When GEI cannot be used, push history in increments below 2 GiB. Pull requests, PR comments, and branch policies are **not** migrated with this approach. Blobs larger than 100 MiB must be removed or converted to LFS first, because a regular push rejects them.
+
+```bash
+git remote add github https://github.com/GITHUB_ORG/REPO.git
+
+# Push main in chunks along its first-parent history
+git log --first-parent --oneline --reverse refs/heads/main | awk 'NR % 1000 == 0' |
+  while read sha msg; do git push github +$sha:refs/heads/main; done
+
+# Push remaining branches and tags. Do not use --mirror: it would push refs/pull/*
+git push github 'refs/heads/*:refs/heads/*' 'refs/tags/*:refs/tags/*'
+git lfs push --all github
+```
+
+If a push returns `pack exceeds maximum allowed size`, reduce the step size. Long-lived branches with large unique history need their own incremental push before the final branch and tag push. A single commit larger than 2 GiB cannot be pushed at any step size and must be split first.
+
+### Step 7: Keep the Repository Healthy After Migration
+
+- Clone with `git clone --filter=blob:none` (partial clone) and use sparse checkout for day-to-day work.
+- Keep `actions/checkout` defaults (`fetch-depth: 1`, `lfs: false`) unless a workflow needs full history or LFS content.
+- Add push rulesets that block files above 100 MiB and restrict binary extensions so the repository does not grow back.
+- Convert any remaining 100 to 400 MiB files on branch tips to LFS with `git lfs migrate import --no-rewrite`.
+
+---
+
 ## Key Concepts
 
 ### Mannequins
@@ -367,6 +547,16 @@ After each migration completes, perform these follow-up tasks:
 |------|---------------------|
 | ADO2GH CLI Extension | Installed via `gh extension install github/gh-ado2gh` |
 | git-sizer | https://github.com/github/git-sizer |
+| Git LFS (`git lfs migrate`) | https://github.com/git-lfs/git-lfs |
+| git filter-repo | https://github.com/newren/git-filter-repo |
+
+### Large Repository References
+
+| Topic | URL |
+|-------|-----|
+| About large files on GitHub | https://docs.github.com/en/repositories/working-with-files/managing-large-files/about-large-files-on-github |
+| About Git Large File Storage | https://docs.github.com/en/repositories/working-with-files/managing-large-files/about-git-large-file-storage |
+| Troubleshooting the 2 GiB push limit | https://docs.github.com/en/get-started/using-git/troubleshooting-the-2-gb-push-limit |
 
 ---
 
