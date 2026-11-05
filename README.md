@@ -59,7 +59,8 @@ Comprehensive L400-level technical documentation for GitHub Enterprise Cloud adm
 
 ### Azure DevOps to GitHub Migration
 - [📊 ADO to GitHub Migration Assessment](docs/ado-to-github-migration-assessment.md) - Comprehensive mapping of ADO DevSecOps recommendations to GitHub equivalents
-- [📄 ADO to GitHub Migration Business Case (Markdown)](docs/ADO-to-GitHub-Migration-Business-Case.md) - Strategic business case for migrating from Azure DevOps to GitHub
+- [📄 ADO to GitHub Migration Business Case (Markdown)](docs/ADO-to-GitHub-Migration-Business-Case.md) - Strategic business case for migrating from Azure DevOps to GitHub, with an honest November 2026 feature comparison
+- [📋 ADO to GitHub Migration Executive Summary](docs/ADO-to-GitHub-Migration-Executive-Summary.md) - Two-page executive buy-in summary of the business case with the pilot decision request
 - [📄 ADO to GitHub Migration Business Case (HTML)](docs/ADO-to-GitHub-Migration-Business-Case.html) - Formatted business case document
 - [🔀 GitHub Enterprise Importer ADO Guide](docs/14-github-enterprise-importer-ado-guide.md) - Step-by-step guide for using GitHub Enterprise Importer with Azure DevOps
 - [� Azure Pipelines with GitHub Repos Integration](docs/15-azure-pipelines-github-repos-integration.md) - Impact analysis of using Azure Pipelines with GitHub repositories after migration

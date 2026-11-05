@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Business Case: Azure DevOps to GitHub Migration</title>
+<!-- Generated from ADO-to-GitHub-Migration-Business-Case.md. Edit the markdown, then regenerate. -->
 <style>
   :root {
     --gh-blue: #0969da;
@@ -653,910 +654,1551 @@
     th { background: #f6f8fa; }
     td, th { border-color: #d0d7de; }
   }
+
+  h4 { font-size: 1.05rem; color: var(--gh-text); margin: 24px 0 10px; }
+  pre { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 8px;
+        padding: 16px; overflow-x: auto; margin: 16px 0 24px; font-size: 0.85rem; line-height: 1.5; }
+  code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.88em;
+         background: rgba(110,118,129,0.2); padding: 2px 6px; border-radius: 4px; }
+  pre code { background: none; padding: 0; }
+  hr { display: none; }
+  .callout { border-left: 4px solid var(--gh-cyan); background: rgba(88,166,255,0.06);
+             border-radius: 0 8px 8px 0; padding: 14px 18px; margin: 20px 0; }
+  .callout p:last-child { margin-bottom: 0; }
+  .callout .callout-title { font-weight: 600; margin-bottom: 6px; font-size: 0.9rem; }
+  .callout-note { border-color: var(--gh-cyan); } .callout-note .callout-title { color: var(--gh-cyan); }
+  .callout-tip { border-color: var(--gh-green); background: rgba(63,185,80,0.06); }
+  .callout-tip .callout-title { color: var(--gh-green); }
+  .callout-important { border-color: var(--gh-purple); background: rgba(163,113,247,0.07); }
+  .callout-important .callout-title { color: var(--gh-purple); }
+  .callout-warning, .callout-caution { border-color: var(--gh-orange); background: rgba(210,153,34,0.07); }
+  .callout-warning .callout-title, .callout-caution .callout-title { color: var(--gh-orange); }
+  td.verdict-only { color: var(--gh-purple); font-weight: 600; }
+  .status-card { margin: 0 auto; max-width: 1100px; }
+
+  h4 { font-size: 1.05rem; color: var(--gh-text); margin: 24px 0 10px; }
+  pre { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 8px;
+        padding: 16px; overflow-x: auto; margin: 16px 0 24px; font-size: 0.85rem; line-height: 1.5; }
+  code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.88em;
+         background: rgba(110,118,129,0.2); padding: 2px 6px; border-radius: 4px; }
+  pre code { background: none; padding: 0; }
+  hr { display: none; }
+  .callout { border-left: 4px solid var(--gh-cyan); background: rgba(88,166,255,0.06);
+             border-radius: 0 8px 8px 0; padding: 14px 18px; margin: 20px 0; }
+  .callout p:last-child { margin-bottom: 0; }
+  .callout .callout-title { font-weight: 600; margin-bottom: 6px; font-size: 0.9rem; }
+  .callout-note { border-color: var(--gh-cyan); } .callout-note .callout-title { color: var(--gh-cyan); }
+  .callout-tip { border-color: var(--gh-green); background: rgba(63,185,80,0.06); }
+  .callout-tip .callout-title { color: var(--gh-green); }
+  .callout-important { border-color: var(--gh-purple); background: rgba(163,113,247,0.07); }
+  .callout-important .callout-title { color: var(--gh-purple); }
+  .callout-warning, .callout-caution { border-color: var(--gh-orange); background: rgba(210,153,34,0.07); }
+  .callout-warning .callout-title, .callout-caution .callout-title { color: var(--gh-orange); }
+  td.verdict-only { color: var(--gh-purple); font-weight: 600; }
+  .status-card { margin: 0 auto; max-width: 1100px; }
+
+  h4 { font-size: 1.05rem; color: var(--gh-text); margin: 24px 0 10px; }
+  pre { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 8px;
+        padding: 16px; overflow-x: auto; margin: 16px 0 24px; font-size: 0.85rem; line-height: 1.5; }
+  code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.88em;
+         background: rgba(110,118,129,0.2); padding: 2px 6px; border-radius: 4px; }
+  pre code { background: none; padding: 0; }
+  hr { display: none; }
+  .callout { border-left: 4px solid var(--gh-cyan); background: rgba(88,166,255,0.06);
+             border-radius: 0 8px 8px 0; padding: 14px 18px; margin: 20px 0; }
+  .callout p:last-child { margin-bottom: 0; }
+  .callout .callout-title { font-weight: 600; margin-bottom: 6px; font-size: 0.9rem; }
+  .callout-note { border-color: var(--gh-cyan); } .callout-note .callout-title { color: var(--gh-cyan); }
+  .callout-tip { border-color: var(--gh-green); background: rgba(63,185,80,0.06); }
+  .callout-tip .callout-title { color: var(--gh-green); }
+  .callout-important { border-color: var(--gh-purple); background: rgba(163,113,247,0.07); }
+  .callout-important .callout-title { color: var(--gh-purple); }
+  .callout-warning, .callout-caution { border-color: var(--gh-orange); background: rgba(210,153,34,0.07); }
+  .callout-warning .callout-title, .callout-caution .callout-title { color: var(--gh-orange); }
+  td.verdict-only { color: var(--gh-purple); font-weight: 600; }
+  .status-card { margin: 0 auto; max-width: 1100px; }
 </style>
 </head>
 <body>
 
-<!-- =================== HERO =================== -->
 <header class="hero">
   <div class="hero-badge">Executive Business Case</div>
   <h1>Azure DevOps to GitHub Migration</h1>
-  <p class="subtitle">Strategic, technical, and financial rationale for migrating to GitHub Enterprise Cloud -- unlocking agentic DevOps, development modernisation, enterprise governance, and standardisation.</p>
-  <div class="hero-meta">
-    <span>Prepared: March 2026</span>
-    <span></span>
-  </div>
+  <p class="subtitle">An honest November 2026 view: Azure DevOps now has AI features, but agentic delivery, security remediation at scale, and agent governance run on GitHub.</p>
+  <div class="hero-meta"><span>Last reviewed: 2026-11-04</span><span>Hybrid model: Azure Boards, Test Plans, and Pipelines retained</span></div>
 </header>
 
-<!-- =================== NAV =================== -->
 <nav class="toc">
   <div class="toc-inner">
-    <a href="#summary">Summary</a>
-    <a href="#strategic">Strategic Context</a>
-    <a href="#modernisation">Modernisation</a>
-    <a href="#standardisation">Standardisation</a>
-    <a href="#governance">Governance</a>
-    <a href="#agentic">Agentic DevOps</a>
-    <a href="#financial">Financial</a>
-    <a href="#migration">Migration</a>
-    <a href="#risk">Risk</a>
-    <a href="#recommendation">Recommendation</a>
-    <a href="#references">References</a>
+    <a href="#executive-summary">Summary</a><a href="#1-strategic-context-why-now">Why Now</a><a href="#2-github-vs-azure-devops-the-2026-feature-reality">Feature Reality</a><a href="#3-pillar-1-agentic-software-delivery">Agentic Delivery</a><a href="#4-pillar-2-standardisation-and-innersource">Standardisation</a><a href="#5-pillar-3-governance-and-security">Security</a><a href="#6-financial-analysis">Financial</a><a href="#7-for-developers-who-love-azure-devops">Developers</a><a href="#8-migration-approach-the-hybrid-strategy">Migration</a><a href="#9-risk-assessment-and-mitigation">Risk</a><a href="#10-executive-recommendation">Recommendation</a><a href="#11-references-and-sources">References</a>
   </div>
 </nav>
 
-<!-- =================== EXECUTIVE SUMMARY =================== -->
-<section id="summary">
+<section id="at-a-glance">
   <div class="container">
-    <h2>Executive Summary</h2>
-    <p>Microsoft's strategic direction is unequivocal: <strong>GitHub is the AI-native software development platform</strong> and the recommended home for source code. With 180+ million developers worldwide, GitHub Copilot powering 20 million users (90% of Fortune 100 companies), and Microsoft's own engineering teams migrating to GitHub, the convergence of innovation, AI, and developer productivity is happening on GitHub -- not Azure DevOps.</p>
-    <p>This business case presents the rationale for migrating source code repositories from Azure DevOps to GitHub Enterprise Cloud while continuing to leverage Azure Boards, Pipelines, and Test Plans where appropriate (the <strong>"hybrid model"</strong>). The migration unlocks <strong>agentic DevOps</strong>, <strong>development practice modernisation</strong>, <strong>enterprise governance at scale</strong>, and <strong>standardisation</strong> across the engineering organisation.</p>
-    <blockquote>
-      "Now is the time to migrate your Azure DevOps repositories to GitHub, so your teams can fully harness the power of Copilot while still benefiting from your existing investments in Azure Boards and Pipelines."<br>
-      -- <strong>Aaron Hallberg</strong>, Partner Director of Product, Azure DevOps (May 2025)
-    </blockquote>
-
-    <div class="card" style="background: linear-gradient(135deg, rgba(63,185,80,0.08), rgba(88,166,255,0.08)); border-color: rgba(63,185,80,0.3); margin: 24px 0;">
-      <h4 style="color: #3fb950; margin-bottom: 12px;">Forrester Total Economic Impact Study (2025)</h4>
-      <p style="font-size: 0.95rem;">Composite organisation: 5,000 developers, $24B revenue. <strong style="color:#3fb950;">376% ROI</strong> and <strong style="color:#3fb950;">$67.9M NPV</strong> over three years. 75% security task efficiency improvement. 50-75% reduction in IT audit preparation time. 46% of code now generated by AI.</p>
-      <p style="font-size:0.8rem; margin-bottom:0;"><a href="https://tei.forrester.com/go/github/enterprisecloud/" style="color: #58a6ff;">Forrester TEI of GHEC</a> | <a href="https://tei.forrester.com/go/GitHub/GitHubAdvancedSecuritySpotlight/" style="color: #58a6ff;">Forrester TEI GHAS Spotlight</a></p>
-    </div>
-
     <div class="stats-row">
-      <div class="stat-card">
-        <div class="stat-value">180M+</div>
-        <div class="stat-label">Developers on GitHub</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-value">20M</div>
-        <div class="stat-label">Copilot Users</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-value">90%</div>
-        <div class="stat-label">Fortune 100 Adoption</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-value">55%</div>
-        <div class="stat-label">Faster Coding Tasks</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-value">20K+</div>
-        <div class="stat-label">Actions Marketplace</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-value">376%</div>
-        <div class="stat-label">Forrester ROI</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-value">46%</div>
-        <div class="stat-label">Code Generated by AI</div>
-      </div>
+      <div class="stat-card"><div class="stat-value">376%</div><div class="stat-label">Forrester TEI ROI (3 yrs)</div></div>
+      <div class="stat-card"><div class="stat-value">$67.9M</div><div class="stat-label">Forrester TEI NPV</div></div>
+      <div class="stat-card"><div class="stat-value">40%+</div><div class="stat-label">PRs started by agents (Sept 2026)</div></div>
+      <div class="stat-card"><div class="stat-value">225M+</div><div class="stat-label">Developers on GitHub</div></div>
+      <div class="stat-card"><div class="stat-value">$0</div><div class="stat-label">Copilot seat for GHEC users (Copilot access)</div></div>
+      <div class="stat-card"><div class="stat-value">GitHub ahead</div><div class="stat-label">Cloud agents and managed security-remediation workflows</div></div>
     </div>
+    <div class="card status-card"><p><strong>Document status</strong></p>
+<ul>
+<li><strong>Last reviewed:</strong> 2026-11-04</li>
+<li><strong>Authorship:</strong> Drafted with AI assistance (GitHub Copilot, multi-model review) and reviewed by a human maintainer before publication.</li>
+<li><strong>Sources:</strong> Based on public documentation, primarily <a href="https://docs.github.com">docs.github.com</a>, <a href="https://learn.microsoft.com">learn.microsoft.com</a>, the <a href="https://learn.microsoft.com/en-us/azure/devops/release-notes/features-timeline">Azure DevOps roadmap</a>, and official vendor blogs cited inline.</li>
+<li><strong>Verify before acting:</strong> GitHub and Microsoft ship updates every few weeks, and several items below are in preview. Re-confirm against the live source pages before relying on this content for production or contractual decisions.</li>
+</ul></div>
   </div>
 </section>
 
-<!-- =================== STRATEGIC CONTEXT =================== -->
-<section id="strategic">
+<section id="sec-executive-summary">
   <div class="container">
-    <h2><span class="section-num">01</span>Strategic Context: Why Now?</h2>
-    <p class="section-lead">Microsoft has made its strategic investment direction clear through a series of official announcements and product decisions.</p>
+<h2 id="executive-summary">Executive Summary</h2>
+<p>Azure DevOps (ADO) is no longer an "AI-free" platform. During 2026 Microsoft brought GitHub Copilot code review to Azure Repos (public preview, with Lite and Balanced effort levels), added agentic Copilot Autofix to GitHub Advanced Security for Azure DevOps (limited public preview, closed to new participants; broader availability targeted for 2026 Q4), and shipped an Azure DevOps MCP Server. Any business case that still argues "AI only exists on GitHub" is out of date and will not survive scrutiny from engineers who know ADO well.</p>
+<p>The case for GitHub is stronger, and more honest, when framed differently:</p>
+<blockquote>
+<p><strong>AI features can be added to any platform. Agentic software delivery needs the code, the compute, the identity, the policy, and the audit trail to live in one place. That place is GitHub.</strong></p>
+</blockquote>
+<p>Four facts carry the decision:</p>
+<ol>
+<li>GitHub-native cloud agents only work where the code lives. The Copilot cloud agent (formerly "coding agent"), which turns any issue or work item into a draft pull request in the cloud, runs against GitHub repositories, as do Agentic Workflows and the third-party agents in Agent HQ (Claude, Codex). Local agent sessions in the IDE or Copilot app work with any Git host, but the cloud, asynchronous workflow does not. Even the Azure Boards "Create a pull request with Copilot" button requires the target repository to be on GitHub; Microsoft documents that Azure Repos is not supported for this integration. ADO's cloud-side agentic capability is limited to security fixes (Autofix, closed preview).</li>
+<li>The economics shifted in GitHub's favour. Since 28 October 2026, eligible GitHub Enterprise Cloud (GHEC) customers can move, through their account team, to "Copilot access": a $0 Copilot seat charge for GHEC-licensed users, with all usage billed as AI credits. Azure DevOps Basic is already included with GHEC licences. For eligible enterprises, one GHEC licence covers source control, Azure Boards access, and Copilot entitlement.</li>
+<li>GitHub burns down security debt; ADO mostly reports it. Both platforms now detect vulnerabilities with the same engines (CodeQL, secret scanning, push protection) at the same price. Detection is no longer the bottleneck; remediation is. ADO added "security campaigns" in April 2026, but there they are shared, filtered views of alerts. <strong>GitHub security campaigns</strong> are a full remediation workflow: the security team selects a related set of alerts across repositories, sets a due date and a campaign manager, notifies the right developers inside their normal workflow, has code scanning alerts submitted to Copilot Autofix automatically, and (with agentic Autofix enabled) assigns up to 25 code scanning alerts at a time to Copilot, which opens a fix pull request for review. Code scanning campaigns are GA; secret scanning campaigns are in public preview. ADO's Autofix is a closed preview, with "batch alert selection" on its 2026 Q4 roadmap.</li>
+<li>GitHub governs agents, not only code. Enterprise AI Controls and the agent control plane (GA February 2026) give administrators a dedicated AI admin role, enterprise-wide agent policies, and audit visibility into Copilot and third-party agent sessions. ADO governs its AI features (code review, Autofix) individually through org, project, and repo settings.</li>
+</ol>
+<p>Microsoft's own Azure DevOps product team states the direction plainly:</p>
+<blockquote>
+<p><em>"Over the last few years, we've encouraged customers to move their repositories from Azure Repos to GitHub, where the newest AI-powered and agentic development experiences land first."</em>
+Laura Jiang, Senior Product Manager, Azure DevOps (June 2026)</p>
+</blockquote>
+<p><strong>Recommendation:</strong> approve a funded pilot and phased migration of source code to GitHub Enterprise Cloud. Keep Azure Boards, Azure Test Plans, and (where they add value) Azure Pipelines and Azure Artifacts in a hybrid model, and govern AI spend with AI credit budgets from day one.</p>
+<p><strong>Key financial and adoption signals:</strong></p>
+<ul>
+<li><strong>376% ROI</strong> and <strong>$67.9M NPV</strong> over three years for a composite 5,000-developer enterprise (<a href="https://tei.forrester.com/go/github/enterprisecloud/">Forrester TEI of GitHub Enterprise Cloud</a>)</li>
+<li><strong>$48.3M</strong> developer efficiency and <strong>$9.3M</strong> security and compliance efficiency (three-year present value) in the same study</li>
+<li><strong>More than 40%</strong> of pull requests on GitHub started with an agent's first draft in September 2026, up from 17% in March (<a href="https://github.blog/news-insights/octoverse/octoverse-commits-pushes-reach-new-highs-in-2026-as-developers-build-with-agents/">Octoverse 2026</a>)</li>
+<li><strong>225M+ developers</strong> on GitHub (Octoverse 2026)</li>
+<li><strong>$0 Copilot seat charge</strong> for GHEC-licensed users under "Copilot access" (eligible enterprises; usage billed as AI credits)</li>
+</ul>
+<hr />
 
-    <h3>Microsoft's Official Position</h3>
-    <div class="timeline">
-      <div class="timeline-item">
-        <div class="tl-date">February 2025</div>
-        <div class="tl-title">Azure DevOps Basic license included free with GitHub Enterprise Cloud</div>
-        <div class="tl-desc">Unified licensing eliminates dual-platform cost barriers. <a href="https://devblogs.microsoft.com/devops/azure-devops-basic-usage-included-with-github-enterprise/">Azure DevOps Blog</a></div>
-      </div>
-      <div class="timeline-item">
-        <div class="tl-date">May 2025</div>
-        <div class="tl-title">"Azure DevOps with GitHub Repositories -- Your Path to Agentic AI"</div>
-        <div class="tl-desc">Official recommendation to migrate repos to GitHub for AI capabilities. <a href="https://devblogs.microsoft.com/devops/azure-devops-with-github-repositories-your-path-to-agentic-ai/">Azure DevOps Blog</a></div>
-      </div>
-      <div class="timeline-item">
-        <div class="tl-date">May 2025</div>
-        <div class="tl-title">Microsoft Build: "Agentic DevOps" keynote</div>
-        <div class="tl-desc">GitHub Copilot positioned as the future of the SDLC. <a href="https://azure.microsoft.com/en-us/blog/agentic-devops-evolving-software-development-with-github-copilot-and-microsoft-azure/">Azure Blog</a></div>
-      </div>
-      <div class="timeline-item">
-        <div class="tl-date">November 2025</div>
-        <div class="tl-title">ADO-to-GitHub Migration Playbook published</div>
-        <div class="tl-desc">Step-by-step migration guide released by Microsoft. <a href="https://devblogs.microsoft.com/all-things-azure/azure-devops-to-github-migration-playbook-unlocking-agentic-devops/">All Things Azure</a></div>
-      </div>
-    </div>
+  </div>
+</section>
+<section id="sec-1-strategic-context-why-now">
+  <div class="container">
+<h2 id="1-strategic-context-why-now">1. Strategic Context: Why Now</h2>
+<h3 id="11-microsofts-official-position">1.1 Microsoft's Official Position</h3>
+<div class="table-wrapper"><table>
+<thead>
+<tr>
+<th>Date</th>
+<th>Announcement</th>
+<th>Source</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Feb 2025</td>
+<td>Azure DevOps Basic licence included with GitHub Enterprise Cloud</td>
+<td><a href="https://devblogs.microsoft.com/devops/azure-devops-basic-usage-included-with-github-enterprise/">Azure DevOps Blog</a></td>
+</tr>
+<tr>
+<td>May 2025</td>
+<td>"Azure DevOps with GitHub Repositories: Your Path to Agentic AI"</td>
+<td><a href="https://devblogs.microsoft.com/devops/azure-devops-with-github-repositories-your-path-to-agentic-ai/">Azure DevOps Blog</a></td>
+</tr>
+<tr>
+<td>May 2025</td>
+<td>Build 2025 "Agentic DevOps" keynote</td>
+<td><a href="https://azure.microsoft.com/en-us/blog/agentic-devops-evolving-software-development-with-github-copilot-and-microsoft-azure/">Azure Blog</a></td>
+</tr>
+<tr>
+<td>Nov 2025</td>
+<td>ADO-to-GitHub Migration Playbook published by Microsoft</td>
+<td><a href="https://devblogs.microsoft.com/all-things-azure/azure-devops-to-github-migration-playbook-unlocking-agentic-devops/">All Things Azure</a></td>
+</tr>
+<tr>
+<td>Feb 2026</td>
+<td>Agent HQ: Claude and Codex join Copilot inside GitHub</td>
+<td><a href="https://github.blog/news-insights/company-news/pick-your-agent-use-claude-and-codex-on-agent-hq/">GitHub Blog</a></td>
+</tr>
+<tr>
+<td>Feb 2026</td>
+<td>Enterprise AI Controls and agent control plane GA</td>
+<td><a href="https://github.blog/changelog/2026-02-26-enterprise-ai-controls-agent-control-plane-now-generally-available/">GitHub Changelog</a></td>
+</tr>
+<tr>
+<td>Jun 2026</td>
+<td>Copilot Autofix for GHAzDO (limited preview) positioned for teams "not ready yet" to migrate</td>
+<td><a href="https://devblogs.microsoft.com/devops/copilot-autofix-for-github-advanced-security-for-azure-devops/">Azure DevOps Blog</a></td>
+</tr>
+<tr>
+<td>Q3 2026</td>
+<td>Copilot code review for Azure Repos (public preview)</td>
+<td><a href="https://devblogs.microsoft.com/devops/copilot-code-reviews-for-azure-repos-public-preview/">Azure DevOps Blog</a></td>
+</tr>
+<tr>
+<td>Oct 2026</td>
+<td>GitHub Universe: Copilot app, Copilot projects (preview), code review Max (preview) and Copilot approvals (GA), "Copilot access" at $0 seat for GHEC</td>
+<td><a href="https://github.blog/news-insights/company-news/github-universe-2026-evolving-every-layer-of-the-stack/">GitHub Blog</a></td>
+</tr>
+</tbody>
+</table></div>
+<p>The pattern is consistent: Microsoft brings selected AI capabilities to Azure DevOps so that customers who cannot migrate yet are not left behind, while the agentic platform (general-purpose cloud agents, multi-agent orchestration, automations, agent governance) is built on GitHub.</p>
+<h3 id="12-what-changed-in-2026-azure-devops-caught-up-on-some-ai-features">1.2 What Changed in 2026: Azure DevOps Caught Up on Some AI Features</h3>
+<p>A credible business case acknowledges where ADO has closed gaps. Earlier versions of this document claimed that ADO had no Copilot for Azure Repos and only third-party security scanning. Both statements are no longer accurate.</p>
+<div class="table-wrapper"><table>
+<thead>
+<tr>
+<th>Capability now in Azure DevOps</th>
+<th>Status (Nov 2026)</th>
+<th>Practical limits</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Copilot code review for Azure Repos</td>
+<td>Public preview</td>
+<td>Lite and Balanced effort levels (no Max); runs as an Azure Pipelines job on Microsoft-hosted agents or Managed DevOps Pools (self-hosted agents not supported); billed on a separate Azure meter</td>
+</tr>
+<tr>
+<td>GitHub Advanced Security for Azure DevOps (GHAzDO)</td>
+<td>GA</td>
+<td>Secret scanning with push protection, CodeQL code scanning, dependency scanning with EPSS prioritisation; malware alerts in preview</td>
+</tr>
+<tr>
+<td>Agentic Copilot Autofix for GHAzDO</td>
+<td>Limited public preview, closed to new participants</td>
+<td>In the limited preview, opens fix pull requests for code scanning alerts and dependency vulnerability alerts using repository instructions; broader availability targeted for 2026 Q4; AI detections for non-CodeQL languages and code-to-cloud with Defender listed as "Future"</td>
+</tr>
+<tr>
+<td>Azure DevOps MCP Server</td>
+<td>Local server available; remote endpoint in public preview</td>
+<td>Lets Copilot (in the IDE) read and act on work items, PRs, pipelines, and wikis</td>
+</tr>
+<tr>
+<td>Copilot in the IDE and the Copilot app's local sessions (completions, chat, agent mode, model routing)</td>
+<td>GA</td>
+<td>Host-agnostic: works against any Git remote, including Azure Repos</td>
+</tr>
+<tr>
+<td>Start Copilot from an Azure Boards work item</td>
+<td>GA</td>
+<td><strong>Requires a GitHub repository.</strong> Azure Repos is not supported</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="13-why-the-gap-persists">1.3 Why the Gap Persists</h3>
+<p>The remaining gap is structural, not a matter of a few missing checkboxes:</p>
+<ul>
+<li>An autonomous agent needs a sandboxed compute environment, a scoped identity, branch and ruleset enforcement, a network firewall, and an audit trail on the same platform that hosts the code. On GitHub these are platform primitives (Actions runners, GitHub Apps, rulesets, the agent firewall, the enterprise audit log). On ADO, AI features are delivered as add-ons that run inside Azure Pipelines jobs and are scoped to specific tasks (review, security fixes).</li>
+<li>GitHub ships the agentic layer first. Copilot code review on GitHub adds a multi-model Max level (preview) and GA Copilot approvals that count toward required reviews; ADO offers Lite and Balanced in preview.</li>
+<li>The ADO roadmap is focused on parity and platform hygiene (YAML pipeline parity, credential-theft reduction, Boards usability, Test Plans language support). These are valuable, but they are not general-purpose agentic-delivery investments.</li>
+</ul>
+<h3 id="14-the-risk-of-inaction">1.4 The Risk of Inaction</h3>
+<div class="table-wrapper"><table>
+<thead>
+<tr>
+<th>Risk</th>
+<th>What it means</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Agent gap</td>
+<td>Teams on Azure Repos cannot delegate backlog items to the Copilot cloud agent, cannot run Claude or Codex as GitHub-native agents, and cannot use cloud-orchestrated Copilot projects or automations. In September 2026 more than 40% of pull requests on GitHub started from an agent's draft.</td>
+</tr>
+<tr>
+<td>Lagging AI security coverage</td>
+<td>GHAzDO is close to parity on core scanning, and its "security campaigns" are shared alert views. It lacks campaign deadlines, owners, developer notifications, tracking issues, and automatic Autofix, and trails on Autofix availability, AI Scan for non-CodeQL languages, AI-application scanning, and scheduled dependency update pull requests. Security debt keeps accumulating faster than teams can fix it alert by alert.</td>
+</tr>
+<tr>
+<td>Split AI spend and policy</td>
+<td>Running Copilot on GitHub for some teams and Azure-metered Copilot code review on ADO for others splits budgets, policies, and telemetry across two systems.</td>
+</tr>
+<tr>
+<td>Talent</td>
+<td>Most developers already use GitHub; onboarding to ADO-specific workflows is an extra cost for every new hire.</td>
+</tr>
+</tbody>
+</table></div>
+<hr />
 
-    <p><strong>Key signal:</strong> The most transformative developer tooling and AI capabilities are landing on GitHub first (and often exclusively). GitHub Copilot's agentic capabilities -- autonomous coding agents, agentic code review, Copilot Autofix -- require code to be hosted on GitHub.</p>
+  </div>
+</section>
+<section id="sec-2-github-vs-azure-devops-the-2026-feature-reality">
+  <div class="container">
+<h2 id="2-github-vs-azure-devops-the-2026-feature-reality">2. GitHub vs Azure DevOps: The 2026 Feature Reality</h2>
+<p>The table compares <strong>source code hosting on GitHub Enterprise Cloud</strong> with <strong>Azure Repos</strong>, as of November 2026. "Verdict" is the honest call for a decision maker. Preview features are labelled; the recommendation in section 10 rests on GA capabilities, and previews are upside.</p>
+<h3 id="21-ai-and-agents">2.1 AI and Agents</h3>
+<div class="table-wrapper"><table>
+<thead>
+<tr>
+<th>Capability</th>
+<th>GitHub Enterprise Cloud</th>
+<th>Azure DevOps (Azure Repos)</th>
+<th>Verdict</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Copilot in the IDE and Copilot app local sessions (completions, chat, agent mode, Copilot Fusion model routing)</td>
+<td>GA</td>
+<td>GA (host-agnostic)</td>
+<td>Parity</td>
+</tr>
+<tr>
+<td>Copilot code review on pull requests</td>
+<td>GA (Lite, Balanced); Max multi-model review in preview; custom instructions; automatic review via rulesets</td>
+<td>Public preview (Lite, Balanced); Microsoft-hosted agents or Managed DevOps Pools only</td>
+<td>GitHub ahead</td>
+</tr>
+<tr>
+<td>Copilot approvals that count toward required reviews</td>
+<td>GA October 2026, scoped by file path</td>
+<td>Not available</td>
+<td class="verdict-only">GitHub only</td>
+</tr>
+<tr>
+<td>Copilot cloud agent (issue or work item to pull request, autonomously)</td>
+<td>GA, from issues, Azure Boards, Slack, Teams, Jira, VS Code, CLI, and mobile</td>
+<td>Not available for Azure Repos</td>
+<td class="verdict-only">GitHub only</td>
+</tr>
+<tr>
+<td>Agent HQ: third-party coding agents (Claude, Codex) alongside Copilot and custom agents</td>
+<td>Public preview (Copilot Pro+ / Enterprise)</td>
+<td>Not available</td>
+<td class="verdict-only">GitHub only</td>
+</tr>
+<tr>
+<td>Copilot projects (multi-repo parallel agent sessions) and cloud session continuity</td>
+<td>Public preview, October 2026</td>
+<td>Not available</td>
+<td class="verdict-only">GitHub only</td>
+</tr>
+<tr>
+<td>Copilot automations and GitHub Agentic Workflows (triage, CI failure analysis, docs, tests)</td>
+<td>Agentic Workflows GA; shared automations rolling out</td>
+<td>Not available (build your own pipeline scripts)</td>
+<td class="verdict-only">GitHub only</td>
+</tr>
+<tr>
+<td>Enterprise AI governance (AI admin role, agent policies, agent session audit)</td>
+<td>GA February 2026</td>
+<td>Org/project/repo enablement per feature; audit events for code review configuration</td>
+<td>GitHub ahead</td>
+</tr>
+<tr>
+<td>MCP integration</td>
+<td>GitHub MCP Server; managed MCP connections across app, CLI, VS Code, web, and code review</td>
+<td>Azure DevOps MCP Server (local; remote in preview)</td>
+<td>Both; complementary in a hybrid model</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="22-security-and-supply-chain">2.2 Security and Supply Chain</h3>
+<div class="table-wrapper"><table>
+<thead>
+<tr>
+<th>Capability</th>
+<th>GitHub Enterprise Cloud</th>
+<th>Azure DevOps (GHAzDO)</th>
+<th>Verdict</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Secret scanning with push protection</td>
+<td>GA</td>
+<td>GA</td>
+<td>Parity</td>
+</tr>
+<tr>
+<td>CodeQL code scanning</td>
+<td>GA; default setup with no YAML</td>
+<td>GA (pipeline tasks or default setup); PR-triggered default setup targeted 2026 Q4</td>
+<td>Near parity</td>
+</tr>
+<tr>
+<td>Security campaigns</td>
+<td>Remediation workflow across repositories: due date, campaign manager, developer notifications, tracking issues (code scanning), automatic Autofix submission (code scanning), and assignment of 1-25 code scanning alerts per agentic Autofix session to Copilot; requires Secret Protection or Code Security. Code scanning campaigns GA; secret scanning campaigns in public preview</td>
+<td>"Security campaigns" in security overview (April 2026) are shared, filtered alert views; "batch alert selection for Copilot Autofix" on the 2026 Q4 roadmap</td>
+<td>GitHub well ahead</td>
+</tr>
+<tr>
+<td>Copilot Autofix for code scanning</td>
+<td>GA, including batch fixes through campaigns</td>
+<td>Agentic fix PRs in limited public preview, closed to new participants</td>
+<td>GitHub ahead</td>
+</tr>
+<tr>
+<td>AI Scan for languages CodeQL does not cover (PHP, Bash, Terraform, Dockerfiles, Blazor, and more)</td>
+<td>GA for pull requests (advisory; does not block merges); whole-repository scan in preview</td>
+<td>Listed as "Future"</td>
+<td class="verdict-only">GitHub only</td>
+</tr>
+<tr>
+<td>Code scanning for AI applications</td>
+<td>Public preview, October 2026; currently detects indirect prompt injection, with more AI-specific risks planned</td>
+<td>Not available</td>
+<td class="verdict-only">GitHub only</td>
+</tr>
+<tr>
+<td>Monitoring for enterprise secrets leaked publicly anywhere on GitHub</td>
+<td>GA, October 2026</td>
+<td>Not available</td>
+<td>GitHub entitlement, not tied to repository hosting</td>
+</tr>
+<tr>
+<td>Dependency alerts</td>
+<td>Dependabot alerts; reachability analysis in preview (JavaScript/TypeScript)</td>
+<td>Dependency scanning alerts with EPSS; malware alerts in preview</td>
+<td>GitHub ahead</td>
+</tr>
+<tr>
+<td>Automated dependency update pull requests</td>
+<td>Dependabot security and scheduled version updates</td>
+<td>Autofix fix PRs for dependency alerts (closed preview); no scheduled version updates</td>
+<td>GitHub ahead</td>
+</tr>
+<tr>
+<td>Install-time package firewall for agents, runners, and IDEs</td>
+<td>Public preview October 2026 (npm first); a GHEC entitlement usable from any endpoint, including Azure Pipelines agents</td>
+<td>Not available</td>
+<td>GHEC entitlement, not tied to repository hosting</td>
+</tr>
+<tr>
+<td>Code quality (maintainability, reliability, coverage)</td>
+<td>GitHub Code Quality GA July 2026 (separately licensed)</td>
+<td>Code coverage branch policies; no native maintainability analysis</td>
+<td>GitHub ahead</td>
+</tr>
+<tr>
+<td>Security overview and posture dashboards</td>
+<td>GA, enterprise and organisation level</td>
+<td>Advanced Security overview with a combined alerts view across the organisation (April 2026)</td>
+<td>Near parity</td>
+</tr>
+<tr>
+<td>Pricing (per active committer per month)</td>
+<td>Secret Protection $19; Code Security $30</td>
+<td>Same SKUs and prices, billed via Azure</td>
+<td>Parity</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="23-developer-workflow-and-platform">2.3 Developer Workflow and Platform</h3>
+<div class="table-wrapper"><table>
+<thead>
+<tr>
+<th>Capability</th>
+<th>GitHub Enterprise Cloud</th>
+<th>Azure DevOps</th>
+<th>Verdict</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Pull requests</td>
+<td>Merge queue, stacked pull requests (GA October 2026), Copilot summaries and approvals, suggested changes</td>
+<td>Mature PR iterations, auto-complete, suggested changes, required reviewers by path</td>
+<td>GitHub ahead on velocity features; ADO PR UI remains well liked</td>
+</tr>
+<tr>
+<td>Enterprise-wide policy</td>
+<td>Enterprise and org rulesets, custom properties, evaluate mode, rule insights</td>
+<td>Branch policies per repo, cross-repo policies per project</td>
+<td>GitHub ahead</td>
+</tr>
+<tr>
+<td>Cloud development environments</td>
+<td>Codespaces</td>
+<td>Not native (Microsoft Dev Box is a separate Azure service)</td>
+<td>GitHub ahead</td>
+</tr>
+<tr>
+<td>CI/CD</td>
+<td>GitHub Actions (hosted runner prices cut up to 39% in January 2026)</td>
+<td>Azure Pipelines (mature checks, approvals, classic releases)</td>
+<td>Both; keep Pipelines where invested</td>
+</tr>
+<tr>
+<td>Work management</td>
+<td>Issues, Projects, sub-issues, issue types</td>
+<td>Azure Boards (process templates, hierarchies, delivery plans, analytics)</td>
+<td><strong>ADO ahead: keep Boards</strong></td>
+</tr>
+<tr>
+<td>Manual test management</td>
+<td>Not native</td>
+<td>Azure Test Plans</td>
+<td><strong>ADO ahead: keep Test Plans</strong></td>
+</tr>
+<tr>
+<td>Package management</td>
+<td>GitHub Packages, package firewall</td>
+<td>Azure Artifacts (upstream sources, universal packages)</td>
+<td>Context dependent: keep Artifacts if needed</td>
+</tr>
+<tr>
+<td>Ecosystem</td>
+<td>225M+ developers; Actions Marketplace with tens of thousands of actions</td>
+<td>Visual Studio Marketplace extensions</td>
+<td>GitHub ahead</td>
+</tr>
+<tr>
+<td>Data residency</td>
+<td>EU (including EFTA, Norway, and Switzerland), Australia, US, Japan</td>
+<td>Region selected per organisation</td>
+<td>Both</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Reading the tables:</strong> ADO wins on work management and manual testing, which is exactly why the hybrid model keeps them. Copilot in the IDE is the same on both platforms. GitHub wins wherever an agent or a security programme must act on the repository itself: autonomous pull requests, AI approvals, multi-agent choice, security campaigns with automatic and agentic Autofix, and agent governance.</p>
+<hr />
 
-    <h3>The Risk of Inaction</h3>
-    <div class="card-grid">
-      <div class="card">
-        <div class="card-icon">&#x26A0;</div>
-        <h4>Innovation Gap</h4>
-        <p>Teams on Azure DevOps Repos cannot leverage Copilot's most advanced capabilities: coding agent, agentic code review, Copilot Autofix, Agent HQ.</p>
-      </div>
-      <div class="card">
-        <div class="card-icon">&#x1F465;</div>
-        <h4>Talent Competitiveness</h4>
-        <p>180M+ developers use GitHub. Developer familiarity and preference increasingly skew toward GitHub workflows.</p>
-      </div>
-      <div class="card">
-        <div class="card-icon">&#x1F6E1;</div>
-        <h4>Technical Debt Accumulation</h4>
-        <p>Without AI-assisted security scanning, dependency management, and automated remediation, security and maintenance burdens grow.</p>
-      </div>
-      <div class="card">
-        <div class="card-icon">&#x23F3;</div>
-        <h4>Platform Stagnation</h4>
-        <p>Microsoft's investment trajectory favours GitHub for new features; Azure DevOps receives maintenance updates, not breakthrough innovation.</p>
-      </div>
-    </div>
+  </div>
+</section>
+<section id="sec-3-pillar-1-agentic-software-delivery">
+  <div class="container">
+<h2 id="3-pillar-1-agentic-software-delivery">3. Pillar 1: Agentic Software Delivery</h2>
+<h3 id="31-from-ai-assistant-to-agent-fleet">3.1 From AI Assistant to Agent Fleet</h3>
+<p>GitHub's Universe 2026 vision describes a delivery system where developers set direction and stay accountable, while agents implement and verify changes. The building blocks on GitHub (status in brackets):</p>
+<div class="table-wrapper"><table>
+<thead>
+<tr>
+<th>Capability</th>
+<th>What it does</th>
+<th>Business impact</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Copilot cloud agent (GA)</td>
+<td>Picks up an issue or Azure Boards work item, creates a branch, writes code and tests in an Actions sandbox, and opens a draft pull request for human review</td>
+<td>Routine backlog items move without consuming senior engineer time</td>
+</tr>
+<tr>
+<td>Copilot code review and approvals (GA; Max in preview)</td>
+<td>AI review on every pull request, with depth matched to risk; Copilot can approve low-risk paths and count toward required approvals</td>
+<td>Shorter review queues; humans focus on design and intent</td>
+</tr>
+<tr>
+<td>Agentic Workflows (GA) and Copilot automations (rolling out)</td>
+<td>Event-driven or scheduled AI workflows (issue triage, CI failure analysis, documentation, test improvement) that learn from outcomes</td>
+<td>Continuous maintenance without bespoke scripts</td>
+</tr>
+<tr>
+<td>Agent HQ (preview)</td>
+<td>Assign the same task to Copilot, Claude, Codex, or a custom agent and compare results inside GitHub</td>
+<td>Avoids lock-in to a single model vendor; best agent per task</td>
+</tr>
+<tr>
+<td>Copilot projects (preview)</td>
+<td>Parallel cloud agent sessions across multiple repositories, followed from phone, VS Code, CLI, or web</td>
+<td>Cross-repo changes (framework upgrades, API migrations) handled as one coordinated project</td>
+</tr>
+<tr>
+<td>GitHub intelligence</td>
+<td>Agents use repository conventions, custom instructions, skills, and history</td>
+<td>Changes follow team standards with less rework</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="32-why-this-matters-to-the-business">3.2 Why This Matters to the Business</h3>
+<ul>
+<li>The unit of output is moving from "lines of code" to "completed work items". GitHub's Octoverse 2026 reports that agent-involved pull requests merged within two weeks at a 90% rate in September 2026, compared with about 86% for other pull requests. This is an observational adoption signal, not a controlled productivity measurement.</li>
+<li>Agents scale with the backlog rather than with headcount, which changes capacity planning for maintenance-heavy portfolios.</li>
+<li>Repositories that stay on Azure Repos keep IDE Copilot, preview AI review, and (for some customers) preview security Autofix. They do not get the cloud agent, AI approvals, Agent HQ, Copilot projects, or Agentic Workflows. The pilot should compare "GitHub with agents" against "ADO plus the Copilot you already have", not against an AI-free baseline.</li>
+</ul>
+<h3 id="33-productivity-evidence">3.3 Productivity Evidence</h3>
+<div class="table-wrapper"><table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>Result</th>
+<th>Source</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Agent-started pull requests</td>
+<td>More than 40% of all pull requests on GitHub (Sept 2026)</td>
+<td><a href="https://github.blog/news-insights/octoverse/octoverse-commits-pushes-reach-new-highs-in-2026-as-developers-build-with-agents/">Octoverse 2026</a></td>
+</tr>
+<tr>
+<td>Coding task speed</td>
+<td>55% faster task completion in a controlled experiment (2022)</td>
+<td>GitHub research</td>
+</tr>
+<tr>
+<td>PR merge rate</td>
+<td>15% increase after Copilot adoption</td>
+<td><a href="https://github.blog/news-insights/research/research-quantifying-github-copilots-impact-in-the-enterprise-with-accenture/">Accenture joint study</a></td>
+</tr>
+<tr>
+<td>Task completion rate</td>
+<td>78% with Copilot vs 70% without</td>
+<td><a href="https://cacm.acm.org/research/measuring-github-copilots-impact-on-productivity/">Communications of the ACM</a></td>
+</tr>
+<tr>
+<td>Developer efficiency value</td>
+<td>$48.3M three-year present value for a 5,000-developer composite</td>
+<td><a href="https://tei.forrester.com/go/github/enterprisecloud/">Forrester TEI</a></td>
+</tr>
+</tbody>
+</table></div>
+<div class="callout callout-note"><div class="callout-title">Note</div><p>Earlier studies measured constrained task completion and enterprise PR and build outcomes, not cloud-agent throughput. Set a baseline (lead time, PR cycle time, backlog throughput) during the pilot rather than relying on vendor averages.</p>
+</div>
+<h3 id="34-modernised-developer-workflow">3.4 Modernised Developer Workflow</h3>
+<p><strong>Before (Azure Repos with IDE Copilot):</strong></p>
+<pre><code class="language-text">Developer -&gt; picks work item -&gt; codes with IDE assistant -&gt; opens PR -&gt;
+optional Copilot review (preview) -&gt; human review -&gt; pipeline -&gt; deploy
+</code></pre>
+<p><strong>After (GitHub with agents, Azure Boards retained):</strong></p>
+<pre><code class="language-text">Work item in Azure Boards -&gt; &quot;Create a pull request with Copilot&quot; -&gt;
+cloud agent drafts PR on GitHub -&gt; Copilot code review + CodeQL (+ advisory AI Scan) -&gt;
+Autofix proposes fixes -&gt; developer reviews and merges -&gt;
+Azure Pipelines or Actions deploy -&gt; Agentic Workflows triage follow-up issues
+</code></pre>
+<hr />
+
+  </div>
+</section>
+<section id="sec-4-pillar-2-standardisation-and-innersource">
+  <div class="container">
+<h2 id="4-pillar-2-standardisation-and-innersource">4. Pillar 2: Standardisation and InnerSource</h2>
+<h3 id="41-enterprise-wide-consistency-with-rulesets">4.1 Enterprise-Wide Consistency with Rulesets</h3>
+<p>GitHub Enterprise Cloud provides enterprise-level rulesets: centrally managed policy collections that enforce consistent standards across every repository and organisation.</p>
+<div class="table-wrapper"><table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Enterprise rulesets</td>
+<td>Baseline protections across every default branch: required pull requests, reviews, status checks, linear history</td>
+</tr>
+<tr>
+<td>Custom properties</td>
+<td>Classify repositories (production, innersource, legacy, sandbox) and target governance rules dynamically</td>
+</tr>
+<tr>
+<td>Evaluate mode</td>
+<td>Trial a ruleset in monitoring mode before enforcement</td>
+</tr>
+<tr>
+<td>Required workflows (ruleset rule)</td>
+<td>Mandate specific Actions workflows (security scans, compliance checks) to pass before merge</td>
+</tr>
+<tr>
+<td>Automatic Copilot code review</td>
+<td>Request AI review on targeted repositories through rulesets</td>
+</tr>
+<tr>
+<td>Commit metadata rules</td>
+<td>Enforce commit message formats, author email domains, and signed commits</td>
+</tr>
+<tr>
+<td>Push rules</td>
+<td>Restrict by file path, extension, and size to block binaries or oversized assets</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="42-innersource-at-scale">4.2 InnerSource at Scale</h3>
+<ul>
+<li>Internal repository visibility makes code discoverable across the enterprise</li>
+<li>Fork-and-pull-request contribution works across team boundaries</li>
+<li>CODEOWNERS routes reviews to domain experts automatically</li>
+<li>Repository templates and starter workflows standardise new projects</li>
+<li>The Actions Marketplace provides reusable, composable automation</li>
+<li>Codespaces gets new developers productive in minutes, not days</li>
+<li>Shared Copilot automations and custom agents let teams share proven AI workflows</li>
+</ul>
+<h3 id="43-unified-toolchain-in-the-hybrid-model">4.3 Unified Toolchain in the Hybrid Model</h3>
+<div class="table-wrapper"><table>
+<thead>
+<tr>
+<th>Aspect</th>
+<th>Azure DevOps today</th>
+<th>Target state</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Code hosting</td>
+<td>Azure Repos</td>
+<td>GitHub repositories</td>
+</tr>
+<tr>
+<td>CI/CD</td>
+<td>Azure Pipelines</td>
+<td>Azure Pipelines (retained) and GitHub Actions (new and migrated workloads)</td>
+</tr>
+<tr>
+<td>Security scanning</td>
+<td>GHAzDO or third-party</td>
+<td>GitHub Secret Protection and Code Security (including AI Scan); GitHub Code Quality licensed separately where needed</td>
+</tr>
+<tr>
+<td>Package management</td>
+<td>Azure Artifacts</td>
+<td>Azure Artifacts and/or GitHub Packages; package firewall (preview) for installs from any endpoint</td>
+</tr>
+<tr>
+<td>Work management</td>
+<td>Azure Boards</td>
+<td>Azure Boards (retained, linked to GitHub with AB# and Copilot integration)</td>
+</tr>
+<tr>
+<td>Test management</td>
+<td>Azure Test Plans</td>
+<td>Azure Test Plans (retained)</td>
+</tr>
+<tr>
+<td>AI assistance</td>
+<td>IDE Copilot; Copilot code review (preview); Autofix (closed preview)</td>
+<td>Agent platform: cloud agent, code review with approvals, Autofix, Agentic Workflows, Agent HQ (preview)</td>
+</tr>
+</tbody>
+</table></div>
+<hr />
+
+  </div>
+</section>
+<section id="sec-5-pillar-3-governance-and-security">
+  <div class="container">
+<h2 id="5-pillar-3-governance-and-security">5. Pillar 3: Governance and Security</h2>
+<h3 id="51-github-advanced-security">5.1 GitHub Advanced Security</h3>
+<h4 id="code-security-codeql-and-ai">Code Security (CodeQL and AI)</h4>
+<ul>
+<li>Static analysis for injection, XSS, insecure deserialisation, and other vulnerability classes across the major languages</li>
+<li>Results inline in pull requests so developers fix before merge</li>
+<li>Copilot Autofix proposes remediation for CodeQL alerts; security campaigns (section 5.2) turn those fixes into a managed remediation programme</li>
+<li>AI Scan for pull requests (GA October 2026) covers languages and formats CodeQL does not, including PHP, Bash, Terraform, Dockerfiles, and Blazor. Findings are advisory with suggested fixes; they do not fail the code scanning check or block merges, and they do not run on fork or Dependabot pull requests. Whole-repository AI Scan is in public preview</li>
+<li>Code scanning for AI applications (public preview, October 2026) currently detects indirect prompt injection in agent and LLM code, with more AI-specific risk categories planned</li>
+</ul>
+<h4 id="secret-protection">Secret Protection</h4>
+<ul>
+<li>Detection of 200+ secret types, AI-assisted password detection, and custom patterns</li>
+<li>Push protection blocks secrets before they reach the repository. A classifier that blocks secrets without a predefined format is in public preview (October 2026); it is off by default, requires AI-detected secrets and push protection, and consumes AI credits</li>
+<li>Public monitoring (GA October 2026) alerts the enterprise when its secrets are exposed publicly anywhere on GitHub</li>
+<li>Delegated bypass and audit-ready alert tracking</li>
+</ul>
+<h4 id="supply-chain">Supply Chain</h4>
+<ul>
+<li>Dependency graph, SBOM export, and Dependabot alerts</li>
+<li>Reachability analysis (public preview, JavaScript and TypeScript) ranks alerts by whether your code calls the vulnerable function</li>
+<li>Dependabot security and scheduled version update pull requests</li>
+<li>Package firewall (public preview, npm first) blocks known malware, critical vulnerabilities, and brand-new package versions at install time for developers, CI runners (including Azure Pipelines agents), and coding agents</li>
+</ul>
+<h4 id="code-quality-ga-july-2026-10-per-active-committer-plus-ai-usage">Code Quality (GA July 2026, $10 per active committer plus AI usage)</h4>
+<ul>
+<li>CodeQL plus AI detection of maintainability and reliability issues, with org-level dashboards and coverage metrics</li>
+</ul>
+<p><strong>Measured outcomes:</strong></p>
+<ul>
+<li>$9.3M three-year present value from security and compliance efficiency for the 5,000-developer composite (<a href="https://tei.forrester.com/go/github/enterprisecloud/">Forrester TEI</a>)</li>
+<li>Interviewee evidence of broader SAST coverage and security-process benefits (<a href="https://tei.forrester.com/go/GitHub/GitHubAdvancedSecuritySpotlight/">Forrester TEI Spotlight: GHAS and Copilot</a>); treat individual interviewee figures as anecdotes, not forecasts</li>
+</ul>
+<div class="callout callout-important"><div class="callout-title">Important</div><p>GHAzDO offers the same core scanning engines and the same per-committer prices on Azure Repos, and Microsoft is previewing agentic Autofix there. The security argument for GitHub is not "scanning vs no scanning". It is <strong>remediation at scale</strong>: security campaigns with deadlines, owners, and automatic Autofix, GA Autofix with agentic assignment to Copilot, plus AI Scan, AI-application scanning, Dependabot updates, and one policy and audit plane for code and agents.</p>
+</div>
+<h3 id="52-fixing-security-debt-at-scale-security-campaigns">5.2 Fixing Security Debt at Scale: Security Campaigns</h3>
+<p>Most enterprises do not lack security findings; they lack the capacity to fix them. Thousands of open alerts sit in dashboards, and security teams spend their time chasing owners instead of reducing risk. Every scanner on the market, including GHAzDO, now finds the same classes of vulnerabilities. The differentiator is how quickly findings turn into merged fixes.</p>
+<p>GitHub security campaigns are built for that problem. Azure DevOps uses the same name for something lighter: since April 2026, GHAzDO "security campaigns" let administrators create and share filtered views of alerts in the security overview. GitHub's campaigns are a managed remediation workflow.</p>
+<div class="table-wrapper"><table>
+<thead>
+<tr>
+<th>Step</th>
+<th>What happens on GitHub</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1. Select</td>
+<td>The security team picks a related set of alerts (for example, every SQL injection alert, starting from a built-in template) across repositories in the organisation</td>
+</tr>
+<tr>
+<td>2. Commit</td>
+<td>The campaign gets a name, a due date, and a campaign manager for questions and reviews</td>
+</tr>
+<tr>
+<td>3. Notify</td>
+<td>Developers with write access are notified and see the campaign alerts in their normal workflow; for code scanning campaigns, tracking issues can be created per repository</td>
+</tr>
+<tr>
+<td>4. Fix</td>
+<td>Code scanning alerts in the campaign are submitted to Copilot Autofix automatically (suggestions are generated where Autofix can produce one). Alerts can be assigned to developers or, with agentic Autofix enabled, assigned to Copilot in groups of 1-25; each assignment starts one agent session that opens one fix pull request and requests review. Agentic Autofix consumes AI credits and Actions minutes</td>
+</tr>
+<tr>
+<td>5. Track</td>
+<td>Campaign progress is visible to the security team in the campaign view and available through the REST API for reporting</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Why this matters to the business:</strong></p>
+<ul>
+<li>Security debt becomes a time-boxed programme with an owner and a deadline, which is what auditors and boards ask for.</li>
+<li>Fix work moves from scarce senior engineers to Autofix and Copilot, with humans reviewing the pull requests.</li>
+<li>Developers fix a cluster of similar issues at once, which builds skills and avoids context switching.</li>
+<li>Secret scanning campaigns (public preview) extend the same model to leaked credentials.</li>
+</ul>
+<p><strong>What Azure DevOps offers instead:</strong> a combined alerts view and shareable filtered alert views ("security campaigns") in the security overview, plus Copilot Autofix in a closed preview. Teams can track remediation as Azure Boards work items, but GHAzDO has no campaign deadlines, owners, developer notifications, or automatic Autofix, and "batch alert selection for Copilot Autofix" is listed for 2026 Q4.</p>
+<div class="callout callout-tip"><div class="callout-title">Tip</div><p>Make a security campaign part of the pilot. Pick one high-impact vulnerability class in the pilot repositories, run it as a campaign with a two-week deadline, and report alerts closed, mean time to remediate, and engineer hours spent. This gives the security leadership direct evidence, not vendor claims.</p>
+</div>
+<h3 id="53-governing-ai-agents">5.3 Governing AI Agents</h3>
+<p>As agents write a growing share of code, the governance question shifts from "who pushed this?" to "which agent, under whose authority, with what permissions?"</p>
+<div class="table-wrapper"><table>
+<thead>
+<tr>
+<th>Control</th>
+<th>GitHub Enterprise Cloud</th>
+<th>Azure DevOps</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Dedicated AI administrator role</td>
+<td>Yes (enterprise custom role)</td>
+<td>No</td>
+</tr>
+<tr>
+<td>Enterprise policies for agents, models, and MCP servers</td>
+<td>Yes</td>
+<td>Per-feature enablement (Copilot code review, Autofix) at org, project, or repo level</td>
+</tr>
+<tr>
+<td>Audit of agent sessions, including third-party agents</td>
+<td>Yes</td>
+<td>Audit events for Copilot code review configuration</td>
+</tr>
+<tr>
+<td>Agent firewall and sandboxed execution</td>
+<td>Yes (Actions-based sandbox)</td>
+<td>Autofix and code review run as pipeline jobs; no general-purpose cloud agent</td>
+</tr>
+<tr>
+<td>AI spend budgets</td>
+<td>Enterprise, org, cost-centre, and SKU-level budgets for AI credits</td>
+<td>Azure Cost Management budgets on the Copilot meters, filterable by project tag</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="54-identity-audit-and-compliance">5.4 Identity, Audit, and Compliance</h3>
+<p><strong>Enterprise Managed Users (EMU)</strong> with Microsoft Entra ID:</p>
+<ul>
+<li>The identity provider is the single source of truth for user lifecycle</li>
+<li>SCIM deprovisioning suspends the GitHub account when Entra ID sends the request (subject to provisioning-cycle latency)</li>
+<li>Entra ID Conditional Access and Privileged Identity Management are supported</li>
+<li>Managed users cannot create public content or collaborate outside the enterprise; plan for this restriction if teams contribute to open source</li>
+</ul>
+<p><strong>Audit log streaming</strong> to Azure Event Hubs, Microsoft Sentinel, Splunk, and other SIEMs, with API and Git events, supports SOC 2, ISO 27001, and FedRAMP evidence collection.</p>
+<div class="table-wrapper"><table>
+<thead>
+<tr>
+<th>Capability</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Enterprise audit log</td>
+<td>User, repository, security, and agent events with API access and streaming</td>
+</tr>
+<tr>
+<td>Ruleset history and insights</td>
+<td>Change history, rollback, bypass analytics</td>
+</tr>
+<tr>
+<td>Data residency</td>
+<td>GHE.com in the EU (including EFTA, Norway, and Switzerland), Australia, US, and Japan</td>
+</tr>
+<tr>
+<td>Network controls</td>
+<td>IP allow lists and Entra Conditional Access policy support</td>
+</tr>
+<tr>
+<td>Bypass controls</td>
+<td>Auditable bypass lists for rulesets and push protection; pair with Entra PIM for time-bound elevation</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="55-governance-comparison">5.5 Governance Comparison</h3>
+<div class="table-wrapper"><table>
+<thead>
+<tr>
+<th>Governance area</th>
+<th>Azure DevOps</th>
+<th>GitHub Enterprise Cloud</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Branch protection</td>
+<td>Per-repository branch policies; cross-repo policies per project</td>
+<td>Enterprise, organisation, and repository rulesets with layered inheritance</td>
+</tr>
+<tr>
+<td>Secret prevention</td>
+<td>Push protection (GHAzDO)</td>
+<td>Push protection, delegated bypass, AI password detection</td>
+</tr>
+<tr>
+<td>Code scanning</td>
+<td>CodeQL via pipeline tasks or default setup (GHAzDO); Autofix in closed preview</td>
+<td>CodeQL default setup, AI Scan, GA Autofix</td>
+</tr>
+<tr>
+<td>Security remediation programmes</td>
+<td>Shared filtered alert views ("security campaigns"); remediation can be tracked manually in Azure Boards</td>
+<td>Security campaigns with due dates, campaign managers, notifications, automatic Autofix, and agentic Autofix assignment to Copilot</td>
+</tr>
+<tr>
+<td>Dependency security</td>
+<td>Alerts with EPSS; malware alerts in preview</td>
+<td>Alerts, Dependabot update PRs, reachability (preview)</td>
+</tr>
+<tr>
+<td>AI governance</td>
+<td>Per-feature enablement</td>
+<td>Enterprise AI Controls and agent control plane</td>
+</tr>
+<tr>
+<td>Audit logging</td>
+<td>Organisation auditing and streaming in public preview ("Auditing GA" listed as "Future" on the ADO roadmap)</td>
+<td>Enterprise audit log (GA) with streaming, Git events, and agent activity</td>
+</tr>
+<tr>
+<td>Policy model</td>
+<td>Organisation and project settings</td>
+<td>Enterprise to organisation to repository cascade</td>
+</tr>
+</tbody>
+</table></div>
+<hr />
+
+  </div>
+</section>
+<section id="sec-6-financial-analysis">
+  <div class="container">
+<h2 id="6-financial-analysis">6. Financial Analysis</h2>
+<h3 id="61-licensing-in-november-2026">6.1 Licensing in November 2026</h3>
+<div class="table-wrapper"><table>
+<thead>
+<tr>
+<th>Component</th>
+<th>Price</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GitHub Enterprise Cloud</td>
+<td>$21/user/month</td>
+<td>Includes Azure DevOps Basic access for matched Entra ID identities</td>
+</tr>
+<tr>
+<td>Azure DevOps Basic</td>
+<td><strong>Included</strong> with GHEC</td>
+<td>Keeps Boards, Pipelines, Test Plans viewing, and Artifacts access</td>
+</tr>
+<tr>
+<td>Copilot access (new, eligible enterprises via account team)</td>
+<td><strong>$0 seat</strong> for GHEC-licensed users</td>
+<td>No included credits; usage billed as AI credits from first use; same features and models as Copilot Enterprise; seats must still be assigned</td>
+</tr>
+<tr>
+<td>Copilot Standalone (part of Copilot access)</td>
+<td>$10/user/month</td>
+<td>For users without a GHEC licence; usage billed separately</td>
+</tr>
+<tr>
+<td>Copilot Business</td>
+<td>$19/user/month</td>
+<td>Includes 1,900 AI credits per user, pooled</td>
+</tr>
+<tr>
+<td>Copilot Enterprise</td>
+<td>$39/user/month</td>
+<td>Includes 3,900 AI credits per user, pooled</td>
+</tr>
+<tr>
+<td>GitHub Secret Protection</td>
+<td>$19/active committer/month</td>
+<td>Same price on GHAzDO</td>
+</tr>
+<tr>
+<td>GitHub Code Security</td>
+<td>$30/active committer/month</td>
+<td>Same price on GHAzDO; AI Scan consumes Code Security AI credits</td>
+</tr>
+<tr>
+<td>GitHub Code Quality</td>
+<td>$10/active committer/month</td>
+<td>Separately licensed; plus AI usage and Actions minutes</td>
+</tr>
+</tbody>
+</table></div>
+<div class="callout callout-note"><div class="callout-title">Note</div><p>Since June 2026, Copilot Business and Copilot Enterprise use <strong>GitHub AI credits</strong> (1 credit = $0.01) based on token consumption. Inline code completions and next edit suggestions remain unlimited and do not consume credits. Copilot code review also consumes Actions minutes. The billing model is chosen for the whole enterprise: "Copilot access" cannot be combined with Copilot Business or Enterprise seats in the same enterprise. Model the trade-off (predictable seats with included credits vs. no seat and pure consumption) with your account team before choosing.</p>
+</div>
+<h3 id="62-why-the-economics-favour-github">6.2 Why the Economics Favour GitHub</h3>
+<ul>
+<li>For eligible enterprises on "Copilot access", one GHEC licence covers GitHub, Azure DevOps Basic, and Copilot entitlement, with spend driven only by AI credit consumption. On ADO alone, Copilot code review and Autofix are additional Azure meters, and the cloud agent is not available at any price.</li>
+<li>Organisations already licensing GHAzDO can move the same Secret Protection and Code Security SKUs to GitHub at the same price and gain GA Autofix, AI Scan, and Dependabot updates.</li>
+<li>AI credits are pooled and governed by budgets at enterprise, organisation, and cost-centre level, which supports chargeback.</li>
+<li>GitHub-hosted runner prices fell by up to 39% in January 2026. A proposed per-minute platform charge for self-hosted runners was announced in December 2025 and then postponed; finance should track its status.</li>
+<li>Build the decision on incremental hybrid TCO (GHEC and AI credits, minus retired ADO and tooling costs) rather than on vendor ROI studies alone.</li>
+</ul>
+<h3 id="63-forrester-total-economic-impact">6.3 Forrester Total Economic Impact</h3>
+<p>Forrester's TEI study of GitHub Enterprise Cloud (commissioned by GitHub; composite: global organisation with 5,000 developers) quantified three-year, risk-adjusted present values:</p>
+<div class="table-wrapper"><table>
+<thead>
+<tr>
+<th>Benefit category</th>
+<th>Impact</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Total ROI</td>
+<td><strong>376%</strong> over three years</td>
+</tr>
+<tr>
+<td>Net present value</td>
+<td><strong>$67.9M</strong></td>
+</tr>
+<tr>
+<td>Developer efficiency and productivity</td>
+<td>$48.3M</td>
+</tr>
+<tr>
+<td>Revenue impact of faster time to market</td>
+<td>$18.4M</td>
+</tr>
+<tr>
+<td>Security and compliance efficiency</td>
+<td>$9.3M</td>
+</tr>
+<tr>
+<td>Retiring the legacy tech stack</td>
+<td>$8.2M</td>
+</tr>
+<tr>
+<td>Faster time to productivity for new developers</td>
+<td>$1.7M</td>
+</tr>
+</tbody>
+</table></div>
+<p><em>Sources: <a href="https://tei.forrester.com/go/github/enterprisecloud/">Forrester TEI of GitHub Enterprise Cloud</a> and <a href="https://tei.forrester.com/go/GitHub/GitHubAdvancedSecuritySpotlight/">Forrester TEI Spotlight: GHAS and Copilot</a>. Treat composite results as a benchmark, not a forecast for your estate. The study does not quantify cloud-agent throughput, which the pilot should measure directly.</em></p>
+<h3 id="64-migration-cost-considerations">6.4 Migration Cost Considerations</h3>
+<div class="table-wrapper"><table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Estimate</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Migration tooling</td>
+<td>Free (GitHub Enterprise Importer, <code>gh ado2gh</code> CLI)</td>
+</tr>
+<tr>
+<td>Migration effort</td>
+<td>Minutes for small repositories to several hours for large repositories with thousands of pull requests; run a trial migration to calibrate (see the QA guide, section 4.2)</td>
+</tr>
+<tr>
+<td>Pipeline rewiring</td>
+<td>Script-assisted with <code>--rewire-pipelines</code>; validate every pipeline. Multi-repo pipelines, custom checkout steps, and environment-specific configuration typically need fixes (QA guide, section 4.4)</td>
+</tr>
+<tr>
+<td>TFVC repositories</td>
+<td>Convert to Git before migration</td>
+</tr>
+<tr>
+<td>Git LFS and large repositories</td>
+<td>LFS objects are transferred separately; very large repositories may need history clean-up</td>
+</tr>
+<tr>
+<td>Training and enablement</td>
+<td>Microsoft Learn and GitHub learning pathways (free)</td>
+</tr>
+<tr>
+<td>Expert services</td>
+<td>Optional GitHub Expert Services for complex estates</td>
+</tr>
+<tr>
+<td>User reclamation</td>
+<td>One-time mannequin remapping after migration</td>
+</tr>
+<tr>
+<td>AI consumption</td>
+<td>Budget AI credits explicitly; start with conservative budgets per cost centre and adjust from pilot telemetry</td>
+</tr>
+</tbody>
+</table></div>
+<hr />
+
+  </div>
+</section>
+<section id="sec-7-for-developers-who-love-azure-devops">
+  <div class="container">
+<h2 id="7-for-developers-who-love-azure-devops">7. For Developers Who Love Azure DevOps</h2>
+<p>Skeptical developers are usually right about something. Address the objection directly, acknowledge what ADO does well, and show what changes on their first day.</p>
+<h3 id="71-objections-and-honest-answers">7.1 Objections and Honest Answers</h3>
+<div class="table-wrapper"><table>
+<thead>
+<tr>
+<th>What developers say</th>
+<th>Honest answer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>"Azure Boards is better than GitHub Issues."</td>
+<td>Agreed for many teams, so Boards stays. You keep your process template, backlogs, and delivery plans. You gain the ability to click "Create a pull request with Copilot" on a work item, which only works when the repository is on GitHub.</td>
+</tr>
+<tr>
+<td>"ADO now has Copilot code review, so why move?"</td>
+<td>It is a public preview (Lite and Balanced) running as a pipeline job, and it is genuinely useful. On GitHub, review is GA, adds a multi-model Max level (preview), and Copilot approvals can count toward required reviews. More importantly, review is one capability among many: the cloud agent, Agentic Workflows, GA Autofix, and AI Scan all act on the same pull request.</td>
+</tr>
+<tr>
+<td>"Our pipelines work. I do not want to rewrite YAML."</td>
+<td>You do not have to. Azure Pipelines builds GitHub repositories, and <code>gh ado2gh</code> rewires pipelines. Move workloads to Actions opportunistically, not as a big bang.</td>
+</tr>
+<tr>
+<td>"I prefer the ADO pull request UI."</td>
+<td>Fair: ADO iterations, comment status, and suggestions are well liked. GitHub adds merge queue, stacked pull requests (GA; repositories using stacks saw 9% more merged code than peers), and Copilot approvals. Run the pilot and let the team compare on real work.</td>
+</tr>
+<tr>
+<td>"Migration will lose history and links."</td>
+<td>GitHub Enterprise Importer migrates Git history, branches, tags, pull requests with comments, and AB# work item links, within documented limits (LFS objects move separately; branch policies are recreated as rulesets). Boards and Test Plans data never moves.</td>
+</tr>
+<tr>
+<td>"Test Plans has no GitHub equivalent."</td>
+<td>Correct, so Test Plans stays and keeps working with the build outputs.</td>
+</tr>
+<tr>
+<td>"This is a vendor push."</td>
+<td>Microsoft owns both products and is the one recommending the move. The Azure DevOps team itself describes GitHub as where agentic experiences "land first".</td>
+</tr>
+<tr>
+<td>"It will cost more."</td>
+<td>GHEC includes Azure DevOps Basic, and eligible enterprises can move to "Copilot access" with a $0 Copilot seat charge. Spend is governed with AI credit budgets. Validate with an incremental TCO model during the pilot.</td>
+</tr>
+<tr>
+<td>"Agents will flood us with low-quality PRs."</td>
+<td>Agent PRs are drafts that require human approval and must pass the same rulesets, CodeQL, and required checks as human PRs (AI Scan adds advisory findings). Octoverse 2026 shows agent PRs merging at a slightly higher two-week rate than other PRs.</td>
+</tr>
+<tr>
+<td>"We have TFVC or huge monorepos."</td>
+<td>Correct concern. TFVC must be converted to Git first, and very large repositories may exceed importer limits until history is trimmed. These can block a specific repository's migration until resolved, so schedule them in later waves.</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="72-what-developers-keep">7.2 What Developers Keep</h3>
+<ul>
+<li>Azure Boards work items, queries, sprints, dashboards, and AB# links</li>
+<li>Azure Test Plans, test suites, and manual test runs</li>
+<li>Azure Pipelines definitions, service connections, environments, and approvals</li>
+<li>Azure Artifacts feeds and upstream sources</li>
+<li>The same Git workflow and the same IDE</li>
+</ul>
+<h3 id="73-what-developers-gain-on-day-one">7.3 What Developers Gain on Day One</h3>
+<ul>
+<li>Assign a well-scoped work item or issue to the cloud agent and review a draft PR instead of writing boilerplate</li>
+<li>AI review on every PR, and Copilot approvals for low-risk paths your admins allow</li>
+<li>Autofix suggestions for CodeQL alerts in the PR, plus advisory AI Scan findings for Terraform, Dockerfiles, and scripts</li>
+<li>Dependabot PRs that keep dependencies current without manual tracking</li>
+<li>Codespaces for consistent, ready-to-code environments</li>
+<li>Merge queue and stacked PRs for breaking large changes into reviewable pieces</li>
+<li>Skills on the platform most of the industry uses (EMU accounts stay inside the enterprise; open source work uses a separate personal account)</li>
+</ul>
+<div class="callout callout-tip"><div class="callout-title">Tip</div><p>Recruit two or three respected ADO champions into the pilot. Let them choose the repositories, define the success criteria, and present the results. Peer evidence persuades developers more than any slide.</p>
+</div>
+<hr />
+
+  </div>
+</section>
+<section id="sec-8-migration-approach-the-hybrid-strategy">
+  <div class="container">
+<h2 id="8-migration-approach-the-hybrid-strategy">8. Migration Approach: The Hybrid Strategy</h2>
+<h3 id="81-recommended-architecture">8.1 Recommended Architecture</h3>
+<pre><code class="language-text">+--------------------------------------------------+
+|              GITHUB ENTERPRISE CLOUD              |
+|                                                  |
+|  +------------+  +------------+  +------------+  |
+|  |   Source   |  |  GitHub    |  |  GitHub    |  |
+|  |   Code     |  |  Actions   |  |  Advanced  |  |
+|  |  (Repos)   |  |  (CI/CD)   |  |  Security  |  |
+|  +------------+  +------------+  +------------+  |
+|  +------------+  +------------+  +------------+  |
+|  |  Copilot   |  | Agent HQ &amp; |  |  AI        |  |
+|  |  cloud     |  | automations|  |  Controls  |  |
+|  |  agent     |  |            |  |  &amp; audit   |  |
+|  +------------+  +------------+  +------------+  |
++----------------------+---------------------------+
+                       | AB# links, Copilot from work items,
+                       | pipeline triggers, MCP
++----------------------v---------------------------+
+|              AZURE DEVOPS (RETAINED)              |
+|                                                  |
+|  +------------+  +------------+  +------------+  |
+|  |   Azure    |  |   Azure    |  |   Azure    |  |
+|  |   Boards   |  |  Pipelines |  | Test Plans |  |
+|  | (Work Mgmt)|  | (Optional) |  | (Testing)  |  |
+|  +------------+  +------------+  +------------+  |
++--------------------------------------------------+
+</code></pre>
+<h3 id="82-migration-phases">8.2 Migration Phases</h3>
+<h4 id="phase-1-pilot-4-6-weeks">Phase 1: Pilot (4-6 weeks)</h4>
+<ul>
+<li>Select 2-3 representative repositories with ADO champions on the team</li>
+<li>Migrate with <code>gh ado2gh</code>; validate Azure Boards and Azure Pipelines integration</li>
+<li>Enable Copilot (seat-based plans or "Copilot access"; the choice applies enterprise-wide), Copilot code review, and GHAS</li>
+<li>Connect Azure Boards to GitHub and test "Create a pull request with Copilot" from work items</li>
+<li>Run one security campaign on a high-impact vulnerability class with a two-week deadline</li>
+<li>Set AI credit budgets and capture baseline DORA, PR, and security remediation metrics</li>
+</ul>
+<h4 id="phase-2-expansion-8-12-weeks">Phase 2: Expansion (8-12 weeks)</h4>
+<ul>
+<li>Migrate remaining repositories in waves grouped by team or product</li>
+<li>Enable enterprise rulesets in evaluate mode, then enforce</li>
+<li>Roll out Copilot, GHAS, and Code Quality organisation-wide</li>
+<li>Configure Enterprise AI Controls: AI admin role, agent and MCP policies, third-party agent enablement</li>
+<li>Establish InnerSource practices and repository standards</li>
+</ul>
+<p><strong>Governance implementation priority (from the <a href="./ado-to-github-migration-assessment.md">ADO migration assessment</a>):</strong></p>
+<ul>
+<li>P1 critical: enable EMU with SCIM from Entra ID; stream audit logs to Sentinel; require fine-grained PATs; restrict outside collaborators; set the default <code>GITHUB_TOKEN</code> to read-only; implement JIT access with Entra PIM; create custom repository roles; require admin approval for GitHub App installs; define AI credit budgets and agent policies</li>
+<li>P2 enhanced: environment protection rules for deployment approvals; runner groups for workload isolation; quarterly dormant-user reviews; enable the package firewall for CI and agents</li>
+<li>P3 operational excellence: Actions security hardening; continuous monitoring of app and agent activity</li>
+</ul>
+<h4 id="phase-3-optimisation-ongoing">Phase 3: Optimisation (ongoing)</h4>
+<ul>
+<li>Scale cloud agent usage across backlogs; evaluate Agent HQ third-party agents as they reach GA</li>
+<li>Introduce Agentic Workflows and shared Copilot automations for triage, CI failure analysis, and documentation</li>
+<li>Migrate CI/CD from Azure Pipelines to GitHub Actions where it simplifies operations</li>
+<li>Build custom agents and MCP servers for organisation-specific tooling</li>
+<li>Refine governance with rule insights and agent audit data</li>
+</ul>
+<h3 id="83-what-gets-preserved">8.3 What Gets Preserved</h3>
+<div class="table-wrapper"><table>
+<thead>
+<tr>
+<th>Artifact</th>
+<th>Preserved?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Complete commit history</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>All branches and tags</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>Pull requests, comments, and reviews</td>
+<td>Yes, within documented importer limits</td>
+</tr>
+<tr>
+<td>AB# work item links on pull requests</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>Git LFS objects</td>
+<td>Transferred separately</td>
+</tr>
+<tr>
+<td>Branch policies</td>
+<td>Recreated as rulesets</td>
+</tr>
+<tr>
+<td>Azure Pipelines</td>
+<td>Yes, after rewiring and validation</td>
+</tr>
+<tr>
+<td>Azure Boards work items</td>
+<td>Retained in ADO (not migrated)</td>
+</tr>
+<tr>
+<td>Azure Test Plans</td>
+<td>Retained in ADO (not migrated)</td>
+</tr>
+<tr>
+<td>User attribution</td>
+<td>Yes, through mannequin reclaim</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="84-success-metrics">8.4 Success Metrics</h3>
+<p><strong>DORA hypotheses</strong> (validate against the pilot baseline; these are targets to test, not guarantees):</p>
+<div class="table-wrapper"><table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>Target improvement</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Deployment frequency</td>
+<td>2-3x increase</td>
+</tr>
+<tr>
+<td>Lead time for changes</td>
+<td>50% reduction</td>
+</tr>
+<tr>
+<td>Change failure rate</td>
+<td>30% reduction</td>
+</tr>
+<tr>
+<td>Mean time to recovery</td>
+<td>40% reduction</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Agentic delivery and platform KPIs:</strong></p>
+<div class="table-wrapper"><table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>Target</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Share of eligible backlog items started by an agent</td>
+<td>25%+ after six months</td>
+</tr>
+<tr>
+<td>Agent PR merge rate</td>
+<td>At or above the human PR merge rate</td>
+</tr>
+<tr>
+<td>Pull request cycle time</td>
+<td>25-35% reduction</td>
+</tr>
+<tr>
+<td>Copilot code review coverage</td>
+<td>100% of PRs on production repositories</td>
+</tr>
+<tr>
+<td>GHAS coverage</td>
+<td>80%+ of repositories with code scanning</td>
+</tr>
+<tr>
+<td>Secret scanning coverage</td>
+<td>100% of repositories with push protection</td>
+</tr>
+<tr>
+<td>Vulnerability remediation time</td>
+<td>50-75% reduction</td>
+</tr>
+<tr>
+<td>Security campaign completion</td>
+<td>80%+ of campaign alerts closed by the campaign due date</td>
+</tr>
+<tr>
+<td>Open critical and high alerts</td>
+<td>Downward trend quarter over quarter</td>
+</tr>
+<tr>
+<td>Ruleset compliance</td>
+<td>95%+ of repositories</td>
+</tr>
+<tr>
+<td>AI spend vs budget</td>
+<td>Within ±10% per cost centre</td>
+</tr>
+<tr>
+<td>Developer satisfaction</td>
+<td>70%+ positive in quarterly survey</td>
+</tr>
+</tbody>
+</table></div>
+<hr />
+
+  </div>
+</section>
+<section id="sec-9-risk-assessment-and-mitigation">
+  <div class="container">
+<h2 id="9-risk-assessment-and-mitigation">9. Risk Assessment and Mitigation</h2>
+<div class="table-wrapper"><table>
+<thead>
+<tr>
+<th>Risk</th>
+<th>Likelihood</th>
+<th>Impact</th>
+<th>Mitigation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Developer resistance ("ADO already has AI")</td>
+<td>High</td>
+<td>Medium</td>
+<td>Use section 7; involve ADO champions; publish the honest feature comparison; measure pilot results</td>
+</tr>
+<tr>
+<td>Developer disruption during migration</td>
+<td>Medium</td>
+<td>Medium</td>
+<td>Phased waves; off-hours execution; communication plan</td>
+</tr>
+<tr>
+<td>Pipeline breakage after rewiring</td>
+<td>Medium</td>
+<td>High</td>
+<td>Trial migrations; validation checklist per pipeline; rollback by keeping source repos read-only until sign-off</td>
+</tr>
+<tr>
+<td>Unpredictable AI consumption costs</td>
+<td>Medium</td>
+<td>Medium</td>
+<td>AI credit budgets at enterprise, org, and cost-centre level; model policies; compare seat-based plans with "Copilot access" (enterprise-wide choice) before committing</td>
+</tr>
+<tr>
+<td>Low-quality or risky agent output</td>
+<td>Medium</td>
+<td>High</td>
+<td>Draft PRs only; rulesets require human approval and passing checks; CodeQL on agent PRs; package firewall for agent installs; restrict Copilot approvals to low-risk paths</td>
+</tr>
+<tr>
+<td>Preview features change or slip</td>
+<td>Medium</td>
+<td>Low</td>
+<td>Base the business case on GA features; treat previews as upside</td>
+</tr>
+<tr>
+<td>Data residency requirements</td>
+<td>Low</td>
+<td>High</td>
+<td>GHE.com regions in EU, Australia, US, Japan; confirm Copilot data residency and model availability for your region</td>
+</tr>
+<tr>
+<td>Integration gaps with Azure Boards</td>
+<td>Low</td>
+<td>Medium</td>
+<td>Boards integration is GA and actively developed (Copilot from work items, AB# in PR Development section)</td>
+</tr>
+<tr>
+<td>Security policy migration complexity</td>
+<td>Medium</td>
+<td>Medium</td>
+<td>Map ADO branch policies to rulesets; roll out in evaluate mode</td>
+</tr>
+<tr>
+<td>EMU restrictions surprise developers</td>
+<td>Medium</td>
+<td>Low</td>
+<td>Communicate early that managed accounts cannot contribute publicly; document the personal-account path for open source</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>When to wait:</strong> if a team relies on TFVC without a conversion plan, needs Azure DevOps Server on-premises with no cloud option, or is in the middle of a regulated release freeze, schedule it in a later wave. The hybrid model allows teams to move independently.</p>
+<hr />
+
+  </div>
+</section>
+<section id="sec-10-executive-recommendation">
+  <div class="container">
+<h2 id="10-executive-recommendation">10. Executive Recommendation</h2>
+<h3 id="the-case-in-six-points">The Case in Six Points</h3>
+<ol>
+<li><strong>Microsoft recommends it.</strong> Azure DevOps leadership and product managers direct customers to GitHub repositories for agentic AI, and the ADO AI features shipped in 2026 are explicitly positioned for teams that are "not ready yet".</li>
+<li><strong>Cloud agent workflows require GitHub.</strong> The Copilot cloud agent, Copilot approvals, Agentic Workflows, and enterprise-wide agent session governance require code on GitHub, and Agent HQ and Copilot projects extend that lead in preview. Local agent sessions work with Azure Repos, and ADO now offers AI review (preview) and agentic security fixes (closed preview), but no cloud agent that takes a work item to a pull request on Azure Repos.</li>
+<li><strong>The economics have shifted.</strong> GHEC includes Azure DevOps Basic, and eligible enterprises can move to "Copilot access" with no Copilot seat charge for GHEC users. Security SKUs cost the same on both platforms, with more GA capability on GitHub.</li>
+<li><strong>Security debt gets fixed, not just found.</strong> GitHub security campaigns, backed by GA Autofix and agentic Autofix assignment to Copilot, turn alert backlogs into owned, time-boxed remediation programmes; ADO's campaigns are shared alert views. Together with AI Scan and Dependabot updates, this has no GA equivalent on Azure Repos, and AI-application scanning, reachability analysis, and the package firewall are arriving in preview.</li>
+<li><strong>The risk is managed.</strong> The hybrid model keeps Azure Boards, Test Plans, Pipelines, and Artifacts. GitHub Enterprise Importer migrates history and pull requests, and migration proceeds in waves.</li>
+<li><strong>The opportunity cost grows.</strong> More than 40% of pull requests on GitHub already start from an agent. The pilot will show how much of that throughput your teams can capture; every quarter without it is a quarter without that data or that capacity.</li>
+</ol>
+<h3 id="recommended-action">Recommended Action</h3>
+<p><strong>Approve a funded pilot followed by phased migration of source code repositories from Azure DevOps to GitHub Enterprise Cloud</strong>, following the hybrid model in this document, with an incremental TCO model, explicit expansion gates after the pilot, and AI credit budgets and Enterprise AI Controls configured from day one.</p>
+<hr />
+
+  </div>
+</section>
+<section id="sec-11-references-and-sources">
+  <div class="container">
+<h2 id="11-references-and-sources">11. References and Sources</h2>
+<h3 id="microsoft-official-sources">Microsoft Official Sources</h3>
+<ol>
+<li><a href="https://devblogs.microsoft.com/devops/azure-devops-with-github-repositories-your-path-to-agentic-ai/">Azure DevOps with GitHub Repositories: Your Path to Agentic AI</a>, Azure DevOps Blog</li>
+<li><a href="https://devblogs.microsoft.com/devops/azure-devops-and-github-repositories-next-steps-in-the-path-to-agentic-ai/">Azure DevOps and GitHub: Next Steps in the Path to Agentic AI</a>, Azure DevOps Blog</li>
+<li><a href="https://azure.microsoft.com/en-us/blog/agentic-devops-evolving-software-development-with-github-copilot-and-microsoft-azure/">Agentic DevOps: Evolving Software Development with GitHub Copilot and Microsoft Azure</a>, Azure Blog</li>
+<li><a href="https://devblogs.microsoft.com/all-things-azure/azure-devops-to-github-migration-playbook-unlocking-agentic-devops/">Azure DevOps to GitHub Migration Playbook</a>, All Things Azure</li>
+<li><a href="https://devblogs.microsoft.com/devops/azure-devops-basic-usage-included-with-github-enterprise/">Azure DevOps Basic Usage Included with GitHub Enterprise</a>, Azure DevOps Blog</li>
+<li><a href="https://learn.microsoft.com/en-us/azure/devops/release-notes/features-timeline">Azure DevOps Roadmap</a>, Microsoft Learn</li>
+<li><a href="https://devblogs.microsoft.com/devops/copilot-code-reviews-for-azure-repos-public-preview/">Copilot Code Reviews for Azure Repos (public preview)</a>, Azure DevOps Blog</li>
+<li><a href="https://devblogs.microsoft.com/devops/copilot-autofix-for-github-advanced-security-for-azure-devops/">Copilot Autofix for GitHub Advanced Security for Azure DevOps</a>, Azure DevOps Blog</li>
+<li><a href="https://learn.microsoft.com/en-us/azure/devops/release-notes/2026/sprint-280-update">Sprint 280 update: Copilot Autofix agentic foundation</a>, Microsoft Learn</li>
+<li><a href="https://learn.microsoft.com/en-us/azure/devops/boards/github/work-item-integration-github-copilot">Use GitHub Copilot with Azure Boards</a>, Microsoft Learn</li>
+<li><a href="https://learn.microsoft.com/en-us/azure/devops/repos/security/github-advanced-security-billing">Billing for GitHub Advanced Security for Azure DevOps</a>, Microsoft Learn</li>
+<li><a href="https://learn.microsoft.com/en-us/training/modules/introduction-to-ado-to-github-migration/">Introduction to Azure DevOps to GitHub Migration</a>, Microsoft Learn</li>
+<li><a href="https://learn.microsoft.com/en-us/azure/devops/repos/security/github-advanced-security-autofix">Copilot Autofix for Code Security Alerts in Azure Repos (Preview)</a>, Microsoft Learn</li>
+<li><a href="https://learn.microsoft.com/en-us/azure/devops/organizations/audit/azure-devops-auditing">Azure DevOps Auditing</a>, Microsoft Learn</li>
+</ol>
+<h3 id="github-official-sources">GitHub Official Sources</h3>
+<ol start="15">
+<li><a href="https://github.blog/news-insights/company-news/github-universe-2026-evolving-every-layer-of-the-stack/">GitHub Universe 2026: Evolving Every Layer of the Stack</a>, GitHub Blog</li>
+<li><a href="https://github.blog/news-insights/octoverse/octoverse-commits-pushes-reach-new-highs-in-2026-as-developers-build-with-agents/">Octoverse 2026: Commits and Pushes Reach New Highs as Developers Build with Agents</a>, GitHub Blog</li>
+<li><a href="https://github.blog/news-insights/company-news/pick-your-agent-use-claude-and-codex-on-agent-hq/">Pick Your Agent: Use Claude and Codex on Agent HQ</a>, GitHub Blog</li>
+<li><a href="https://github.blog/changelog/2026-02-26-enterprise-ai-controls-agent-control-plane-now-generally-available/">Enterprise AI Controls and Agent Control Plane GA</a>, GitHub Changelog</li>
+<li><a href="https://github.blog/changelog/2026-10-28-copilot-code-review-merge-with-confidence-with-max-and-approvals/">Copilot Code Review: Max and Approvals</a>, GitHub Changelog</li>
+<li><a href="https://github.blog/changelog/2026-10-28-github-copilot-app-universe-releases/">GitHub Copilot App Universe Releases (Copilot projects)</a>, GitHub Changelog</li>
+<li><a href="https://docs.github.com/en/copilot/how-tos/copilot-integrations/integrate-cloud-agent-with-azure-boards">Integrating Copilot Cloud Agent with Azure Boards</a>, GitHub Docs</li>
+<li><a href="https://docs.github.com/en/copilot/get-started/whats-changing-with-github-enterprise-and-copilot">What's Changing with GitHub Enterprise and Copilot Billing</a>, GitHub Docs</li>
+<li><a href="https://github.blog/news-insights/company-news/github-copilot-is-moving-to-usage-based-billing/">GitHub Copilot Is Moving to Usage-Based Billing</a>, GitHub Blog</li>
+<li><a href="https://wellarchitected.github.com/library/scenarios/migrations/azure-devops-migration-guide/">GitHub Well-Architected: Azure DevOps Migration Guide</a>, GitHub Well-Architected</li>
+<li><a href="https://docs.github.com/en/migrations/ado/understand-migrations-from-azure-devops-to-github">About Migrations from Azure DevOps to GitHub</a>, GitHub Docs</li>
+</ol>
+<h3 id="security-and-governance">Security and Governance</h3>
+<ol start="26">
+<li><a href="https://github.blog/changelog/2026-10-15-ai-scan-for-pull-requests-generally-available/">AI Scan for Pull Requests GA</a>, GitHub Changelog</li>
+<li><a href="https://docs.github.com/en/enterprise-cloud@latest/code-security/concepts/security-at-scale/about-security-campaigns">About Security Campaigns</a>, GitHub Docs</li>
+<li><a href="https://docs.github.com/en/enterprise-cloud@latest/code-security/how-tos/manage-security-alerts/remediate-alerts-at-scale/fixing-alerts-in-security-campaign">Fixing Alerts in a Security Campaign (assigning alerts to Copilot)</a>, GitHub Docs</li>
+<li><a href="https://learn.microsoft.com/en-us/azure/devops/release-notes/2026/ghazdo/sprint-272-update">GHAzDO Sprint 272 Update: combined alerts view and security campaigns in security overview</a>, Microsoft Learn</li>
+<li><a href="https://github.blog/changelog/2026-10-28-push-protection-beyond-predefined-secret-patterns/">Push Protection Beyond Predefined Secret Patterns (public preview)</a>, GitHub Changelog</li>
+<li><a href="https://github.blog/changelog/month/10-2026/">October 2026 Changelog: AI-application scanning, repository AI Scan, push protection classifier, public monitoring</a>, GitHub Changelog</li>
+<li><a href="https://github.blog/changelog/2026-10-28-prioritize-dependabot-alerts-with-reachability-analysis/">Prioritize Dependabot Alerts with Reachability Analysis</a>, GitHub Changelog</li>
+<li><a href="https://github.blog/changelog/2026-10-20-github-package-firewall-in-public-preview/">GitHub Package Firewall in Public Preview</a>, GitHub Changelog</li>
+<li><a href="https://github.blog/changelog/2026-07-20-github-code-quality-is-now-generally-available/">GitHub Code Quality Is Now Generally Available</a>, GitHub Changelog</li>
+<li><a href="https://github.blog/changelog/2025-03-04-introducing-github-secret-protection-and-github-code-security/">Introducing GitHub Secret Protection and GitHub Code Security</a>, GitHub Changelog</li>
+<li><a href="https://docs.github.com/en/enterprise-cloud@latest/admin/enforcing-policies/enforcing-policies-for-your-enterprise/enforcing-policies-for-code-governance">Enforcing Code Governance with Rulesets</a>, GitHub Docs</li>
+<li><a href="https://docs.github.com/en/enterprise-cloud@latest/admin/data-residency/about-github-enterprise-cloud-with-data-residency">About GitHub Enterprise Cloud with Data Residency</a>, GitHub Docs</li>
+</ol>
+<h3 id="research-and-economics">Research and Economics</h3>
+<ol start="38">
+<li><a href="https://tei.forrester.com/go/github/enterprisecloud/">Forrester Total Economic Impact of GitHub Enterprise Cloud</a></li>
+<li><a href="https://tei.forrester.com/go/GitHub/GitHubAdvancedSecuritySpotlight/">Forrester TEI Spotlight: GHAS and Copilot</a></li>
+<li><a href="https://github.blog/news-insights/research/research-quantifying-github-copilots-impact-in-the-enterprise-with-accenture/">Quantifying GitHub Copilot's Impact in the Enterprise with Accenture</a>, GitHub Blog</li>
+<li><a href="https://cacm.acm.org/research/measuring-github-copilots-impact-on-productivity/">Measuring GitHub Copilot's Impact on Productivity</a>, Communications of the ACM</li>
+</ol>
+<h3 id="related-documents-in-this-repository">Related Documents in This Repository</h3>
+<ol start="42">
+<li><a href="./ado-to-github-migration-assessment.md">ADO to GitHub Migration Assessment</a></li>
+<li><a href="./ADO-to-GitHub-Migration-QA.md">ADO to GitHub Migration QA</a></li>
+<li><a href="./ADO-to-GitHub-Migration-Executive-Summary.md">ADO to GitHub Migration Executive Summary</a></li>
+</ol>
+<hr />
+<p><em>Document prepared with data sourced from official Microsoft, GitHub, and Azure documentation as of November 2026.</em></p>
   </div>
 </section>
 
-<!-- =================== MODERNISATION =================== -->
-<section id="modernisation">
-  <div class="container">
-    <h2><span class="section-num">02</span>Development Practice Modernisation</h2>
-    <p class="section-lead">Microsoft introduced "Agentic DevOps" at Build 2025 -- a paradigm where AI agents collaborate alongside developers throughout the entire SDLC.</p>
-
-    <h3>GitHub Copilot Capabilities (Exclusively on GitHub)</h3>
-    <div class="card-grid">
-      <div class="card">
-        <div class="card-icon">&#x1F916;</div>
-        <h4>Copilot Coding Agent</h4>
-        <p>Autonomous agent that accepts GitHub Issues, creates branches, writes code, runs tests, and opens pull requests -- all without developer intervention.</p>
-        <span class="card-tag tag-impact">Backlog velocity boost</span>
-        <span class="card-tag tag-exclusive">GitHub Exclusive</span>
-      </div>
-      <div class="card">
-        <div class="card-icon">&#x1F50D;</div>
-        <h4>Agentic Code Review</h4>
-        <p>AI-powered code review that detects bugs, suggests improvements, and validates security during PR review.</p>
-        <span class="card-tag tag-impact">Faster reviews</span>
-        <span class="card-tag tag-exclusive">GitHub Exclusive</span>
-      </div>
-      <div class="card">
-        <div class="card-icon">&#x1F527;</div>
-        <h4>Copilot Autofix</h4>
-        <p>Automatically generates security vulnerability fixes discovered by code scanning. MTTR drops from days to minutes.</p>
-        <span class="card-tag tag-impact">Security acceleration</span>
-        <span class="card-tag tag-exclusive">GitHub Exclusive</span>
-      </div>
-      <div class="card">
-        <div class="card-icon">&#x1F3DB;</div>
-        <h4>Agent HQ</h4>
-        <p>Centralised control centre to manage, monitor, and assign work across AI agents. Full engineering visibility.</p>
-        <span class="card-tag tag-exclusive">GitHub Exclusive</span>
-      </div>
-      <div class="card">
-        <div class="card-icon">&#x1F4BB;</div>
-        <h4>Agent Mode (IDE)</h4>
-        <p>Multi-step reasoning in VS Code / Visual Studio. Edits across files, generates tests, runs terminal commands from a single prompt.</p>
-        <span class="card-tag tag-impact">Hours to minutes</span>
-      </div>
-      <div class="card">
-        <div class="card-icon">&#x1F6E0;</div>
-        <h4>SRE Agent for Azure</h4>
-        <p>Monitors production 24/7, auto-diagnoses incidents, creates GitHub Issues for remediation. Reduces on-call burden.</p>
-        <span class="card-tag tag-exclusive">GitHub Exclusive</span>
-      </div>
-    </div>
-
-    <h3>Repository Intelligence: GitHub's Exclusive Capability</h3>
-    <p><strong>Repository Intelligence</strong> represents a fundamental architectural capability that Azure DevOps cannot match, operating through three layers:</p>
-    <div class="card-grid">
-      <div class="card">
-        <h4>Vector Indexing</h4>
-        <p>Codebase chunks converted to embeddings for semantic search -- enabling AI to understand code meaning, not just text matching.</p>
-      </div>
-      <div class="card">
-        <h4>Knowledge Graph Construction</h4>
-        <p>Directed graphs mapping functions, classes, and relationships -- giving AI a structural understanding of the entire codebase.</p>
-      </div>
-      <div class="card">
-        <h4>Historical Reasoning</h4>
-        <p>Analysis of commit messages, PRs, and issues to understand developer intent and project evolution over time.</p>
-      </div>
-    </div>
-    <p><strong>Critical Distinction:</strong> GitHub maintains persistent, server-side indexes automatically updated on every push. Azure DevOps relies on client-side, ephemeral indexing in VS Code that disappears when sessions end. <strong>Copilot Workspace</strong> leverages this intelligence to generate specifications, create multi-file plans, and understand dependency graphs -- exclusive to GitHub with no Azure DevOps equivalent.</p>
-
-    <h3>Proven Productivity Impact</h3>
-    <p>Research from GitHub and Accenture demonstrates measurable returns:</p>
-    <div class="table-wrapper">
-      <table>
-        <thead>
-          <tr><th>Metric</th><th>Result</th><th>Source</th></tr>
-        </thead>
-        <tbody>
-          <tr><td>Coding speed improvement</td><td><strong>55% faster</strong> task completion (1h11m vs 2h41m)</td><td>GitHub / controlled experiment</td></tr>
-          <tr><td>Individual output increase</td><td><strong>20-40%</strong> productivity gains</td><td>Multiple enterprise studies</td></tr>
-          <tr><td>AI code generation share</td><td><strong>46% of code</strong> now generated by Copilot</td><td>GitHub telemetry (July 2025)</td></tr>
-          <tr><td>PR merge rate improvement</td><td><strong>15% increase</strong> after Copilot adoption</td><td>Accenture joint study</td></tr>
-          <tr><td>Code suggestion acceptance</td><td><strong>30%</strong> acceptance rate, <strong>88%</strong> retention</td><td>GitHub metrics</td></tr>
-          <tr><td>Task completion rate</td><td><strong>78% with Copilot</strong> vs 70% without (P=.0017)</td><td>CACM academic research</td></tr>
-          <tr><td>Developer satisfaction</td><td><strong>88-90%</strong> report feeling more productive</td><td>GitHub developer survey</td></tr>
-          <tr><td>Flow state preservation</td><td><strong>73%</strong> report staying in flow effectively</td><td>GitHub developer survey</td></tr>
-          <tr><td>Mental energy conservation</td><td><strong>87%</strong> preserve mental effort on repetitive tasks</td><td>GitHub developer survey</td></tr>
-          <tr><td>Weekly engagement</td><td><strong>67%</strong> use Copilot 5+ days/week</td><td>GitHub usage data</td></tr>
-          <tr><td>First-day adoption</td><td><strong>81.4%</strong> install Copilot on first licensed day</td><td>GitHub telemetry</td></tr>
-        </tbody>
-      </table>
-    </div>
-
-    <h3>Modernised Developer Workflow</h3>
-    <div class="flow-compare">
-      <div class="flow-box flow-before">
-        <h4>Current State (Azure DevOps Repos)</h4>
-        <ul>
-          <li>Manual code reviews without AI assistance</li>
-          <li>No autonomous task delegation to AI agents</li>
-          <li>Security scanning limited to pipeline-integrated third-party tools</li>
-          <li>No AI-assisted documentation or test generation in workflow</li>
-        </ul>
-      </div>
-      <div class="flow-box flow-after">
-        <h4>Target State (GitHub + Copilot)</h4>
-        <ul>
-          <li>AI-powered code reviews on every PR (agentic review)</li>
-          <li>Assign issues to <code>@copilot</code> for autonomous implementation</li>
-          <li>Integrated security scanning with AI-powered autofix</li>
-          <li>Natural language-driven infrastructure and workflow automation</li>
-          <li>AI-assisted technical debt management and app modernisation</li>
-        </ul>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- =================== STANDARDISATION =================== -->
-<section id="standardisation">
-  <div class="container">
-    <h2><span class="section-num">03</span>Standardisation</h2>
-    <p class="section-lead">GitHub Enterprise Cloud provides centrally managed policy collections that enforce consistent standards across all repositories and organisations.</p>
-
-    <h3>Enterprise-Wide Consistency with Rulesets</h3>
-    <div class="table-wrapper">
-      <table>
-        <thead>
-          <tr><th>Feature</th><th>Description</th></tr>
-        </thead>
-        <tbody>
-          <tr><td><strong>Enterprise Rulesets</strong></td><td>Apply baseline protections across every default branch. Require PRs, reviews, status checks, and linear history.</td></tr>
-          <tr><td><strong>Custom Properties</strong></td><td>Classify repositories (production, innersource, legacy, sandbox) and dynamically target them with specific governance rules.</td></tr>
-          <tr><td><strong>Evaluate Mode</strong></td><td>Test rulesets in monitoring mode before enforcement -- frictionless rollout.</td></tr>
-          <tr><td><strong>Required Workflows</strong></td><td>Mandate specific GitHub Actions workflows (security scans, compliance checks) before code can be merged.</td></tr>
-          <tr><td><strong>Merge Method Control</strong></td><td>Enforce specific merge strategies (squash, rebase) across the organisation.</td></tr>
-          <tr><td><strong>Commit Metadata Validation</strong></td><td>Enforce commit message formats, author email domains, and GPG signing requirements.</td></tr>
-          <tr><td><strong>Push Restrictions</strong></td><td>Control by file path, file type, file size, and extensions -- prevent binaries, credentials, or oversized assets.</td></tr>
-        </tbody>
-      </table>
-    </div>
-
-    <h3>InnerSource at Scale</h3>
-    <p>GitHub's architecture naturally supports InnerSource -- applying open-source best practices within the enterprise:</p>
-    <div class="card-grid">
-      <div class="card">
-        <h4>Internal Visibility</h4>
-        <p>Repos discoverable across the organisation by default, enabling cross-team collaboration.</p>
-      </div>
-      <div class="card">
-        <h4>Fork-and-PR Model</h4>
-        <p>Structured contribution from any team using the world-standard contribution workflow.</p>
-      </div>
-      <div class="card">
-        <h4>CODEOWNERS</h4>
-        <p>Automated routing of reviews to domain experts based on file paths and ownership rules.</p>
-      </div>
-      <div class="card">
-        <h4>Repository Templates</h4>
-        <p>Standardised project scaffolding ensuring consistent structure across new projects.</p>
-      </div>
-      <div class="card">
-        <h4>Starter Workflows</h4>
-        <p>Pre-configured CI/CD pipelines that teams adopt instantly for immediate consistency.</p>
-      </div>
-      <div class="card">
-        <h4>20,000+ Actions Marketplace</h4>
-        <p>Reusable, composable automation components from the world's largest CI/CD ecosystem.</p>
-      </div>
-      <div class="card">
-        <h4>GitHub Codespaces</h4>
-        <p>Fully configured cloud development environments. New developers productive in minutes, not days. Eliminates "works on my machine" issues.</p>
-      </div>
-    </div>
-
-    <h3>Unified Toolchain Comparison</h3>
-    <div class="table-wrapper">
-      <table>
-        <thead>
-          <tr><th>Aspect</th><th>Azure DevOps (Current)</th><th>GitHub Enterprise (Target)</th></tr>
-        </thead>
-        <tbody>
-          <tr><td><strong>Code hosting</strong></td><td>Azure Repos</td><td>GitHub Repositories</td></tr>
-          <tr><td><strong>CI/CD</strong></td><td>Azure Pipelines (retained)</td><td>GitHub Actions + Azure Pipelines</td></tr>
-          <tr><td><strong>Security scanning</strong></td><td>Third-party integrations</td><td>GitHub Advanced Security (native)</td></tr>
-          <tr><td><strong>Package management</strong></td><td>Azure Artifacts</td><td>GitHub Packages / Azure Artifacts</td></tr>
-          <tr><td><strong>Project management</strong></td><td>Azure Boards (retained)</td><td>Azure Boards (integrated with GitHub)</td></tr>
-          <tr><td><strong>AI assistance</strong></td><td>IDE-only Copilot</td><td>Full agentic Copilot (coding agent, review, autofix)</td></tr>
-          <tr><td><strong>Developer ecosystem</strong></td><td>Limited marketplace</td><td>20,000+ Actions, 180M+ developer community</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-</section>
-
-<!-- =================== GOVERNANCE =================== -->
-<section id="governance">
-  <div class="container">
-    <h2><span class="section-num">04</span>Governance &amp; Security</h2>
-    <p class="section-lead">GitHub Advanced Security provides an integrated, developer-first security platform that shifts security left into the development workflow.</p>
-
-    <h3>GitHub Advanced Security (GHAS)</h3>
-    <div class="card-grid">
-      <div class="card">
-        <div class="card-icon">&#x1F50E;</div>
-        <h4>Code Scanning (CodeQL)</h4>
-        <p>Static analysis detecting SQL injection, XSS, command injection, insecure patterns. Supports 15+ languages. Results embedded directly in pull requests. <strong>Copilot Autofix</strong> generates remediation code.</p>
-      </div>
-      <div class="card">
-        <div class="card-icon">&#x1F510;</div>
-        <h4>Secret Scanning &amp; Push Protection</h4>
-        <p>Automatic detection of 200+ secret types. <strong>Push Protection</strong> blocks commits containing secrets before they reach the repository. Custom patterns for org-specific secrets.</p>
-      </div>
-      <div class="card">
-        <div class="card-icon">&#x1F4E6;</div>
-        <h4>Dependency Management</h4>
-        <p>Dependency Graph for full supply chain visibility. Dependabot alerts and automated security updates. SBOM generation for regulatory compliance (Executive Order 14028).</p>
-      </div>
-    </div>
-
-    <div class="card" style="background: linear-gradient(135deg, rgba(63,185,80,0.05), rgba(88,166,255,0.05)); border-color: rgba(63,185,80,0.2); margin: 24px 0;">
-      <h4 style="color: #3fb950;">Security Posture Improvements (Forrester TEI GHAS Spotlight)</h4>
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-top: 12px;">
-        <div><div style="font-size: 1.5rem; font-weight: 800; color: #3fb950;">10-20% -&gt; 80%+</div><div style="font-size: 0.8rem; color: #8b949e;">SAST coverage expansion</div></div>
-        <div><div style="font-size: 1.5rem; font-weight: 800; color: #3fb950;">3x Faster</div><div style="font-size: 0.8rem; color: #8b949e;">Vulnerability remediation</div></div>
-        <div><div style="font-size: 1.5rem; font-weight: 800; color: #3fb950;">75%</div><div style="font-size: 0.8rem; color: #8b949e;">Security task efficiency gain</div></div>
-        <div><div style="font-size: 1.5rem; font-weight: 800; color: #3fb950;">4h -&gt; 1h</div><div style="font-size: 0.8rem; color: #8b949e;">Security info request response</div></div>
-      </div>
-    </div>
-
-    <h3>2025 Security Product Structure</h3>
-    <div class="table-wrapper">
-      <table>
-        <thead>
-          <tr><th>Product</th><th>Price</th><th>Capabilities</th></tr>
-        </thead>
-        <tbody>
-          <tr><td><strong>GitHub Secret Protection</strong></td><td>$19/user/month</td><td>Secret scanning, AI password detection, push protection, custom patterns</td></tr>
-          <tr><td><strong>GitHub Code Security</strong></td><td>$30/user/month</td><td>CodeQL scanning, Copilot Autofix, supply chain protection, security campaigns</td></tr>
-        </tbody>
-      </table>
-    </div>
-
-    <h3>Enterprise Managed Users (EMU)</h3>
-    <p>EMU provides centralised control over user lifecycle and access through Entra ID:</p>
-    <div class="card-grid">
-      <div class="card">
-        <h4>Identity Governance</h4>
-        <p>Single source of truth via Entra ID. Automated provisioning/deprovisioning -- users suspended immediately when disabled. Standardised enterprise-controlled usernames.</p>
-      </div>
-      <div class="card">
-        <h4>Security Boundary</h4>
-        <p>Managed users cannot create public repos or collaborate outside the enterprise boundary. Full Conditional Access and Privileged Identity Management (PIM) support.</p>
-      </div>
-      <div class="card">
-        <h4>Audit Log Streaming</h4>
-        <p>Real-time streaming to Azure Event Hubs, Azure Monitor, and Microsoft Sentinel. 30+ event categories. SOC 2, ISO 27001, FedRAMP compliance support. Automated dormant user reporting.</p>
-      </div>
-    </div>
-
-    <h3>Enterprise Audit &amp; Compliance</h3>
-    <div class="table-wrapper">
-      <table>
-        <thead>
-          <tr><th>Capability</th><th>Description</th></tr>
-        </thead>
-        <tbody>
-          <tr><td><strong>Audit Logs</strong></td><td>Comprehensive logging of all user actions, repository changes, and security events</td></tr>
-          <tr><td><strong>Enterprise Rulesets</strong></td><td>Centrally enforced policies with 180-day change history and rollback</td></tr>
-          <tr><td><strong>Rule Insights</strong></td><td>Analytics dashboards tracking violations, bypass requests, and developer impact</td></tr>
-          <tr><td><strong>SAML/SCIM/Entra ID</strong></td><td>Enterprise identity integration with automatic provisioning/deprovisioning</td></tr>
-          <tr><td><strong>Data Residency</strong></td><td>GHEC with Data Residency available in EU, Australia, US (more coming)</td></tr>
-          <tr><td><strong>IP Allow Lists</strong></td><td>Network-level access control for enterprise environments</td></tr>
-          <tr><td><strong>Bypass Controls</strong></td><td>Auditable emergency bypass with full traceability</td></tr>
-        </tbody>
-      </table>
-    </div>
-
-    <h3>Governance Comparison</h3>
-    <div class="table-wrapper">
-      <table>
-        <thead>
-          <tr><th>Governance Area</th><th>Azure DevOps</th><th>GitHub Enterprise Cloud</th></tr>
-        </thead>
-        <tbody>
-          <tr><td><strong>Branch protection</strong></td><td>Per-repository policies</td><td>Enterprise-wide rulesets with layered inheritance</td></tr>
-          <tr><td><strong>Secret prevention</strong></td><td>Limited (third-party)</td><td>Native push protection + 200+ pattern detection</td></tr>
-          <tr><td><strong>Code scanning</strong></td><td>Third-party integration</td><td>Native CodeQL + AI-powered Autofix</td></tr>
-          <tr><td><strong>Dependency security</strong></td><td>Third-party integration</td><td>Native Dependabot + automated remediation</td></tr>
-          <tr><td><strong>Audit logging</strong></td><td>Basic activity logs</td><td>Comprehensive enterprise audit log with API access</td></tr>
-          <tr><td><strong>Policy enforcement</strong></td><td>Per-project configuration</td><td>Enterprise &gt; Organisation &gt; Repository cascade</td></tr>
-          <tr><td><strong>Compliance reporting</strong></td><td>Manual / third-party</td><td>Built-in security overview dashboard</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-</section>
-
-<!-- =================== AGENTIC DEVOPS =================== -->
-<section id="agentic">
-  <div class="container">
-    <h2><span class="section-num">05</span>Agentic DevOps &amp; the AI-Native SDLC</h2>
-    <p class="section-lead">The software development lifecycle is being fundamentally transformed by autonomous AI agents. GitHub is the platform where this transformation is happening.</p>
-
-    <h3>Agentic Capabilities Across the SDLC</h3>
-    <div class="table-wrapper">
-      <table>
-        <thead>
-          <tr><th>SDLC Phase</th><th>Agentic Capability</th><th>Human Role</th></tr>
-        </thead>
-        <tbody>
-          <tr><td><strong>Planning</strong></td><td>Copilot Chat: Decompose stories into tasks, generate acceptance criteria, estimate complexity</td><td>Review &amp; approve decomposition</td></tr>
-          <tr><td><strong>Coding</strong></td><td>Coding Agent: Autonomously implements features, fixes bugs, writes tests from assigned Issues</td><td>Review PRs, provide feedback</td></tr>
-          <tr><td><strong>Code Review</strong></td><td>Agentic Code Review: AI reviews every PR for bugs, security, performance, style</td><td>Final approval decision</td></tr>
-          <tr><td><strong>Security</strong></td><td>Copilot Autofix: Auto-generates patches for security vulnerabilities</td><td>Review and merge fixes</td></tr>
-          <tr><td><strong>CI/CD</strong></td><td>GitHub Actions + MCP Servers: AI-assisted pipeline creation and debugging</td><td>Configure policies, approve deployments</td></tr>
-          <tr><td><strong>Operations</strong></td><td>SRE Agent: 24/7 monitoring, auto-diagnosis, incident response, GitHub Issue creation</td><td>Acknowledge, review remediation</td></tr>
-          <tr><td><strong>Maintenance</strong></td><td>App Modernisation Agent: Automated dependency updates, framework migrations, tech debt reduction</td><td>Approve modernisation plans</td></tr>
-        </tbody>
-      </table>
-    </div>
-
-    <h3>The Intelligence Gap: Azure DevOps vs GitHub</h3>
-    <p>Azure DevOps faces fundamental limitations that cannot be addressed through incremental updates:</p>
-    <div class="table-wrapper">
-      <table>
-        <thead>
-          <tr><th>Limitation (Azure DevOps)</th><th>GitHub Exclusive Capability</th></tr>
-        </thead>
-        <tbody>
-          <tr><td>No native Copilot for Azure Repos (not on current roadmap)</td><td>Full Copilot integration with server-side repository intelligence</td></tr>
-          <tr><td>Client-side only indexing (locked in IDE, not in web portal)</td><td>Persistent server-side semantic search and knowledge graphs</td></tr>
-          <tr><td>Q&amp;A interface only (no autonomous plan-and-execute)</td><td>Copilot Workspace: AI generates specs and multi-file plans from issues</td></tr>
-          <tr><td>Synchronisation lags (indexes rely on IDE to initiate)</td><td>Always-up-to-date indexes, automatically maintained on every push</td></tr>
-          <tr><td>No repository agents of any kind</td><td>Copilot Autofix, Agentic Workflows, Coding Agent, SRE Agent</td></tr>
-        </tbody>
-      </table>
-    </div>
-    <p>Microsoft's current investment trajectory and roadmap indicate that advanced repository intelligence capabilities are being developed exclusively for GitHub, positioning it as the primary platform for next-generation developer productivity.</p>
-
-    <h3>GitHub Agentic Workflows (Repository Automation)</h3>
-    <p>Six continuous automation patterns with built-in security guardrails:</p>
-    <div class="table-wrapper">
-      <table>
-        <thead>
-          <tr><th>Workflow</th><th>Function</th></tr>
-        </thead>
-        <tbody>
-          <tr><td><strong>Continuous Triage</strong></td><td>Automatically summarise, label, and route new issues</td></tr>
-          <tr><td><strong>Continuous Documentation</strong></td><td>Keep READMEs aligned with code changes</td></tr>
-          <tr><td><strong>Continuous Code Simplification</strong></td><td>Identify improvements and open pull requests</td></tr>
-          <tr><td><strong>Continuous Test Improvement</strong></td><td>Assess coverage and add high-value tests</td></tr>
-          <tr><td><strong>Continuous Quality Hygiene</strong></td><td>Investigate CI failures and propose fixes</td></tr>
-          <tr><td><strong>Continuous Reporting</strong></td><td>Create regular repository health reports</td></tr>
-        </tbody>
-      </table>
-    </div>
-    <p>These workflows run with <strong>read-only permissions by default</strong>, with write operations requiring explicit approval -- a defense-in-depth security architecture protecting against unintended behaviours and prompt-injection attacks.</p>
-
-    <h3>MCP (Model Context Protocol) Integration</h3>
-    <p>The Azure DevOps MCP Server (announced May 2025) enables Copilot to interact directly with Azure DevOps data, bridging the hybrid model:</p>
-    <ul>
-      <li>Summarise work items and discussion history</li>
-      <li>Generate test cases from user stories</li>
-      <li>De-duplicate and re-order backlogs</li>
-      <li>Decompose user stories into tasks with AI-generated descriptions</li>
-      <li>All accessible from GitHub Copilot Chat</li>
-    </ul>
-
-    <h3>Developer Experience Transformation</h3>
-    <div class="flow-compare">
-      <div class="flow-box flow-before">
-        <h4>Before -- Manual DevOps</h4>
-        <div class="flow-steps">
-          Developer <span class="arrow">-></span> writes code <span class="arrow">-></span> creates PR <span class="arrow">-></span> waits for review <span class="arrow">-></span> fixes feedback <span class="arrow">-></span> runs CI <span class="arrow">-></span> deploys <span class="arrow">-></span> manually monitors <span class="arrow">-></span> gets paged at 3am <span class="arrow">-></span> debugs <span class="arrow">-></span> patches
-        </div>
-      </div>
-      <div class="flow-box flow-after">
-        <h4>After -- Agentic DevOps</h4>
-        <div class="flow-steps">
-          Developer <span class="arrow">-></span> assigns Issue to @copilot <span class="arrow">-></span> Coding Agent creates PR <span class="arrow">-></span> Agentic Review provides feedback <span class="arrow">-></span> Copilot iterates <span class="arrow">-></span> CI/CD runs <span class="arrow">-></span> SRE Agent monitors <span class="arrow">-></span> auto-diagnoses <span class="arrow">-></span> creates remediation Issue <span class="arrow">-></span> cycle continues autonomously
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- =================== FINANCIAL =================== -->
-<section id="financial">
-  <div class="container">
-    <h2><span class="section-num">06</span>Financial Analysis</h2>
-    <p class="section-lead">Since February 2025, Azure DevOps Basic access is included at no additional cost for GitHub Enterprise Cloud users, eliminating dual-licensing concerns.</p>
-
-    <h3>Licensing: The Unified Model</h3>
-    <div class="table-wrapper">
-      <table>
-        <thead>
-          <tr><th>Component</th><th>Cost</th></tr>
-        </thead>
-        <tbody>
-          <tr><td><strong>GitHub Enterprise Cloud</strong></td><td>$21/user/month</td></tr>
-          <tr><td><strong>Azure DevOps Basic</strong></td><td><strong>Included</strong> with GHEC (via Entra ID)</td></tr>
-          <tr><td><strong>GitHub Copilot Business</strong></td><td>$19/user/month</td></tr>
-          <tr><td><strong>GitHub Copilot Enterprise</strong></td><td>$39/user/month</td></tr>
-          <tr><td><strong>GitHub Secret Protection</strong> (optional)</td><td>$19/active committer/month</td></tr>
-          <tr><td><strong>GitHub Code Security</strong> (optional)</td><td>$30/active committer/month</td></tr>
-        </tbody>
-      </table>
-    </div>
-    <p style="font-size:0.9rem; color:var(--gh-text-muted);"><strong>Note:</strong> Over 200,000 users already benefit from the unified GitHub Enterprise + Azure DevOps Basic licensing.</p>
-
-    <h3>Forrester Total Economic Impact (TEI) Study</h3>
-    <p>Forrester's 2025 TEI study (composite: 5,000-developer organisation, $24B revenue) quantified:</p>
-    <div class="table-wrapper">
-      <table>
-        <thead>
-          <tr><th>Benefit Category</th><th>Impact</th></tr>
-        </thead>
-        <tbody>
-          <tr><td><strong>Total ROI</strong></td><td><strong style="color:#3fb950;">376% over three years</strong></td></tr>
-          <tr><td><strong>Net Present Value</strong></td><td><strong style="color:#3fb950;">$67.9M</strong></td></tr>
-          <tr><td>Developer productivity gains</td><td>10-20% improvement from faster code commits and PR cycles</td></tr>
-          <tr><td>Legacy tool consolidation</td><td>Elimination of multiple security scanners, CI/CD platforms, PM tools</td></tr>
-          <tr><td>Fewer code defects</td><td>Early vulnerability detection reduces production remediation costs</td></tr>
-          <tr><td>Developer onboarding time</td><td>Reduced from weeks to days (Codespaces + EMU + standardised workflows)</td></tr>
-          <tr><td>DevOps/SRE efficiency</td><td>Pipeline management and infrastructure consistency improvements</td></tr>
-          <tr><td>IT audit preparation</td><td><strong>50-75% reduction</strong> in preparation time</td></tr>
-          <tr><td>Legacy tool retirement</td><td>License savings from consolidated scanning, artifacts, documentation</td></tr>
-        </tbody>
-      </table>
-    </div>
-    <p style="font-size:0.85rem; color:var(--gh-text-muted);">Sources: <a href="https://tei.forrester.com/go/github/enterprisecloud/">Forrester TEI of GHEC</a> | <a href="https://tei.forrester.com/go/GitHub/GitHubAdvancedSecuritySpotlight/">Forrester TEI Spotlight: GHAS + Copilot</a></p>
-
-    <h3>Cost-Benefit Summary</h3>
-    <div class="table-wrapper">
-      <table>
-        <thead>
-          <tr><th>Cost Category</th><th>Impact</th></tr>
-        </thead>
-        <tbody>
-          <tr><td><strong>Licensing savings</strong></td><td>Elimination of duplicate platform licensing; Azure DevOps Basic included with GHEC</td></tr>
-          <tr><td><strong>Productivity gains</strong></td><td>20-55% faster development tasks (Copilot); autonomous coding agent handles routine work</td></tr>
-          <tr><td><strong>Security cost reduction</strong></td><td>Native GHAS replaces need for multiple third-party security tools</td></tr>
-          <tr><td><strong>Incident response savings</strong></td><td>SRE Agent reduces MTTR and on-call burden</td></tr>
-          <tr><td><strong>Reduced context switching</strong></td><td>Unified developer experience reduces tool fragmentation overhead</td></tr>
-          <tr><td><strong>Technical debt reduction</strong></td><td>AI-assisted modernisation and automated dependency updates</td></tr>
-          <tr><td><strong>Talent acquisition</strong></td><td>GitHub proficiency is a recruitment advantage; developers prefer GitHub workflows</td></tr>
-        </tbody>
-      </table>
-    </div>
-
-    <h3>Migration Cost Considerations</h3>
-    <div class="table-wrapper">
-      <table>
-        <thead>
-          <tr><th>Item</th><th>Estimate</th></tr>
-        </thead>
-        <tbody>
-          <tr><td>Migration tooling</td><td>Free (GitHub Enterprise Importer, <code>gh ado2gh</code> CLI)</td></tr>
-          <tr><td>Migration effort</td><td>5-10 minutes per repository (automated script)</td></tr>
-          <tr><td>Pipeline rewiring</td><td>Automated via <code>--rewire-pipelines</code> option</td></tr>
-          <tr><td>Training &amp; enablement</td><td>Microsoft Learn paths + GitHub Learning Pathways (free)</td></tr>
-          <tr><td>Expert services</td><td>Optional GitHub Expert Services for complex scenarios</td></tr>
-          <tr><td>User reclamation</td><td>Post-migration mannequin remapping (one-time)</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-</section>
-
-<!-- =================== MIGRATION =================== -->
-<section id="migration">
-  <div class="container">
-    <h2><span class="section-num">07</span>Migration Approach: The Hybrid Strategy</h2>
-    <p class="section-lead">Host source code on GitHub to benefit from AI capabilities, while continuing to use Azure Boards, Pipelines, and Test Plans.</p>
-
-    <h3>Recommended Architecture</h3>
-    <div class="arch-diagram">
-      <div class="arch-platform github-cloud">
-        <div class="platform-label">GitHub Enterprise Cloud</div>
-        <div class="arch-services">
-          <div class="arch-svc"><div class="svc-name">Source Code</div><div class="svc-detail">Repositories</div></div>
-          <div class="arch-svc"><div class="svc-name">GitHub Actions</div><div class="svc-detail">CI/CD</div></div>
-          <div class="arch-svc"><div class="svc-name">Advanced Security</div><div class="svc-detail">GHAS</div></div>
-          <div class="arch-svc"><div class="svc-name">GitHub Copilot</div><div class="svc-detail">AI / Agents</div></div>
-          <div class="arch-svc"><div class="svc-name">GitHub Packages</div><div class="svc-detail">Artifacts</div></div>
-          <div class="arch-svc"><div class="svc-name">GitHub Projects</div><div class="svc-detail">Planning</div></div>
-        </div>
-      </div>
-      <div class="arch-connector">| Deep Integration |</div>
-      <div class="arch-platform ado-retained">
-        <div class="platform-label">Azure DevOps (Retained)</div>
-        <div class="arch-services">
-          <div class="arch-svc"><div class="svc-name">Azure Boards</div><div class="svc-detail">Work Management</div></div>
-          <div class="arch-svc"><div class="svc-name">Azure Pipelines</div><div class="svc-detail">Optional CI/CD</div></div>
-          <div class="arch-svc"><div class="svc-name">Azure Test Plans</div><div class="svc-detail">Testing</div></div>
-        </div>
-      </div>
-    </div>
-
-    <h3>Migration Phases</h3>
-    <div class="phase-grid">
-      <div class="phase-card phase-1">
-        <div class="phase-num">Phase 1 -- Pilot</div>
-        <h4>Foundation (4-6 weeks)</h4>
-        <ul>
-          <li>Select 2-3 representative repositories</li>
-          <li>Execute migration using <code>gh ado2gh</code> tooling</li>
-          <li>Validate Azure Boards/Pipelines integration</li>
-          <li>Enable Copilot and GHAS for pilot teams</li>
-          <li>Collect feedback and refine process</li>
-        </ul>
-      </div>
-      <div class="phase-card phase-2">
-        <div class="phase-num">Phase 2 -- Expansion</div>
-        <h4>Scale (8-12 weeks)</h4>
-        <ul>
-          <li>Migrate remaining repositories in waves</li>
-          <li>Enable enterprise rulesets and governance</li>
-          <li>Roll out GitHub Copilot organisation-wide</li>
-          <li>Implement GHAS security scanning</li>
-          <li>Establish InnerSource practices</li>
-        </ul>
-      </div>
-      <div class="phase-card phase-3">
-        <div class="phase-num">Phase 3 -- Optimisation</div>
-        <h4>Transform (Ongoing)</h4>
-        <ul>
-          <li>Activate agentic workflows (Coding Agent, SRE Agent)</li>
-          <li>Migrate CI/CD to GitHub Actions where beneficial</li>
-          <li>Implement custom MCP servers</li>
-          <li>Continuous governance refinement</li>
-        </ul>
-      </div>
-    </div>
-
-    <h3>What Gets Preserved</h3>
-    <div class="check-grid">
-      <div class="check-item"><span class="check-icon">&#10003;</span> Complete commit history</div>
-      <div class="check-item"><span class="check-icon">&#10003;</span> All branches and tags</div>
-      <div class="check-item"><span class="check-icon">&#10003;</span> Pull request metadata</div>
-      <div class="check-item"><span class="check-icon">&#10003;</span> Azure Pipelines (auto-rewired)</div>
-      <div class="check-item"><span class="check-icon">&#10003;</span> Azure Boards work items (retained + integrated)</div>
-      <div class="check-item"><span class="check-icon">&#10003;</span> Azure Test Plans (retained)</div>
-      <div class="check-item"><span class="check-icon">&#10003;</span> User attribution (via mannequin reclaim)</div>
-    </div>
-
-    <h3>Success Metrics: DORA and Developer Productivity KPIs</h3>
-    <div class="flow-compare">
-      <div class="flow-box" style="border-top: 3px solid #a371f7;">
-        <h4 style="color: #a371f7;">DORA Metrics Targets</h4>
-        <ul>
-          <li><strong>Deployment frequency:</strong> 2-3x increase (weekly to multiple daily)</li>
-          <li><strong>Lead time:</strong> 50% reduction (days to hours)</li>
-          <li><strong>Change failure rate:</strong> 30% reduction</li>
-          <li><strong>MTTR:</strong> 40% reduction (repository intelligence)</li>
-        </ul>
-      </div>
-      <div class="flow-box" style="border-top: 3px solid #58a6ff;">
-        <h4 style="color: #58a6ff;">Developer Productivity KPIs</h4>
-        <ul>
-          <li><strong>Copilot acceptance:</strong> 27%+ target (312+ daily completions)</li>
-          <li><strong>AI code share:</strong> 40-46% target</li>
-          <li><strong>PR cycle time:</strong> 25-35% reduction</li>
-          <li><strong>GHAS coverage:</strong> 80%+ repositories</li>
-          <li><strong>Vulnerability remediation:</strong> 75% time reduction</li>
-          <li><strong>Policy compliance:</strong> 95%+ repos compliant</li>
-        </ul>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- =================== RISK =================== -->
-<section id="risk">
-  <div class="container">
-    <h2><span class="section-num">08</span>Risk Assessment &amp; Mitigation</h2>
-    <p class="section-lead">All identified risks are manageable with appropriate planning and fall within acceptable thresholds for enterprise migration.</p>
-
-    <div class="table-wrapper">
-      <table>
-        <thead>
-          <tr><th>Risk</th><th>Likelihood</th><th>Impact</th><th>Mitigation</th></tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><strong>Developer disruption during migration</strong></td>
-            <td><span class="risk-medium">Medium</span></td>
-            <td><span class="risk-medium">Medium</span></td>
-            <td>Phased migration; off-hours execution; comprehensive communication plan</td>
-          </tr>
-          <tr>
-            <td><strong>Pipeline breakage</strong></td>
-            <td><span class="risk-low">Low</span></td>
-            <td><span class="risk-high">High</span></td>
-            <td>Automated rewiring; validation checklist; rollback capability</td>
-          </tr>
-          <tr>
-            <td><strong>Learning curve for GitHub workflows</strong></td>
-            <td><span class="risk-low">Low</span></td>
-            <td><span class="risk-low">Low</span></td>
-            <td>Free Microsoft Learn + GitHub Learning Pathways; most developers already familiar</td>
-          </tr>
-          <tr>
-            <td><strong>Data residency requirements</strong></td>
-            <td><span class="risk-low">Low</span></td>
-            <td><span class="risk-high">High</span></td>
-            <td>GHEC Data Residency available in EU, AU, US; verify regional compliance</td>
-          </tr>
-          <tr>
-            <td><strong>Integration gaps with Azure Boards</strong></td>
-            <td><span class="risk-low">Low</span></td>
-            <td><span class="risk-medium">Medium</span></td>
-            <td>Steady stream of integration improvements; deep Azure Boards &lt;-&gt; GitHub integration</td>
-          </tr>
-          <tr>
-            <td><strong>Security policy migration complexity</strong></td>
-            <td><span class="risk-medium">Medium</span></td>
-            <td><span class="risk-medium">Medium</span></td>
-            <td>Enterprise rulesets provide equal or superior controls; phased policy rollout with Evaluate mode</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-</section>
-
-<!-- =================== RECOMMENDATION =================== -->
-<section id="recommendation">
-  <div class="container">
-    <h2><span class="section-num">09</span>Executive Recommendation</h2>
-    <p class="section-lead">The strategic, technical, and financial evidence converges on a clear conclusion.</p>
-
-    <h3>The Case Is Clear</h3>
-    <ol class="rec-list">
-      <li><strong>Microsoft recommends it.</strong> The official position from Azure DevOps leadership is to migrate repos to GitHub to unlock agentic AI capabilities.</li>
-      <li><strong>The AI advantage is exclusive.</strong> Copilot's most powerful features -- the Coding Agent, Agentic Code Review, Copilot Autofix, SRE Agent -- require GitHub-hosted code.</li>
-      <li><strong>The licensing model incentivises it.</strong> Azure DevOps Basic is now free with GitHub Enterprise Cloud, eliminating cost barriers.</li>
-      <li><strong>The tooling is mature.</strong> GitHub Enterprise Importer has migrated hundreds of thousands of repositories for Azure DevOps customers. The process is automated and proven.</li>
-      <li><strong>The risk is low.</strong> The hybrid model preserves investments in Azure Boards, Pipelines, and Test Plans. Migration is incremental and reversible.</li>
-      <li><strong>The cost of delay is real.</strong> Every sprint without agentic Copilot capabilities is a sprint where competitors who have migrated are moving faster.</li>
-    </ol>
-
-    <div class="cta-box">
-      <h3>Recommended Action</h3>
-      <p><strong>Approve the migration of source code repositories from Azure DevOps to GitHub Enterprise Cloud</strong>, following the hybrid model and phased approach outlined in this document.</p>
-    </div>
-  </div>
-</section>
-
-<!-- =================== REFERENCES =================== -->
-<section id="references">
-  <div class="container">
-    <h2><span class="section-num">10</span>References &amp; Sources</h2>
-
-    <h3>Microsoft Official Sources</h3>
-    <div class="ref-grid">
-      <div class="ref-item">
-        <span class="ref-num">1.</span>
-        <div><a href="https://devblogs.microsoft.com/devops/azure-devops-with-github-repositories-your-path-to-agentic-ai/">Azure DevOps with GitHub Repositories -- Your Path to Agentic AI</a><br><span class="ref-source">Aaron Hallberg, Partner Director of Product, Azure DevOps</span></div>
-      </div>
-      <div class="ref-item">
-        <span class="ref-num">2.</span>
-        <div><a href="https://azure.microsoft.com/en-us/blog/agentic-devops-evolving-software-development-with-github-copilot-and-microsoft-azure/">Agentic DevOps: Evolving Software Development with GitHub Copilot and Microsoft Azure</a><br><span class="ref-source">Microsoft Azure Blog, Build 2025</span></div>
-      </div>
-      <div class="ref-item">
-        <span class="ref-num">3.</span>
-        <div><a href="https://devblogs.microsoft.com/all-things-azure/azure-devops-to-github-migration-playbook-unlocking-agentic-devops/">Azure DevOps to GitHub Migration Playbook</a><br><span class="ref-source">All Things Azure Blog</span></div>
-      </div>
-      <div class="ref-item">
-        <span class="ref-num">4.</span>
-        <div><a href="https://devblogs.microsoft.com/devops/azure-devops-basic-usage-included-with-github-enterprise/">Azure DevOps Basic Usage Included with GitHub Enterprise</a><br><span class="ref-source">Azure DevOps Blog</span></div>
-      </div>
-      <div class="ref-item">
-        <span class="ref-num">5.</span>
-        <div><a href="https://learn.microsoft.com/en-us/training/modules/introduction-to-ado-to-github-migration/">Introduction to Azure DevOps to GitHub Migration</a><br><span class="ref-source">Microsoft Learn</span></div>
-      </div>
-    </div>
-
-    <h3>GitHub Official Sources</h3>
-    <div class="ref-grid">
-      <div class="ref-item">
-        <span class="ref-num">6.</span>
-        <div><a href="https://wellarchitected.github.com/library/scenarios/migrations/azure-devops-migration-guide/">GitHub Well-Architected: Azure DevOps Migration Guide</a><br><span class="ref-source">GitHub Well-Architected Framework</span></div>
-      </div>
-      <div class="ref-item">
-        <span class="ref-num">7.</span>
-        <div><a href="https://github.com/resources/insights/accelerate-innovation-azure-devops-migration">Accelerate Innovation by Migrating from Azure DevOps</a><br><span class="ref-source">GitHub Resources</span></div>
-      </div>
-      <div class="ref-item">
-        <span class="ref-num">8.</span>
-        <div><a href="https://github.blog/news-insights/product-news/github-copilot-meet-the-new-coding-agent/">GitHub Copilot: Meet the New Coding Agent</a><br><span class="ref-source">GitHub Blog</span></div>
-      </div>
-      <div class="ref-item">
-        <span class="ref-num">9.</span>
-        <div><a href="https://github.blog/ai-and-ml/github-copilot/github-copilot-coding-agent-101-getting-started-with-agentic-workflows-on-github/">Copilot Coding Agent 101: Getting Started with Agentic Workflows</a><br><span class="ref-source">GitHub Blog</span></div>
-      </div>
-      <div class="ref-item">
-        <span class="ref-num">10.</span>
-        <div><a href="https://github.blog/ai-and-ml/github-copilot/from-idea-to-pr-a-guide-to-github-copilots-agentic-workflows/">From Idea to PR: A Guide to GitHub Copilot's Agentic Workflows</a><br><span class="ref-source">GitHub Blog</span></div>
-      </div>
-    </div>
-
-    <h3>Governance &amp; Security</h3>
-    <div class="ref-grid">
-      <div class="ref-item">
-        <span class="ref-num">11.</span>
-        <div><a href="https://docs.github.com/en/enterprise-cloud@latest/admin/enforcing-policies/enforcing-policies-for-your-enterprise/enforcing-policies-for-code-governance">Enforcing Code Governance with Rulesets</a><br><span class="ref-source">GitHub Docs</span></div>
-      </div>
-      <div class="ref-item">
-        <span class="ref-num">12.</span>
-        <div><a href="https://wellarchitected.github.com/library/governance/recommendations/managing-repositories-at-scale/rulesets-best-practices/">Rulesets Best Practices</a><br><span class="ref-source">GitHub Well-Architected</span></div>
-      </div>
-      <div class="ref-item">
-        <span class="ref-num">13.</span>
-        <div><a href="https://www.microsoft.com/en-us/securityengineering/sdl/ghas">GitHub Advanced Security (GHAS)</a><br><span class="ref-source">Microsoft Security Engineering</span></div>
-      </div>
-      <div class="ref-item">
-        <span class="ref-num">14.</span>
-        <div><a href="https://github.blog/changelog/2025-03-04-introducing-github-secret-protection-and-github-code-security/">Introducing GitHub Secret Protection and GitHub Code Security</a><br><span class="ref-source">GitHub Changelog</span></div>
-      </div>
-    </div>
-
-    <h3>Research &amp; Metrics</h3>
-    <div class="ref-grid">
-      <div class="ref-item">
-        <span class="ref-num">15.</span>
-        <div><a href="https://github.blog/news-insights/research/research-quantifying-github-copilots-impact-in-the-enterprise-with-accenture/">Quantifying GitHub Copilot's Impact in the Enterprise -- Accenture Study</a><br><span class="ref-source">GitHub Blog</span></div>
-      </div>
-      <div class="ref-item">
-        <span class="ref-num">16.</span>
-        <div><a href="https://github.com/githubabcs/gh-abcs-admin/blob/main/docs/ado-to-github-migration-assessment.md">ADO to GitHub Migration Assessment</a><br><span class="ref-source">GitHub ABCs</span></div>
-      </div>
-    </div>
-
-    <h3>Forrester Economic Studies</h3>
-    <div class="ref-grid">
-      <div class="ref-item">
-        <span class="ref-num">17.</span>
-        <div><a href="https://tei.forrester.com/go/github/enterprisecloud/">Forrester Total Economic Impact of GitHub Enterprise Cloud</a><br><span class="ref-source">376% ROI analysis, 2025</span></div>
-      </div>
-      <div class="ref-item">
-        <span class="ref-num">18.</span>
-        <div><a href="https://tei.forrester.com/go/GitHub/GitHubAdvancedSecuritySpotlight/">Forrester TEI Spotlight: GHAS and Copilot</a><br><span class="ref-source">Security and productivity benefits, 2025</span></div>
-      </div>
-    </div>
-
-    <h3>Academic Research &amp; Strategic Analysis</h3>
-    <div class="ref-grid">
-      <div class="ref-item">
-        <span class="ref-num">19.</span>
-        <div><a href="https://cacm.acm.org/research/measuring-github-copilots-impact-on-productivity/">Measuring GitHub Copilot's Impact on Productivity</a><br><span class="ref-source">Communications of the ACM</span></div>
-      </div>
-      <div class="ref-item">
-        <span class="ref-num">20.</span>
-        <div><a href="https://github.blog/ai-and-ml/automate-repository-tasks-with-github-agentic-workflows/">GitHub Agentic Workflows</a><br><span class="ref-source">Repository automation with AI agents</span></div>
-      </div>
-      <div class="ref-item">
-        <span class="ref-num">21.</span>
-        <div><a href="https://devblogs.microsoft.com/devops/azure-devops-and-github-repositories-next-steps-in-the-path-to-agentic-ai/">Azure DevOps and GitHub -- Next Steps in Agentic AI</a><br><span class="ref-source">Official Microsoft positioning</span></div>
-      </div>
-    </div>
-  </div>
-</section>
-  <div class="container">
-    <p>Document prepared with data sourced from official Microsoft, GitHub, and Azure documentation as of March 2026.</p>
-  </div>
+<footer>
+  <p>Generated from <a href="./ADO-to-GitHub-Migration-Business-Case.md">ADO-to-GitHub-Migration-Business-Case.md</a>.
+  See also the <a href="./ADO-to-GitHub-Migration-Executive-Summary.md">Executive Summary</a>.</p>
 </footer>
 
 </body>
